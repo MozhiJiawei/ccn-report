@@ -48,19 +48,9 @@ reports/<大类>/<对象或方向>/<report-slug>-<YYYYMMDD>-<creator>/
 
 ## Report Package Contents
 
-每个报告目录建议包含：
+每个报告目录内部结构由交付件自身决定，不强制套用统一模板。
 
-```text
-REPORT.md
-deliverables/
-sources/
-qa/
-```
-
-- `REPORT.md` 记录报告目的、产物清单、来源、QA 和变更记录。
-- `deliverables/` 放最终交付文件。
-- `sources/` 放允许归档的输入材料或引用材料。
-- `qa/` 放校验结果、截图、导出预览或人工检查记录。
+允许归档的正式交付形态包括 HTML、PPTX、PDF、Markdown、图片包、源材料摘要和 QA 记录。无论采用哪种形态，都必须先创建符合命名规则的报告目录，不能把交付文件直接放在大类或二级分类目录下。
 
 ## Pre-Commit Gates
 

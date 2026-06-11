@@ -23,8 +23,6 @@ AI 生成报告交付件归档仓库。
 |-- scripts/
 |   |-- check_report_archive.py
 |   `-- pre_commit_gate.py
-`-- templates/
-    `-- REPORT.md
 ```
 
 ## Report Package
@@ -49,12 +47,7 @@ reports/学术论文分析/Agent/multi-agent-planning-survey-20260611-mozhi/
 - `<YYYYMMDD>`：8 位日期，例如 `20260611`。
 - `<creator>`：小写字母、数字和短横线，例如 `mozhi`。
 
-每个报告目录建议包含：
-
-- `REPORT.md`：交付说明、背景、产物清单、生成方式和版本记录。
-- `deliverables/`：最终交付文件，例如 `.pptx`、`.pdf`、`.docx`、`.xlsx`、图片包。
-- `sources/`：允许归档的输入材料、摘要、引用材料或源文件。
-- `qa/`：校验记录、截图、导出预览、人工检查记录。
+每个报告目录内部结构由交付形态决定。HTML、PPTX、PDF、图片包、源材料和 QA 记录都可以按该报告自身需要组织。
 
 ## Archive Rules
 
@@ -64,6 +57,7 @@ reports/学术论文分析/Agent/multi-agent-planning-survey-20260611-mozhi/
 - 一个报告一个目录，不把多个主题混在同一目录。
 - 报告目录名必须满足 `<report-slug>-<YYYYMMDD>-<creator>`。
 - 大型中间文件、缓存、临时导出默认不归档。
+- 不强制使用统一模板；报告内容可以是 HTML、PPTX、PDF、Markdown 或其他正式交付形态。
 
 ## Validation
 

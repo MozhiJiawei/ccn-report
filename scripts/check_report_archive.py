@@ -75,17 +75,6 @@ def check_subject(subject: Path, errors: list[str]) -> None:
                 "Expected <report-slug>-<YYYYMMDD>-<creator>.",
                 errors,
             )
-            continue
-
-        check_report_package(item, errors)
-
-
-def check_report_package(report_dir: Path, errors: list[str]) -> None:
-    if not (report_dir / "REPORT.md").is_file():
-        fail(f"Report package missing REPORT.md: {report_dir.relative_to(REPO_ROOT)}", errors)
-
-    if not (report_dir / "deliverables").is_dir():
-        fail(f"Report package missing deliverables/ directory: {report_dir.relative_to(REPO_ROOT)}", errors)
 
 
 def main() -> int:
