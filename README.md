@@ -60,6 +60,17 @@ AI 生成报告交付件归档仓库。
 - 大型中间文件、缓存、临时导出默认不归档。
 - 不强制使用统一模板；报告内容可以是 HTML、PPTX、PDF、Markdown 或其他正式交付形态。
 
+## Git LFS
+
+三大归档目录下的文件默认使用 Git LFS，以避免 PPTX、PDF、图片、视频、压缩包等交付件撑大 Git 历史。
+
+可读文本文件通过 `.gitattributes` 白名单保留普通 Git diff，例如 Markdown、HTML、CSS、JavaScript、JSON、YAML、CSV、SVG、XML 和纯文本。
+
+白名单文本文件如果超过 5 MiB，门禁会失败。处理方式：
+
+- 优先拆出内嵌图片或大资产，让二进制资产走 LFS。
+- 如果确实需要归档单个超大文本文件，在 `.gitattributes` 为该具体路径添加 Git LFS 例外。
+
 ## Validation
 
 提交前运行：

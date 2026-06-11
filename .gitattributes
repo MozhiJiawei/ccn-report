@@ -1,0 +1,27 @@
+# Archive deliverables default to Git LFS.
+大厂动态/** filter=lfs diff=lfs merge=lfs -text
+开源软件分析/** filter=lfs diff=lfs merge=lfs -text
+学术论文分析/** filter=lfs diff=lfs merge=lfs -text
+
+# Keep reviewable text assets in regular Git.
+*.md -filter -diff -merge text
+*.markdown -filter -diff -merge text
+*.html -filter -diff -merge text
+*.htm -filter -diff -merge text
+*.css -filter -diff -merge text
+*.js -filter -diff -merge text
+*.mjs -filter -diff -merge text
+*.cjs -filter -diff -merge text
+*.ts -filter -diff -merge text
+*.tsx -filter -diff -merge text
+*.jsx -filter -diff -merge text
+*.json -filter -diff -merge text
+*.jsonl -filter -diff -merge text
+*.yaml -filter -diff -merge text
+*.yml -filter -diff -merge text
+*.toml -filter -diff -merge text
+*.txt -filter -diff -merge text
+*.csv -filter -diff -merge text
+*.tsv -filter -diff -merge text
+*.svg -filter -diff -merge text
+*.xml -filter -diff -merge text
