@@ -60,23 +60,41 @@ def check_category(category: Path, errors: list[str]) -> None:
         if not item.is_dir():
             fail(f"Category directories must not contain files directly: {item.relative_to(REPO_ROOT)}", errors)
             continue
-
-        check_subject(item, errors)
-
-
-def check_subject(subject: Path, errors: list[str]) -> None:
-    for item in subject.iterdir():
-        if item.name in IGNORED_NAMES:
-            continue
-        if not item.is_dir():
-            fail(f"Subject directories must only contain report directories: {item.relative_to(REPO_ROOT)}", errors)
-            continue
-        if not is_valid_report_dir_name(item.name):
+        if is_valid_report_dir_name(item.name):
             fail(
-                f"Invalid report directory name: {item.relative_to(REPO_ROOT)}. "
-                "Expected <report-slug>-<YYYYMMDD>-<creator>.",
+                f"Report directories must be placed under an object/direction directory: {item.relative_to(REPO_ROOT)}",
                 errors,
             )
+            continue
+
+        check_archive_branch(item, errors)
+
+
+def check_archive_branch(branch: Path, errors: list[str]) -> None:
+    direct_files = [item for item in branch.iterdir() if item.is_file() and item.name not in IGNORED_NAMES]
+    if direct_files:
+        fail(
+            f"Directory contains files but is not a valid report directory: {branch.relative_to(REPO_ROOT)}. "
+            "Move files into <report-slug>-<YYYYMMDD>-<creator>/ or rename this directory to that format.",
+            errors,
+        )
+
+    for item in branch.iterdir():
+        if item.name in IGNORED_NAMES:
+            continue
+        if item.is_file():
+            continue
+        if not item.is_dir():
+            fail(
+                f"Archive category containers must only contain directories: {item.relative_to(REPO_ROOT)}",
+                errors,
+            )
+            continue
+
+        if is_valid_report_dir_name(item.name):
+            continue
+
+        check_archive_branch(item, errors)
 
 
 def main() -> int:

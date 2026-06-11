@@ -26,18 +26,19 @@ AI 生成报告交付件归档仓库。
 
 ## Report Package
 
-报告必须归档到二级分类目录下的独立子目录，不能直接放在大类或二级分类根目录。
+报告必须归档到对象或方向目录之后的独立报告目录里，中间可以按需要增加自定义子类。
 
 ```text
-<大类>/<对象或方向>/<report-slug>-<YYYYMMDD>-<creator>/
+<大类>/<对象或方向>/.../.../<report-slug>-<YYYYMMDD>-<creator>/.../
 ```
 
 示例：
 
 ```text
 大厂动态/OpenAI/gpt-5-market-scan-20260611-mozhi/
-开源软件分析/LangChain/langgraph-runtime-review-20260611-mozhi/
-学术论文分析/Agent/multi-agent-planning-survey-20260611-mozhi/
+大厂动态/OpenAI/模型发布/gpt-5-market-scan-20260611-mozhi/
+开源软件分析/LangChain/Runtime/LangGraph/langgraph-runtime-review-20260611-mozhi/
+学术论文分析/Agent/多智能体规划/multi-agent-planning-survey-20260611-mozhi/
 ```
 
 目录名规则：
@@ -52,9 +53,10 @@ AI 生成报告交付件归档仓库。
 
 - 根目录不直接放报告文件。
 - 大类目录下不直接放报告文件。
-- 二级分类目录下只放报告目录，不直接放单个交付文件。
+- 对象或方向目录及其自定义子类目录下不直接放单个交付文件。
 - 一个报告一个目录，不把多个主题混在同一目录。
-- 报告目录名必须满足 `<report-slug>-<YYYYMMDD>-<creator>`。
+- 只有最终报告目录名必须满足 `<report-slug>-<YYYYMMDD>-<creator>`。
+- 报告目录内部可以按交付件需要继续创建任意子目录和文件。
 - 大型中间文件、缓存、临时导出默认不归档。
 - 不强制使用统一模板；报告内容可以是 HTML、PPTX、PDF、Markdown 或其他正式交付形态。
 
