@@ -54,6 +54,19 @@
 
 允许归档的正式交付形态包括 HTML、PPTX、PDF、Markdown、图片包、源材料摘要和 QA 记录。无论采用哪种形态，都必须先创建符合命名规则的最终报告目录，不能把交付文件直接放在大类、对象或方向、自定义子类目录下。
 
+## Git LFS Rules
+
+三大归档目录下的文件默认走 Git LFS。
+
+以下可读文本扩展名通过 `.gitattributes` 白名单保留普通 Git diff：
+
+```text
+.md .markdown .html .htm .css .js .mjs .cjs .ts .tsx .jsx
+.json .jsonl .yaml .yml .toml .txt .csv .tsv .svg .xml
+```
+
+白名单文本文件超过 5 MiB 时，`python scripts/pre_commit_gate.py` 会失败。归档前应优先拆出内嵌图片或大资产；若确实需要保留单个超大文本文件，应在 `.gitattributes` 为该具体路径添加 Git LFS 例外。
+
 ## Pre-Commit Gates
 
 提交前必须运行：
