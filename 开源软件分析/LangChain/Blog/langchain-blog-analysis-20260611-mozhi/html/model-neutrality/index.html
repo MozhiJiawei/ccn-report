@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Model Neutrality - LangChain Blog</title>
+  <style>
+    :root {
+      --ink: #101711;
+      --muted: #536159;
+      --line: #dbe5de;
+      --paper: #fbfcf8;
+      --panel: #ffffff;
+      --green: #1f7a4d;
+      --green-soft: #e7f4ec;
+      --mint: #bdebd3;
+      --shadow: 0 24px 80px rgba(16, 23, 17, .08);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(31,122,77,.055) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(31,122,77,.045) 1px, transparent 1px),
+        var(--paper);
+      background-size: 44px 44px;
+      font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+
+    a { color: var(--green); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+    .page {
+      width: min(1180px, calc(100vw - 48px));
+      margin: 0 auto;
+      padding: 34px 0 54px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 34px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .mark {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      display: inline-grid;
+      place-items: center;
+      background: var(--mint);
+      font-size: 14px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 36px;
+      align-items: start;
+      padding-bottom: 34px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(46px, 6vw, 86px);
+      line-height: .98;
+      letter-spacing: 0;
+      max-width: 900px;
+    }
+
+    .summary {
+      margin-top: 22px;
+      max-width: 790px;
+      font-size: 24px;
+      line-height: 1.36;
+      color: #203126;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.82);
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .side {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .side h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    .side ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    .side li {
+      margin: 12px 0;
+      color: var(--muted);
+    }
+
+    .side b { color: var(--ink); }
+
+    section {
+      padding: 34px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 28px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.15;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 760px;
+    }
+
+    .flow {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    svg text {
+      font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      fill: var(--ink);
+    }
+
+    .quote-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .quote {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      min-height: 164px;
+    }
+
+    .quote h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .quote p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      padding-top: 22px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .section-head,
+      .quote-grid {
+        grid-template-columns: 1fr;
+      }
+      .page { width: min(100vw - 24px, 760px); }
+      h1 { font-size: 36px; }
+      .summary { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topbar" aria-label="页面信息">
+      <div class="brand"><span class="mark">LC</span> LangChain Blog</div>
+      <div>Model Neutrality · 2026-06-04</div>
+    </nav>
+
+    <header class="hero">
+      <div>
+        <div class="eyebrow">5-second takeaway</div>
+        <h1>模型中立性比云中立性更重要</h1>
+        <p class="summary">
+          LangChain 认为，AI 应用真正容易被锁定的不是底层模型 API，而是承载业务逻辑的 agent harness；因此企业需要一个开源、多模型、理解模型差异的中立层。
+        </p>
+        <div class="meta">
+          <a class="chip" href="https://www.langchain.com/blog/model-neutrality">原文链接</a>
+          <span class="chip">Why Model Neutrality Matters More Than Cloud Neutrality</span>
+          <span class="chip">作者：Neil Dahlke</span>
+          <span class="chip">阅读时间：7 min</span>
+        </div>
+      </div>
+
+      <aside class="side" aria-label="文章传递的三个观点">
+        <h2>文章传递的三个观点</h2>
+        <ol>
+          <li><b>软件层级在上移：</b>从工具和 SaaS，走向能端到端完成任务的 AI agent。</li>
+          <li><b>新锁定点在 harness：</b>模型实验室会把 orchestration、状态、工具调用和评测能力做成自家入口。</li>
+          <li><b>中立层不能最低公分母化：</b>好的 harness 要支持多模型，也要暴露每个模型的独特能力。</li>
+        </ol>
+      </aside>
+    </header>
+
+    <section>
+      <div class="section-head">
+        <h2>原文论证链</h2>
+        <p>文章用云时代的 Terraform 类比，说明 agent 时代也需要一个位于供应商之上的中立控制层。</p>
+      </div>
+      <div class="flow">
+        <svg viewBox="0 0 1080 330" width="100%" height="auto" role="img" aria-label="Model neutrality argument flow">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#1f7a4d"></path>
+            </marker>
+          </defs>
+          <rect x="28" y="76" width="232" height="108" rx="8" fill="#fff" stroke="#dbe5de"></rect>
+          <text x="52" y="116" font-size="20" font-weight="800">云时代</text>
+          <text x="52" y="148" font-size="14" fill="#536159">云资源变成商品</text>
+          <text x="52" y="172" font-size="14" fill="#536159">锁定转移到工具和控制层</text>
+
+          <rect x="318" y="76" width="232" height="108" rx="8" fill="#fff" stroke="#dbe5de"></rect>
+          <text x="342" y="116" font-size="20" font-weight="800">模型时代</text>
+          <text x="342" y="148" font-size="14" fill="#536159">tokens 也会商品化</text>
+          <text x="342" y="172" font-size="14" fill="#536159">agent harness 成为锁定点</text>
+
+          <rect x="608" y="76" width="232" height="108" rx="8" fill="#e7f4ec" stroke="#1f7a4d"></rect>
+          <text x="632" y="116" font-size="20" font-weight="800">中立 Harness</text>
+          <text x="632" y="148" font-size="14" fill="#2e4b39">open source / multi-model</text>
+          <text x="632" y="172" font-size="14" fill="#2e4b39">profile-aware</text>
+
+          <rect x="350" y="236" width="378" height="58" rx="8" fill="#101711"></rect>
+          <text x="382" y="272" font-size="18" font-weight="800" fill="#fff">LangChain 把自己放在这个中立层位置</text>
+
+          <line x1="260" y1="130" x2="310" y2="130" stroke="#1f7a4d" stroke-width="2.5" marker-end="url(#arrow)"></line>
+          <line x1="550" y1="130" x2="600" y2="130" stroke="#1f7a4d" stroke-width="2.5" marker-end="url(#arrow)"></line>
+          <path d="M724 184 C724 224, 638 232, 600 236" fill="none" stroke="#1f7a4d" stroke-width="2.5" marker-end="url(#arrow)"></path>
+        </svg>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>关键词</h2>
+        <p>这篇文章没有实验图表，主要信息集中在几个概念定义和类比上。</p>
+      </div>
+      <div class="quote-grid">
+        <article class="quote">
+          <h3>Agent harness</h3>
+          <p>承载 orchestration、状态、工具接入和评测的应用层。原文认为这里会成为模型供应商争夺的控制点。</p>
+        </article>
+        <article class="quote">
+          <h3>Model profile</h3>
+          <p>每个模型的能力、限制和最佳用法不同；中立层的价值在于暴露这些差异，而不是把模型压成同一种接口。</p>
+        </article>
+        <article class="quote">
+          <h3>Deep Agents</h3>
+          <p>原文把 Deep Agents 描述为 LangChain 在中立 harness 方向上的实现：开源、可跨模型、可利用模型特性。</p>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      <span>LangChain Blog 单篇速读</span>
+      <span><a href="https://www.langchain.com/blog/model-neutrality">https://www.langchain.com/blog/model-neutrality</a></span>
+    </footer>
+  </main>
+</body>
+</html>

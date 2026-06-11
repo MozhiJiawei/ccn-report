@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>You don’t know what your agent will do until it’s in production | LangChain Blog 速读</title>
+  <style>
+    :root{--ink:#17221f;--muted:#5b6864;--paper:#f6f7f1;--panel:#fff;--line:#d7dfd8;--green:#0d604c;--blue:#265f8f;--rose:#9a5474;--amber:#a86525;--dark:#10201c}
+    *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Arial,"Microsoft YaHei",sans-serif;line-height:1.62} a{color:var(--green)}
+    .hero{min-height:88vh;display:grid;align-items:start;padding:42px 6vw 30px;background:linear-gradient(135deg,#10201c 0%,#12372f 55%,#1f5b4d 100%);color:#f8fbf8}
+    .hero-inner{width:min(1180px,100%);margin:0 auto}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;color:#d9ebe4;font-size:13px}.pill{border:1px solid rgba(255,255,255,.26);border-radius:999px;padding:5px 10px;background:rgba(255,255,255,.08)}
+    h1{max-width:980px;margin:0 0 18px;font-size:clamp(38px,5.6vw,74px);line-height:1.02;letter-spacing:0}.deck{max-width:1050px;margin:0 0 24px;color:#ebf6ef;font-size:clamp(17px,1.6vw,22px)}
+    .why-what-how{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}.hero-card{min-height:150px;padding:18px;border:1px solid rgba(255,255,255,.22);border-radius:8px;background:rgba(12,36,31,.78)}.label{margin-bottom:8px;color:#aee2c7;font-size:13px;font-weight:800;text-transform:uppercase}.hero-card p{margin:0;color:#fff;font-size:16px}
+    .wrap{width:min(1120px,88vw);margin:0 auto;padding:46px 0 64px}.section{margin:0 0 34px}.grid{display:grid;grid-template-columns:1.02fr .98fr;gap:22px;align-items:start}h2{margin:0 0 12px;font-size:clamp(25px,3vw,38px);line-height:1.15;letter-spacing:0}.lead{margin:0 0 16px;color:var(--muted);font-size:18px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card,.panel,figure{border:1px solid var(--line);border-radius:8px;background:var(--panel);box-shadow:0 10px 28px rgba(20,42,36,.06)}.card{padding:18px;min-height:168px}.card h3{margin:0 0 8px;font-size:19px;line-height:1.25}.card p{margin:0;color:#465551}
+    figure{margin:0;padding:18px}figure img{display:block;width:100%;max-height:520px;object-fit:contain;border-radius:6px;background:#eef2ee}figcaption{margin-top:10px;color:var(--muted);font-size:14px}.panel{padding:20px}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.step{min-height:108px;padding:15px;border:1px solid var(--line);border-radius:8px;background:#fff}.step strong{display:block;margin-bottom:6px;color:var(--green)}.source{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+    @media(max-width:900px){.hero{min-height:auto;background:#10201c}.why-what-how,.grid,.cards,.flow{grid-template-columns:1fr}h1{font-size:40px}}
+    </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="meta">
+        <span class="pill">February 26, 2026</span>
+        <span class="pill">14
+min</span>
+        <span class="pill">技术长文</span>
+        <span class="pill">LangChain Accounts</span>
+      </div>
+      <h1>You don’t know what your agent will do until it’s in production</h1>
+      <p class="deck">Why：传统监控假设输入和代码路径相对固定，但 agent 面对自然语言、非确定性模型和多步工具调用，上线后才会暴露真实行为。 What：文章认为生产监控需要从 latency、error rate 扩展到输入、输出、推理轨迹、工具选择、用户反馈和质量变化。 How：用 LangSmith traces 捕获自然语言交互和工具链路，再把生产数据聚合为在线评价、失败模式、数据集和持续改进信号。</p>
+      <div class="why-what-how" aria-label="Why What How">
+        <div class="hero-card"><div class="label">Why</div><p>传统监控假设输入和代码路径相对固定，但 agent 面对自然语言、非确定性模型和多步工具调用，上线后才会暴露真实行为。</p></div>
+        <div class="hero-card"><div class="label">What</div><p>文章认为生产监控需要从 latency、error rate 扩展到输入、输出、推理轨迹、工具选择、用户反馈和质量变化。</p></div>
+        <div class="hero-card"><div class="label">How</div><p>用 LangSmith traces 捕获自然语言交互和工具链路，再把生产数据聚合为在线评价、失败模式、数据集和持续改进信号。</p></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="section">
+      <h2>agent 的输入空间无法像表单一样枚举</h2>
+      <p class="lead">同一退款、账单或技术支持意图会被用户用无数种说法表达，测试集很难覆盖全部路径。</p>
+      <div class="grid">
+        <div class="cards"><article class="card"><h3>agent 的输入空间无法像表单一样枚举</h3><p>同一退款、账单或技术支持意图会被用户用无数种说法表达，测试集很难覆盖全部路径。</p></article>
+<article class="card"><h3>质量监控要看对话本身</h3><p>APM 指标只能说明系统慢了或错了，agent observability 还要记录输入、输出、检索、工具调用和 reasoning。</p></article>
+<article class="card"><h3>生产数据是持续改进的燃料</h3><p>上线 traces 可以被打标、聚类、评分并沉淀成 eval 数据集，让监控和改进形成闭环。</p></article></div>
+        
+        <figure>
+          <img src="assets/source-03.webp" alt="You don’t know what your agent will do until it’s in production">
+          <figcaption>这张原图支撑页面主线：同一退款、账单或技术支持意图会被用户用无数种说法表达，测试集很难覆盖全部路径。</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="section">
+      <h2>这篇文章的论证链路</h2>
+      <div class="flow"><div class="step"><strong>观察</strong>记录真实输入、输出、工具调用和上下文。</div>
+<div class="step"><strong>归纳</strong>把单次行为聚合成模式、失败类型或业务信号。</div>
+<div class="step"><strong>评价</strong>用 traces、datasets 或在线评分验证改动。</div>
+<div class="step"><strong>改进</strong>调整 prompt、工具、模型、memory 或 runtime。</div></div>
+    </section>
+    <p class="source">原文：<a href="https://www.langchain.com/blog/production-monitoring">https://www.langchain.com/blog/production-monitoring</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How Madrigal Built a Flexible and Scalable Multi-Agent Research and Intelligence Platform for Pharma with LangChain and LangSmith | LangChain Blog 速读</title>
+  <style>
+    :root { --ink:#111827; --muted:#5d6678; --paper:#fbfaf6; --line:#d8d3c6; --blue:#2f7de1; --teal:#16857d; --green:#6f8a35; --plum:#653958; --sand:#ebe4d5; --panel:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:Georgia,"Times New Roman",serif; line-height:1.55; }
+    a { color:inherit; text-decoration-color:rgba(47,125,225,.45); text-underline-offset:3px; }
+    .page { max-width:1160px; margin:0 auto; padding:28px 28px 64px; }
+    .hero { min-height:650px; display:grid; grid-template-columns:minmax(0,1.08fr) minmax(340px,.92fr); gap:42px; align-items:center; border-bottom:1px solid var(--line); padding-bottom:34px; }
+    .kicker { display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-family:"Courier New",monospace; font-size:12px; text-transform:uppercase; color:var(--muted); margin-bottom:22px; }
+    .pill { border:1px solid var(--line); border-radius:999px; padding:5px 10px; background:rgba(255,255,255,.58); }
+    h1 { font-size:clamp(44px,6vw,82px); line-height:.91; letter-spacing:0; margin:0 0 24px; max-width:780px; font-weight:500; }
+    .thesis { font-size:22px; line-height:1.45; max-width:780px; margin:0 0 26px; }
+    .thesis strong { font-family:"Courier New",monospace; font-size:14px; color:var(--blue); margin-right:8px; }
+    .feature-strip { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:24px 0 26px; font-family:"Courier New",monospace; font-size:12px; color:#253044; }
+    .feature-strip span { min-height:58px; border-top:3px solid var(--ink); background:rgba(255,255,255,.62); padding:9px 8px; }
+    .feature-strip span:nth-child(2){border-color:var(--teal)} .feature-strip span:nth-child(3){border-color:var(--green)} .feature-strip span:nth-child(4){border-color:var(--plum)}
+    .hero-meta { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-top:24px; }
+    .hero-meta div { padding:14px 16px 16px 0; min-height:82px; }
+    .hero-meta div+div { border-left:1px solid var(--line); padding-left:16px; }
+    .hero-meta span { display:block; font-family:"Courier New",monospace; font-size:12px; color:var(--muted); margin-bottom:8px; }
+    .hero-meta b { display:block; font-size:17px; line-height:1.25; font-weight:600; }
+    .poster { margin:0; border:1px solid var(--ink); background:#fff; transform:rotate(.35deg); box-shadow:10px 10px 0 var(--sand); }
+    .poster img { display:block; width:100%; height:auto; max-height:460px; object-fit:contain; background:#fff; }
+    .poster figcaption { padding:14px 16px 16px; font-size:14px; color:var(--muted); border-top:1px solid var(--ink); background:#fff; }
+    .fallback-visual { min-height:360px; display:grid; align-content:center; gap:12px; padding:28px; background:linear-gradient(135deg,#fff,#eef5ef); }
+    .fallback-visual span { display:block; border-left:6px solid var(--blue); padding:10px 14px; font-size:24px; line-height:1.1; background:#fff; }
+    .section { padding:58px 0; border-bottom:1px solid var(--line); }
+    .section h2 { font-size:clamp(31px,4vw,52px); line-height:1; letter-spacing:0; font-weight:500; margin:0 0 22px; max-width:850px; }
+    .section>p { max-width:800px; font-size:20px; margin:0 0 24px; color:#2a3040; }
+    .point-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; margin-top:30px; }
+    .point { border-top:3px solid var(--ink); padding:18px 0 0; }
+    .point:nth-child(2){border-color:var(--teal)} .point:nth-child(3){border-color:var(--green)}
+    .point h3 { font-size:24px; line-height:1.12; margin:0 0 10px; font-weight:600; }
+    .point p { margin:0; font-size:17px; color:var(--muted); }
+    .two-up { display:grid; grid-template-columns:minmax(0,.92fr) minmax(420px,1.08fr); gap:32px; align-items:center; }
+    .figure { margin:0; border:1px solid var(--line); background:var(--panel); overflow:hidden; }
+    .figure img { display:block; width:100%; height:auto; max-height:520px; object-fit:contain; }
+    .figure figcaption { padding:12px 14px 14px; font-size:14px; color:var(--muted); border-top:1px solid var(--line); background:rgba(235,228,213,.3); }
+    .mechanism { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:34px; border:1px solid var(--line); background:var(--panel); }
+    .mechanism div { min-height:145px; padding:18px 16px; }
+    .mechanism div+div { border-left:1px solid var(--line); }
+    .mechanism span { display:block; font-family:"Courier New",monospace; color:var(--blue); font-size:12px; margin-bottom:14px; }
+    .mechanism b { display:block; font-size:19px; line-height:1.15; margin-bottom:10px; }
+    .mechanism p { margin:0; color:var(--muted); font-size:15px; }
+    .closing { padding:54px 0 8px; color:var(--muted); font-size:15px; font-family:"Courier New",monospace; }
+    @media (max-width:920px){ .hero,.two-up{grid-template-columns:1fr;min-height:auto}.feature-strip,.mechanism{grid-template-columns:1fr 1fr}.point-grid{grid-template-columns:1fr} }
+    @media (max-width:620px){ .page{padding:20px 18px 42px} h1{font-size:46px}.thesis{font-size:19px}.hero-meta,.feature-strip,.mechanism{grid-template-columns:1fr}.hero-meta div+div,.mechanism div+div{border-left:0;border-top:1px solid var(--line);padding-left:0} }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <div class="kicker"><span class="pill">LangChain Blog</span><span class="pill">Customer</span><span class="pill">customer case</span></div>
+        <h1>How Madrigal Built a Flexible and Scalable Multi-Agent Research and Intelligence Platform for Pharma with LangChain and LangSmith</h1>
+        <p class="thesis"><strong>为什么</strong>制药研究和情报工作横跨科学、临床、市场和商业来源，人工综合速度慢，一次性自动化也很难适应不断变化的问题。<strong>是什么</strong>Madrigal 用 LangChain 和 LangSmith 构建灵活、可扩展的多 agent 研究与情报平台，用于整合多来源信息。<strong>怎么做</strong>LangChain 支撑多 agent workflow 和工具编排，LangSmith 提供 tracing、evaluation 和 observability，让团队能持续迭代质量。</p>
+        <div class="feature-strip" aria-label="Article focus"><span>为什么</span><span>是什么</span><span>怎么做到</span><span>读者带走</span></div>
+        <div class="hero-meta">
+          <div><span>日期</span><b>April 29, 2026</b></div>
+          <div><span>作者</span><b>LangChain Accounts</b></div>
+          <div><span>阅读时间</span><b>原文未显示</b></div>
+        </div>
+      </div>
+      <figure class="poster"><img src="assets/hero-customers-madrigal.png" alt="How Madrigal Built a Flexible and Scalable Multi-Agent Research and Intelligence Platform for Pharma with LangChain and LangSmith source visual"><figcaption>原文视觉用于定位文章主题；正文只保留能支撑相邻观点的图片或重构链路。</figcaption></figure>
+    </section>
+    <section class="section">
+      <h2>读者应该带走什么</h2>
+      <p>Madrigal 用 LangChain 和 LangSmith 构建灵活、可扩展的多 agent 研究与情报平台，用于整合多来源信息。</p>
+      <div class="mechanism"><div><span>01</span><b>问题</b><p>制药研究和情报工作横跨科学、临床、市场和商业来源，人工综合速度慢，一次性自动化也很难适应不断变化的问题。</p></div><div><span>02</span><b>观点</b><p>Madrigal 用 LangChain 和 LangSmith 构建灵活、可扩展的多 agent 研究与情报平台，用于整合多来源信息。</p></div><div><span>03</span><b>机制</b><p>LangChain 支撑多 agent workflow 和工具编排，LangSmith 提供 tracing、evaluation 和 observability，让团队能持续迭代质量。</p></div><div><span>04</span><b>用途</b><p>用这篇文章判断 LangChain 在该方向上的产品或技术变化。</p></div></div>
+    </section>
+    <section class="closing">Source: <a href="https://www.langchain.com/blog/customers-madrigal">https://www.langchain.com/blog/customers-madrigal</a></section>
+  </main>
+</body>
+</html>

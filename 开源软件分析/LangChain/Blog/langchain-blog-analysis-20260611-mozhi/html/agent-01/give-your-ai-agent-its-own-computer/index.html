@@ -1,0 +1,81 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Give your agent its own computer | LangChain Blog 速读</title>
+  <style>
+    :root { --ink:#111827; --muted:#536172; --paper:#f4f7fb; --panel:#fff; --line:#d8e2ef; --blue:#155eef; --teal:#0f766e; --amber:#a15c07; --night:#07111f; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; line-height:1.62; }
+    a { color:var(--blue); }
+    .hero { min-height:88vh; display:grid; align-items:start; padding:36px 6vw 28px; color:#f8fbff; background:linear-gradient(120deg, rgba(7,17,31,.97), rgba(14,36,57,.9) 55%, rgba(12,65,72,.78)), url("assets/source-01.png") center / cover no-repeat; }
+    .hero-inner { width:min(1180px,100%); margin:0 auto; }
+    .meta { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; color:#d3e8ff; font-size:14px; }
+    .pill { border:1px solid rgba(167,213,255,.34); border-radius:999px; padding:5px 10px; background:rgba(255,255,255,.07); }
+    h1 { max-width:1060px; margin:0 0 14px; font-size:clamp(36px,5.9vw,72px); line-height:1.03; letter-spacing:0; }
+    .deck { max-width:1030px; margin:0; color:#e4f0ff; font-size:clamp(17px,1.65vw,23px); }
+    .why-what-how { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:24px; }
+    .hero-card { min-height:136px; padding:17px; border:1px solid rgba(167,213,255,.28); border-radius:8px; background:rgba(7,17,31,.76); }
+    .label { margin-bottom:8px; color:#8ad7ff; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0; }
+    .hero-card p { margin:0; color:#f3f8ff; font-size:16px; }
+    .wrap { width:min(1120px,88vw); margin:0 auto; padding:44px 0 56px; }
+    .section { margin:0 0 34px; }
+    h2 { margin:0 0 12px; font-size:clamp(25px,3vw,38px); line-height:1.16; letter-spacing:0; }
+    .lead { margin:0 0 16px; max-width:900px; color:var(--muted); font-size:18px; }
+    .grid { display:grid; grid-template-columns:1.05fr .95fr; gap:22px; align-items:start; }
+    .panel, figure { margin:0; padding:20px; border:1px solid var(--line); border-radius:8px; background:var(--panel); box-shadow:0 10px 28px rgba(15,23,42,.06); }
+    figure img { display:block; width:100%; max-height:520px; object-fit:contain; border-radius:6px; background:#eef3f8; }
+    figcaption { margin-top:11px; color:#536172; font-size:14px; }
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .card { padding:18px; min-height:150px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .card h3 { margin:0 0 8px; font-size:20px; line-height:1.25; }
+    .card p { margin:0; color:#4b596a; }
+    .flow { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px; }
+    .step { min-height:118px; padding:16px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .step strong { display:block; margin-bottom:6px; color:var(--teal); }
+    .source { margin-top:36px; padding-top:22px; border-top:1px solid var(--line); color:#5c6878; font-size:14px; }
+    @media (max-width: 900px) { .why-what-how, .grid, .cards, .flow { grid-template-columns:1fr; } .hero { min-height:auto; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="meta">
+        <span class="pill">June 5, 2026</span>
+        <span class="pill">7 min</span>
+        <span class="pill">产品观点 / 安全</span>
+        <span class="pill">Amy Ru</span>
+      </div>
+      <h1>Give your agent its own computer</h1>
+      <p class="deck">Why：会运行代码、安装依赖、处理文件和保持长会话的 agent，不能直接共享开发者电脑或普通容器边界。What：LangSmith Sandboxes 给每个 agent 一个硬件虚拟化 microVM，兼具快速启动和有状态机器能力。How：开发者用 SDK 创建 sandbox 并运行命令，依靠 snapshots/forks、blueprints、service URLs、Auth Proxy 和默认私有访问来支撑生产级执行。</p>
+      <div class="why-what-how" aria-label="Why What How">
+        <div class="hero-card"><div class="label">Why</div><p>会运行代码、安装依赖、处理文件和保持长会话的 agent，不能直接共享开发者电脑或普通容器边界。</p></div>
+        <div class="hero-card"><div class="label">What</div><p>LangSmith Sandboxes 给每个 agent 一个硬件虚拟化 microVM，兼具快速启动和有状态机器能力。</p></div>
+        <div class="hero-card"><div class="label">How</div><p>开发者用 SDK 创建 sandbox 并运行命令，依靠 snapshots/forks、blueprints、service URLs、Auth Proxy 和默认私有访问来支撑生产级执行。</p></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="section">
+      <h2>agent 需要工作地点，不只是 token stream。</h2>
+      <div class="grid">
+        <div class="panel"><p class="lead">数据分析、CI、研究、内容流水线和 RL/eval harness 都要拉文件、跑脚本、装依赖、启动服务或并行环境；这类工作需要可执行、有状态的环境。</p></div>
+        <figure>
+          <img src="assets/source-01.png" alt="Give your agent its own computer source image">
+          <figcaption>首图贴合文章主张：更强的 agent 需要自己的隔离计算机，而不是借用人的 laptop。</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="section">
+      <div class="cards">
+        <article class="card"><h3>普通容器不是针对不受信任 agent 代码的隔离答案。</h3><p>文章指出 agent 运行的代码可能来自模型、用户 prompt、克隆仓库或包依赖；容器共享宿主内核，不适合作为 untrusted model-generated code 的最终隔离边界。</p></article>
+        <article class="card"><h3>microVM 同时提供隔离和长会话工作能力。</h3><p>sandbox 有自己的 kernel、filesystem、shell、package manager、network access、code execution 和 persistent state；结束后环境消失，不触碰生产基础设施或其他 sandbox。</p></article>
+        <article class="card"><h3>GA primitive 让 agent workflow 更像生产系统。</h3><p>snapshot/fork 支持分支试错，blueprint 预热环境，service URL 打开 agent 启动的本地服务，Auth Proxy 让凭据停留在 runtime 外部。</p></article>
+      </div>
+    </section>
+    
+    <footer class="source">原文： <a href="https://www.langchain.com/blog/give-your-ai-agent-its-own-computer">Give your agent its own computer</a>. 原文作者： Amy Ru.</footer>
+  </main>
+</body>
+</html>

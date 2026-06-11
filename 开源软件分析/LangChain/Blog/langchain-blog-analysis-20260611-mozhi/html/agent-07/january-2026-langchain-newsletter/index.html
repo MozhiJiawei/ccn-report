@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>January 2026: LangChain Newsletter | LangChain Blog 速读</title>
+  <style>
+    :root{--ink:#17221f;--muted:#5b6864;--paper:#f6f7f1;--panel:#fff;--line:#d7dfd8;--green:#0d604c;--blue:#265f8f;--rose:#9a5474;--amber:#a86525;--dark:#10201c}
+    *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Arial,"Microsoft YaHei",sans-serif;line-height:1.62} a{color:var(--green)}
+    .hero{min-height:88vh;display:grid;align-items:start;padding:42px 6vw 30px;background:linear-gradient(135deg,#10201c 0%,#12372f 55%,#1f5b4d 100%);color:#f8fbf8}
+    .hero-inner{width:min(1180px,100%);margin:0 auto}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;color:#d9ebe4;font-size:13px}.pill{border:1px solid rgba(255,255,255,.26);border-radius:999px;padding:5px 10px;background:rgba(255,255,255,.08)}
+    h1{max-width:980px;margin:0 0 18px;font-size:clamp(38px,5.6vw,74px);line-height:1.02;letter-spacing:0}.deck{max-width:1050px;margin:0 0 24px;color:#ebf6ef;font-size:clamp(17px,1.6vw,22px)}
+    .why-what-how{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}.hero-card{min-height:150px;padding:18px;border:1px solid rgba(255,255,255,.22);border-radius:8px;background:rgba(12,36,31,.78)}.label{margin-bottom:8px;color:#aee2c7;font-size:13px;font-weight:800;text-transform:uppercase}.hero-card p{margin:0;color:#fff;font-size:16px}
+    .wrap{width:min(1120px,88vw);margin:0 auto;padding:46px 0 64px}.section{margin:0 0 34px}.grid{display:grid;grid-template-columns:1.02fr .98fr;gap:22px;align-items:start}h2{margin:0 0 12px;font-size:clamp(25px,3vw,38px);line-height:1.15;letter-spacing:0}.lead{margin:0 0 16px;color:var(--muted);font-size:18px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card,.panel,figure{border:1px solid var(--line);border-radius:8px;background:var(--panel);box-shadow:0 10px 28px rgba(20,42,36,.06)}.card{padding:18px;min-height:168px}.card h3{margin:0 0 8px;font-size:19px;line-height:1.25}.card p{margin:0;color:#465551}
+    figure{margin:0;padding:18px}figure img{display:block;width:100%;max-height:520px;object-fit:contain;border-radius:6px;background:#eef2ee}figcaption{margin-top:10px;color:var(--muted);font-size:14px}.panel{padding:20px}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.step{min-height:108px;padding:15px;border:1px solid var(--line);border-radius:8px;background:#fff}.step strong{display:block;margin-bottom:6px;color:var(--green)}.source{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+    @media(max-width:900px){.hero{min-height:auto;background:#10201c}.why-what-how,.grid,.cards,.flow{grid-template-columns:1fr}h1{font-size:40px}}
+    </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="meta">
+        <span class="pill">January 29, 2026</span>
+        <span class="pill">4
+min</span>
+        <span class="pill">newsletter</span>
+        <span class="pill">LangChain Accounts</span>
+      </div>
+      <h1>January 2026: LangChain Newsletter</h1>
+      <p class="deck">Why：一月更新回答的是同一个运营问题：agent 不只要更容易搭出来，还要能被观察、评估和持续改进。 What：本期把 LangSmith Agent Builder GA、实验对比、自托管 Insights Agent、LangChain JS 与 deepagents 更新放在同一条主线上。 How：LangChain 用产品发布、开源改进、课程、支持门户和全球活动，把 agent 构建从一次性上线推进到持续运营。</p>
+      <div class="why-what-how" aria-label="Why What How">
+        <div class="hero-card"><div class="label">Why</div><p>一月更新回答的是同一个运营问题：agent 不只要更容易搭出来，还要能被观察、评估和持续改进。</p></div>
+        <div class="hero-card"><div class="label">What</div><p>本期把 LangSmith Agent Builder GA、实验对比、自托管 Insights Agent、LangChain JS 与 deepagents 更新放在同一条主线上。</p></div>
+        <div class="hero-card"><div class="label">How</div><p>LangChain 用产品发布、开源改进、课程、支持门户和全球活动，把 agent 构建从一次性上线推进到持续运营。</p></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="section">
+      <h2>一月主线从构建转向运行期改进</h2>
+      <p class="lead">Agent Builder GA 降低构建门槛，observability 与 evaluation 内容则强调上线后的调试、评估和洞察。</p>
+      <div class="grid">
+        <div class="cards"><article class="card"><h3>一月主线从构建转向运行期改进</h3><p>Agent Builder GA 降低构建门槛，observability 与 evaluation 内容则强调上线后的调试、评估和洞察。</p></article>
+<article class="card"><h3>产品更新集中在可见性和协作</h3><p>side-by-side LLM experiment comparisons、self-hosted Insights Agent 与支持门户，都服务于团队理解行为和协作排障。</p></article>
+<article class="card"><h3>生态信号来自课程、活动和客户故事</h3><p>Academy、meetups、webinars 与客户案例把实践经验扩散到更广的 builder 社群。</p></article></div>
+        
+        <figure>
+          <img src="assets/source-01.svg" alt="January 2026: LangChain Newsletter">
+          <figcaption>这张原图支撑页面主线：Agent Builder GA 降低构建门槛，observability 与 evaluation 内容则强调上线后的调试、评估和洞察。</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="section">
+      <h2>这篇文章的论证链路</h2>
+      <div class="flow"><div class="step"><strong>观察</strong>记录真实输入、输出、工具调用和上下文。</div>
+<div class="step"><strong>归纳</strong>把单次行为聚合成模式、失败类型或业务信号。</div>
+<div class="step"><strong>评价</strong>用 traces、datasets 或在线评分验证改动。</div>
+<div class="step"><strong>改进</strong>调整 prompt、工具、模型、memory 或 runtime。</div></div>
+    </section>
+    <p class="source">原文：<a href="https://www.langchain.com/blog/january-2026-langchain-newsletter">https://www.langchain.com/blog/january-2026-langchain-newsletter</a></p>
+  </main>
+</body>
+</html>

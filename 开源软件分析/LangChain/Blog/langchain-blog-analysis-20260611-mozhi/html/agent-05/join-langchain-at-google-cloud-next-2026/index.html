@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Join LangChain at Google Cloud Next 2026 - 速读</title>
+  <style>
+    :root {
+      --ink: #121826;
+      --muted: #596273;
+      --paper: #fbfcf8;
+      --line: #d8e0e7;
+      --blue: #2f80ed;
+      --green: #16a36b;
+      --coral: #e65b56;
+      --navy: #101828;
+      --soft: #eef6f3;
+      --gold: #c8892e;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Segoe UI", Arial, sans-serif; line-height: 1.58; }
+    a { color: inherit; }
+    .page { width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
+    .hero { min-height: 88vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr); gap: 42px; align-items: center; padding: 42px 0 32px; }
+    .eyebrow { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; color: var(--muted); font-size: 13px; }
+    .pill { border: 1px solid var(--line); border-radius: 999px; padding: 7px 11px; background: rgba(255,255,255,.76); }
+    h1 { margin: 0; font-size: clamp(42px, 6.5vw, 78px); line-height: .96; letter-spacing: 0; max-width: 860px; }
+    .tagline { margin: 22px 0 0; max-width: 760px; color: #2d3748; font-size: 21px; }
+    .lead { margin: 24px 0 0; max-width: 790px; font-size: 18px; color: #263241; }
+    .lead strong { color: var(--navy); }
+    .triad { margin-top: 26px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .triad div { border-left: 4px solid var(--blue); padding: 6px 14px 4px; min-height: 96px; background: rgba(255,255,255,.5); }
+    .triad b { display: block; margin-bottom: 5px; font-size: 13px; text-transform: uppercase; }
+    .triad span { color: var(--muted); font-size: 15px; }
+    .hero-figure { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: 0 24px 60px rgba(16,24,40,.14); }
+    .hero-figure img { width: 100%; display: block; max-height: 560px; object-fit: contain; background: #fff; }
+    figcaption { padding: 14px 16px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+    .no-image { min-height: 380px; padding: 36px; display: grid; align-content: center; }
+    .no-image b { font-size: 28px; }
+    .band { border-top: 1px solid var(--line); padding: 68px 0; }
+    .section-head { max-width: 820px; margin-bottom: 28px; }
+    h2 { margin: 0; font-size: clamp(30px, 4vw, 48px); line-height: 1.05; letter-spacing: 0; }
+    .section-head p { margin: 13px 0 0; color: var(--muted); font-size: 18px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 24px; min-height: 260px; }
+    .card span { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: #0d5f43; background: var(--soft); font-weight: 760; }
+    .card h3 { margin: 28px 0 10px; font-size: 23px; line-height: 1.18; }
+    .card p, td { margin: 0; color: var(--muted); }
+    .split { display: grid; grid-template-columns: minmax(320px, .9fr) minmax(0, 1.1fr); gap: 30px; align-items: start; }
+    .flow { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; counter-reset: step; }
+    .flow li { counter-increment: step; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px 18px 18px 58px; position: relative; font-weight: 700; }
+    .flow li::before { content: counter(step); position: absolute; left: 18px; top: 16px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #ffe9df; color: #9d341f; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 17px 18px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    tr:last-child th, tr:last-child td { border-bottom: 0; }
+    th { width: 28%; color: var(--ink); }
+    .figures { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .figures figure { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    .figures img { width: 100%; display: block; max-height: 460px; object-fit: contain; background: #fff; }
+    .source { display: inline-block; margin-top: 26px; color: var(--blue); font-weight: 700; }
+    @media (max-width: 860px) {
+      .hero, .split { grid-template-columns: 1fr; min-height: auto; }
+      .triad, .cards, .figures { grid-template-columns: 1fr; }
+      h1 { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">
+          <span class="pill">活动公告</span>
+          <span class="pill">March 23, 2026</span>
+          <span class="pill">The LangChain Team · 5 min</span>
+        </div>
+        <h1>Join LangChain at Google Cloud Next 2026</h1>
+        <p class="tagline">这是一篇面向 Google Cloud Next 参会者的 LangChain 活动路线图。</p>
+        <p class="lead"><strong>核心观点：</strong>Why: 参会者需要快速判断 LangChain 在 Google Cloud Next 2026 能提供哪些 agent 生产化帮助。What: 文章给出 Booth #5006、LangSmith 产品演示、Harrison Chase 会面和两场 session。How: 现场路径被组织为展台技术交流、路线图对话和围绕安全 runtime 与开放生态的 breakout session。</p>
+        <div class="triad">
+          <div><b>Why</b><span>参会者需要快速判断 LangChain 在 Google Cloud Next 2026 能提供哪些 agent 生产化帮助。</span></div>
+          <div><b>What</b><span>文章给出 Booth #5006、LangSmith 产品演示、Harrison Chase 会面和两场 session。</span></div>
+          <div><b>How</b><span>现场路径被组织为展台技术交流、路线图对话和围绕安全 runtime 与开放生态的 breakout session。</span></div>
+        </div>
+      </div>
+      <figure class="hero-figure"><img src="assets/google-cloud-next-cover.png" alt="活动主视觉，支撑文章的现场参会定位。"><figcaption>活动主视觉，支撑文章的现场参会定位。</figcaption></figure>
+    </section>
+
+    <section class="band">
+      <div class="section-head">
+        <h2>文章的主张集中在这三点</h2>
+        <p>这些子观点都服务于首屏结论，帮助读者快速抓住文章的判断框架。</p>
+      </div>
+      <div class="cards"><article class="card"><span>01</span><h3>展台聚焦生产 agent 的三类问题</h3><p>Booth #5006 展示 observability/evals、deployment 和 Fleet，面向调试、上线和多 agent 管理。</p></article>
+<article class="card"><span>02</span><h3>一场 session 讨论安全地跑不可信代码</h3><p>Google Cloud 与 LangChain speakers 会谈 subsecond cold starts、massive concurrency、gVisor 和 zero-trust runtime。</p></article>
+<article class="card"><span>03</span><h3>另一场 session 把开放生态放进创业叙事</h3><p>Harrison Chase 参与讨论 Google open-source AI ecosystem、社区工具和避免 vendor lock-in。</p></article></div>
+    </section>
+
+    <section class="band">
+      <div class="split">
+        <div>
+          <div class="section-head">
+            <h2>机制链路从这里读</h2>
+            <p>文章不是平铺信息，而是在这条链路上说明产品、技术或组织变化。</p>
+          </div>
+          <ol class="flow"><li>Booth #5006</li>
+<li>Product demos</li>
+<li>Technical sessions</li>
+<li>Roadmap meetings</li></ol>
+        </div>
+        <div>
+          <table><tr><th>Location</th><td>Mandalay Bay Convention Center, Expo Hall, Booth #5006。</td></tr>
+<tr><th>Dates</th><td>April 22-24, 2026。</td></tr>
+<tr><th>Session BRK2-112</th><td>April 23, 2026, 10:30 AM - 11:15 AM，主题是 high-velocity runtimes for AI agents。</td></tr></table>
+          <a class="source" href="https://www.langchain.com/blog/join-langchain-at-google-cloud-next-2026">打开原文</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="band"><div class="section-head"><h2>原文图片支撑的观点</h2><p>只保留与附近观点直接相关的原图。</p></div><div class="figures"><figure><img src="assets/booth-session-detail.png" alt="支撑展台和 session 信息。"><figcaption>支撑展台和 session 信息。</figcaption></figure></div></section>
+  </main>
+</body>
+</html>

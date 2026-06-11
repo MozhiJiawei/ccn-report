@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New in Deep Agents v0.6 | LangChain Blog 速读</title>
+  <style>
+    :root {
+      --ink: #10141f;
+      --muted: #596172;
+      --paper: #fbfaf6;
+      --line: #d8d3c6;
+      --blue: #2f7de1;
+      --teal: #1b8f8a;
+      --green: #748d2f;
+      --plum: #5d2f4a;
+      --sand: #ebe4d5;
+      --panel: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; text-decoration-color: rgba(47, 125, 225, .45); text-underline-offset: 3px; }
+
+    .page {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 28px 28px 64px;
+    }
+
+    .hero {
+      min-height: 660px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr);
+      gap: 42px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 34px;
+    }
+
+    .kicker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: rgba(255, 255, 255, .58);
+    }
+
+    h1 {
+      font-size: clamp(46px, 6.5vw, 90px);
+      line-height: .88;
+      letter-spacing: 0;
+      margin: 0 0 24px;
+      max-width: 760px;
+      font-weight: 500;
+    }
+
+    .thesis {
+      font-size: 22px;
+      line-height: 1.45;
+      max-width: 760px;
+      margin: 0 0 26px;
+    }
+
+    .thesis strong {
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      color: var(--blue);
+      margin-right: 8px;
+    }
+
+    .feature-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      margin: 24px 0 26px;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      color: #253044;
+    }
+
+    .feature-strip span {
+      min-height: 56px;
+      border-top: 3px solid var(--ink);
+      background: rgba(255, 255, 255, .62);
+      padding: 9px 8px;
+    }
+
+    .feature-strip span:nth-child(2) { border-color: var(--teal); }
+    .feature-strip span:nth-child(3) { border-color: var(--green); }
+    .feature-strip span:nth-child(4) { border-color: var(--blue); }
+    .feature-strip span:nth-child(5) { border-color: var(--plum); }
+
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-top: 24px;
+    }
+
+    .hero-meta div {
+      padding: 14px 16px 16px 0;
+      min-height: 82px;
+    }
+
+    .hero-meta div + div {
+      border-left: 1px solid var(--line);
+      padding-left: 16px;
+    }
+
+    .hero-meta span {
+      display: block;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .hero-meta b {
+      display: block;
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 600;
+    }
+
+    .poster {
+      margin: 0;
+      border: 1px solid var(--ink);
+      background: #fff;
+      transform: rotate(.45deg);
+      box-shadow: 10px 10px 0 var(--sand);
+    }
+
+    .poster img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .poster figcaption {
+      padding: 14px 16px 16px;
+      font-size: 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--ink);
+      background: #fff;
+    }
+
+    .section {
+      padding: 62px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section h2 {
+      font-size: clamp(31px, 4.1vw, 54px);
+      line-height: 1;
+      letter-spacing: 0;
+      font-weight: 500;
+      margin: 0 0 22px;
+      max-width: 850px;
+    }
+
+    .section > p {
+      max-width: 790px;
+      font-size: 20px;
+      margin: 0 0 30px;
+      color: #2a3040;
+    }
+
+    .point-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 30px;
+    }
+
+    .point {
+      border-top: 3px solid var(--ink);
+      padding: 18px 0 0;
+    }
+
+    .point:nth-child(2) { border-color: var(--teal); }
+    .point:nth-child(3) { border-color: var(--green); }
+
+    .point h3 {
+      font-size: 24px;
+      line-height: 1.12;
+      margin: 0 0 10px;
+      font-weight: 600;
+    }
+
+    .point p {
+      margin: 0;
+      font-size: 17px;
+      color: var(--muted);
+    }
+
+    .two-up {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
+      gap: 32px;
+      align-items: center;
+    }
+
+    .figure {
+      margin: 0;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .figure figcaption {
+      padding: 12px 14px 14px;
+      font-size: 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      background: rgba(235, 228, 213, .3);
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .metric {
+      border-top: 3px solid var(--blue);
+      background: rgba(255, 255, 255, .55);
+      padding: 16px 0 0;
+    }
+
+    .metric b {
+      display: block;
+      font-size: 36px;
+      line-height: 1;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .metric span {
+      display: block;
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .mechanism {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0;
+      margin-top: 34px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .mechanism div {
+      min-height: 150px;
+      padding: 18px 16px;
+    }
+
+    .mechanism div + div {
+      border-left: 1px solid var(--line);
+    }
+
+    .mechanism span {
+      display: block;
+      font-family: "Courier New", monospace;
+      color: var(--blue);
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+
+    .mechanism b {
+      display: block;
+      font-size: 19px;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .mechanism p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .closing {
+      padding: 54px 0 8px;
+      color: var(--muted);
+      font-size: 15px;
+      font-family: "Courier New", monospace;
+    }
+
+    @media (max-width: 920px) {
+      .hero, .two-up {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .feature-strip, .mechanism {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .point-grid, .metric-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page { padding: 20px 18px 42px; }
+      h1 { font-size: 48px; }
+      .thesis { font-size: 19px; }
+      .hero-meta, .feature-strip, .mechanism { grid-template-columns: 1fr; }
+      .hero-meta div + div, .mechanism div + div { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <div class="kicker">
+          <span class="pill">LangChain Blog</span>
+          <span class="pill">Deep Agents</span>
+          <span class="pill">Open Source</span>
+        </div>
+        <h1>New in Deep Agents v0.6</h1>
+        <p class="thesis"><strong>为什么</strong>长流程 agent 的瓶颈已经不只是模型答案质量，而是模型成本、上下文膨胀、检查点存储和前端可观测性一起限制生产化。<strong>是什么</strong>Deep Agents v0.6 把 code interpreter、harness profiles、streaming v3、DeltaChannel 和 ContextHubBackend 打包成同一条性能主线。<strong>怎么做</strong>它让工具调用在运行时中完成、按模型版本化调优 harness、用类型化事件流暴露进度、用 diff 存检查点，并把 agent 行为文件放进可版本化的 Context Hub。</p>
+        <div class="feature-strip" aria-label="Article focus"><span>为什么</span><span>是什么</span><span>怎么做到</span><span>读者带走</span></div>
+        <div class="hero-meta">
+          <div><span>日期</span><b>May 13, 2026</b></div>
+          <div><span>作者</span><b>Sydney Runkle</b></div>
+          <div><span>阅读时间</span><b>10 min</b></div>
+        </div>
+      </div>
+      <figure class="poster">
+        <img src="assets/hero-new-in-deep-agents.png" alt="New in Deep Agents v0.6 article hero">
+        <figcaption>这张原文 hero 只负责定位发布主题；真正的论据在后面的存储对比和产品截图里。</figcaption>
+      </figure>
+    </section>
+
+    <section class="section">
+      <h2>读者应该带走什么</h2>
+      <p>Deep Agents v0.6 把 code interpreter、harness profiles、streaming v3、DeltaChannel 和 ContextHubBackend 打包成同一条性能主线。</p>
+      <div class="mechanism"><div><span>01</span><b>问题</b><p>长流程 agent 的瓶颈已经不只是模型答案质量，而是模型成本、上下文膨胀、检查点存储和前端可观测性一起限制生产化。</p></div><div><span>02</span><b>观点</b><p>Deep Agents v0.6 把 code interpreter、harness profiles、streaming v3、DeltaChannel 和 ContextHubBackend 打包成同一条性能主线。</p></div><div><span>03</span><b>机制</b><p>它让工具调用在运行时中完成、按模型版本化调优 harness、用类型化事件流暴露进度、用 diff 存检查点，并把 agent 行为文件放进可版本化的 Context Hub。</p></div><div><span>04</span><b>用途</b><p>用这篇文章判断 LangChain 在该方向上的产品或技术变化。</p></div></div>
+    </section>
+
+    <section class="closing">
+      Source: <a href="https://www.langchain.com/blog/deep-agents-0-6">https://www.langchain.com/blog/deep-agents-0-6</a>
+    </section>
+  </main>
+</body>
+</html>

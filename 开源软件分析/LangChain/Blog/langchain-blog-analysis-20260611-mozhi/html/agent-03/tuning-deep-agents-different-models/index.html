@@ -1,0 +1,534 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tuning Deep Agents to Work Well with Different Models | LangChain Blog 速读</title>
+  <style>
+    :root {
+      --ink: #111827;
+      --muted: #5f6b7a;
+      --line: #d7e2ee;
+      --paper: #f8fbff;
+      --blue: #69b8ee;
+      --deep: #14233f;
+      --green: #19a875;
+      --amber: #d8901d;
+      --panel: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      line-height: 1.6;
+    }
+
+    a {
+      color: #115da8;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(17, 93, 168, .35);
+    }
+
+    a:focus-visible {
+      outline: 3px solid rgba(25, 168, 117, .45);
+      outline-offset: 4px;
+    }
+
+    .hero {
+      min-height: auto;
+      display: flex;
+      align-items: flex-start;
+      background:
+        linear-gradient(135deg, rgba(105, 184, 238, .12), rgba(25, 168, 117, .05)),
+        var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: minmax(0, .98fr) minmax(420px, 1.02fr);
+      gap: 22px;
+      align-items: start;
+      width: min(1180px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 32px 0 34px;
+    }
+
+    .hero-copy {
+      background: rgba(255, 255, 255, .86);
+      border: 1px solid rgba(20, 35, 63, .14);
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 26px 60px rgba(20, 35, 63, .1);
+    }
+
+    .hero-evidence {
+      display: grid;
+      gap: 14px;
+    }
+
+    .evidence-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      border: 1px solid rgba(20, 35, 63, .14);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 16px 36px rgba(20, 35, 63, .08);
+    }
+
+    .evidence-head h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.18;
+    }
+
+    .evidence-head span {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .hero-art {
+      margin: 0;
+      border: 1px solid rgba(20, 35, 63, .14);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--blue);
+    }
+
+    .hero-art img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 2.8;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .hero-art figcaption {
+      padding: 12px 14px;
+      color: #31435f;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+      color: var(--deep);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .meta span {
+      background: rgba(255, 255, 255, .74);
+      border: 1px solid rgba(20, 35, 63, .16);
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      color: var(--deep);
+      font-size: clamp(36px, 3.7vw, 54px);
+      line-height: 1.02;
+      font-weight: 800;
+    }
+
+    .lead-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      max-width: 860px;
+      margin-top: 22px;
+    }
+
+    .lead-item {
+      min-height: 0;
+      background: #fff;
+      border: 1px solid rgba(20, 35, 63, .16);
+      border-radius: 8px;
+      padding: 13px 15px;
+    }
+
+    .lead-item strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--deep);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .lead-item p {
+      margin: 0;
+      color: #22324d;
+      font-size: 14px;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 52px 0 96px;
+    }
+
+    section {
+      margin-top: 84px;
+    }
+
+    section:first-child {
+      margin-top: 0;
+    }
+
+    .section-kicker {
+      margin: 0 0 14px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      max-width: 860px;
+      margin: 0 0 20px;
+      color: var(--deep);
+      font-size: 34px;
+      line-height: 1.18;
+    }
+
+    .wide-copy {
+      max-width: 860px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 30px;
+    }
+
+    .hero-result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .result {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .hero-result-grid .result {
+      padding: 18px;
+      box-shadow: 0 16px 36px rgba(20, 35, 63, .08);
+    }
+
+    .result:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 36px rgba(20, 35, 63, .1);
+    }
+
+    .result h3 {
+      margin: 0 0 22px;
+      color: var(--deep);
+      font-size: 19px;
+    }
+
+    .hero-result-grid .result h3 {
+      margin-bottom: 14px;
+      font-size: 17px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 72px 1fr 58px;
+      gap: 12px;
+      align-items: center;
+      margin: 12px 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .hero-result-grid .bar-row {
+      grid-template-columns: 58px 1fr 44px;
+      gap: 8px;
+      margin: 9px 0;
+      font-size: 12px;
+    }
+
+    .track {
+      height: 14px;
+      overflow: hidden;
+      background: #e9f0f7;
+      border-radius: 999px;
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--amber);
+    }
+
+    .fill.profile {
+      background: var(--green);
+    }
+
+    .lift {
+      margin-top: 18px;
+      color: var(--deep);
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .hero-result-grid .lift {
+      margin-top: 12px;
+      font-size: 27px;
+    }
+
+    .caption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .hero-result-grid .caption {
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .mechanics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .mechanic {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+    }
+
+    .mechanic h3 {
+      margin: 0 0 10px;
+      color: var(--deep);
+      font-size: 18px;
+    }
+
+    .mechanic p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 14px;
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    .flow-step {
+      min-height: 132px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .flow-step strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--deep);
+    }
+
+    .flow-step span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .arrow {
+      color: var(--green);
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .quote-strip {
+      margin-top: 26px;
+      border-left: 4px solid var(--green);
+      padding: 14px 0 14px 20px;
+      color: #263852;
+      background: rgba(25, 168, 117, .07);
+      font-size: 15px;
+    }
+
+    .source {
+      margin-top: 76px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 860px) {
+      .hero-inner, main { width: min(100% - 28px, 1120px); }
+      .hero-inner, .lead-grid, .result-grid, .hero-result-grid, .mechanics, .flow {
+        grid-template-columns: 1fr;
+      }
+      .evidence-head { display: block; }
+      .evidence-head span { display: block; margin-top: 6px; }
+      .arrow { display: none; }
+      h1 { font-size: 42px; }
+      h2 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <div class="meta">
+          <span>LangChain Blog</span>
+          <span>April 29, 2026</span>
+          <span>Vivek Trivedy & Mason Daugherty</span>
+          <span>5 min</span>
+        </div>
+        <h1>模型换了，Agent harness 也要跟着调。</h1>
+        <div class="lead-grid" aria-label="First-screen conclusion">
+          <article class="lead-item">
+            <strong>Why</strong>
+            <p>Deep Agents 过去用一套通用 prompts、tools 和 middleware 覆盖所有大模型，但不同模型的提示指南和工具约定差异很大。</p>
+          </article>
+          <article class="lead-item">
+            <strong>What</strong>
+            <p>LangChain 引入 model-specific harness profiles，并内置 OpenAI、Anthropic、Google profiles；在 tau2-bench 子集上，相比默认 harness 提升 10 到 20 个百分点。</p>
+          </article>
+          <article class="lead-item">
+            <strong>How</strong>
+            <p>Profile 作为声明式覆盖层，按模型调整 system prompt、工具包含与命名、middleware、subagent 配置和 skills，同时保持 create_deep_agent 调用方式不变。</p>
+          </article>
+        </div>
+      </div>
+      <aside class="hero-evidence" aria-label="Benchmark result">
+        <div class="evidence-head">
+          <h2>custom profile 让两个模型都到 53%。</h2>
+          <span>tau2-bench 子集</span>
+        </div>
+        <div class="hero-result-grid">
+          <article class="result">
+            <h3>GPT 5.3 Codex</h3>
+            <div class="bar-row"><span>Base</span><div class="track"><div class="fill" style="width: 33%"></div></div><b>33%</b></div>
+            <div class="bar-row"><span>Profile</span><div class="track"><div class="fill profile" style="width: 53%"></div></div><b>53%</b></div>
+            <div class="lift">+20 pts</div>
+            <div class="caption">Codex profile 对齐 apply_patch、shell_command 等工具约定。</div>
+          </article>
+          <article class="result">
+            <h3>Claude Opus 4.7</h3>
+            <div class="bar-row"><span>Base</span><div class="track"><div class="fill" style="width: 43%"></div></div><b>43%</b></div>
+            <div class="bar-row"><span>Profile</span><div class="track"><div class="fill profile" style="width: 53%"></div></div><b>53%</b></div>
+            <div class="lift">+10 pts</div>
+            <div class="caption">Opus profile 主要改工具使用和 planning prompt。</div>
+          </article>
+        </div>
+        <figure class="hero-art">
+          <img src="assets/article-hero-blue-77-characters-max.png" alt="LangChain blog cover for Tuning Deep Agents to Work Well with Different Models">
+          <figcaption>原文主视觉只承载标题信息；核心证据是上方 benchmark 对比。</figcaption>
+        </figure>
+      </aside>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <p class="section-kicker">Result</p>
+      <h2>profile 的价值不是抽象优雅，而是评测分数立刻变高。</h2>
+      <p class="wide-copy">原文用更难、尚未被前沿模型饱和的 tau2-bench 子集衡量多轮工具使用和指令遵循。两个模型切到 custom profile 后都达到 53%，差距来自 harness 层的 prompt、工具和 middleware 调整。</p>
+
+      <div class="result-grid" aria-label="tau2-bench profile comparison">
+        <article class="result">
+          <h3>GPT 5.3 Codex</h3>
+          <div class="bar-row"><span>Base</span><div class="track"><div class="fill" style="width: 33%"></div></div><b>33%</b></div>
+          <div class="bar-row"><span>Profile</span><div class="track"><div class="fill profile" style="width: 53%"></div></div><b>53%</b></div>
+          <div class="lift">+20 pts</div>
+          <div class="caption">Codex profile 重点采用 Codex prompting guide 中的工具名和工具实现约定。</div>
+        </article>
+        <article class="result">
+          <h3>Claude Opus 4.7</h3>
+          <div class="bar-row"><span>Base</span><div class="track"><div class="fill" style="width: 43%"></div></div><b>43%</b></div>
+          <div class="bar-row"><span>Profile</span><div class="track"><div class="fill profile" style="width: 53%"></div></div><b>53%</b></div>
+          <div class="lift">+10 pts</div>
+          <div class="caption">Opus profile 主要集中在工具使用和 planning 相关 prompt 片段。</div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-kicker">Model fit</p>
+      <h2>每个模型家族吃到的优化点不同，通用 harness 很难同时命中。</h2>
+      <p class="wide-copy">文章把 Codex 和 Claude prompting guides 作为变更来源：Codex 更依赖工具实现与命名约定，Claude/Opus 更依赖工具结果反思、主动观察文件和测试状态等 prompt 规则。</p>
+      <div class="mechanics">
+        <article class="mechanic">
+          <h3>Codex: 工具名对齐</h3>
+          <p>把 deepagents 默认的 edit_file 覆盖为推荐的 apply_patch，并把 execute 工具别名为 shell_command。</p>
+        </article>
+        <article class="mechanic">
+          <h3>Codex: 调用节奏</h3>
+          <p>prompt 强调工具调用前先判定所需文件与资源，并把独立读取、搜索等操作并行化。</p>
+        </article>
+        <article class="mechanic">
+          <h3>Opus: 观察优先</h3>
+          <p>prompt 强调用工具直接读取文件、运行测试、搜索代码，再基于真实状态继续规划。</p>
+        </article>
+      </div>
+      <div class="quote-strip">原文结论：per-model harness customization 是一个有用 primitive，可帮助 builders 管理、版本化并测试不同 agent 配置。</div>
+    </section>
+
+    <section>
+      <p class="section-kicker">Mechanism</p>
+      <h2>profile 是覆盖层，不是新的调用入口。</h2>
+      <p class="wide-copy">开发者可以为 model 或 provider 注册 profile，也可以从 YAML 载入已有 profile；当模型切换时，create_deep_agent 自动适配。内置 profile 覆盖 OpenAI、Anthropic 和 Google，同时支持再覆盖、叠加或作为 plugin 分发。</p>
+      <div class="flow" aria-label="profile adaptation flow">
+        <div class="flow-step"><strong>Model/provider</strong><span>OpenAI、Anthropic、Google，或注册的自定义模型。</span></div>
+        <div class="arrow">→</div>
+        <div class="flow-step"><strong>Harness profile</strong><span>声明 system prompt、tools、middleware、subagents、skills 的差异。</span></div>
+        <div class="arrow">→</div>
+        <div class="flow-step"><strong>Same call site</strong><span>create_deep_agent 的使用方式保持稳定，底层 harness 随模型调整。</span></div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-kicker">Takeaway</p>
+      <h2>Deep Agents 的方向是让模型差异进入配置层，而不是散落在业务代码里。</h2>
+      <p class="wide-copy">这篇文章不是单纯宣布一个配置文件格式，而是在强调 agent harness 本身会影响模型表现。profiles 把这些差异集中到可管理、可复用、可测试的层里，让同一套 Deep Agents 调用可以贴近不同模型的最佳默认值。</p>
+    </section>
+
+    <footer class="source">
+      Source: <a href="https://www.langchain.com/blog/tuning-deep-agents-different-models">Tuning Deep Agents to Work Well with Different Models</a>
+    </footer>
+  </main>
+</body>
+</html>
+
+

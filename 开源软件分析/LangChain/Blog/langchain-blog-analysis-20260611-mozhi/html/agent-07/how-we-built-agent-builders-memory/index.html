@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How we built Agent Builder’s memory system | LangChain Blog 速读</title>
+  <style>
+    :root{--ink:#17221f;--muted:#5b6864;--paper:#f6f7f1;--panel:#fff;--line:#d7dfd8;--green:#0d604c;--blue:#265f8f;--rose:#9a5474;--amber:#a86525;--dark:#10201c}
+    *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Arial,"Microsoft YaHei",sans-serif;line-height:1.62} a{color:var(--green)}
+    .hero{min-height:88vh;display:grid;align-items:start;padding:42px 6vw 30px;background:linear-gradient(135deg,#10201c 0%,#12372f 55%,#1f5b4d 100%);color:#f8fbf8}
+    .hero-inner{width:min(1180px,100%);margin:0 auto}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;color:#d9ebe4;font-size:13px}.pill{border:1px solid rgba(255,255,255,.26);border-radius:999px;padding:5px 10px;background:rgba(255,255,255,.08)}
+    h1{max-width:980px;margin:0 0 18px;font-size:clamp(38px,5.6vw,74px);line-height:1.02;letter-spacing:0}.deck{max-width:1050px;margin:0 0 24px;color:#ebf6ef;font-size:clamp(17px,1.6vw,22px)}
+    .why-what-how{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}.hero-card{min-height:150px;padding:18px;border:1px solid rgba(255,255,255,.22);border-radius:8px;background:rgba(12,36,31,.78)}.label{margin-bottom:8px;color:#aee2c7;font-size:13px;font-weight:800;text-transform:uppercase}.hero-card p{margin:0;color:#fff;font-size:16px}
+    .wrap{width:min(1120px,88vw);margin:0 auto;padding:46px 0 64px}.section{margin:0 0 34px}.grid{display:grid;grid-template-columns:1.02fr .98fr;gap:22px;align-items:start}h2{margin:0 0 12px;font-size:clamp(25px,3vw,38px);line-height:1.15;letter-spacing:0}.lead{margin:0 0 16px;color:var(--muted);font-size:18px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card,.panel,figure{border:1px solid var(--line);border-radius:8px;background:var(--panel);box-shadow:0 10px 28px rgba(20,42,36,.06)}.card{padding:18px;min-height:168px}.card h3{margin:0 0 8px;font-size:19px;line-height:1.25}.card p{margin:0;color:#465551}
+    figure{margin:0;padding:18px}figure img{display:block;width:100%;max-height:520px;object-fit:contain;border-radius:6px;background:#eef2ee}figcaption{margin-top:10px;color:var(--muted);font-size:14px}.panel{padding:20px}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.step{min-height:108px;padding:15px;border:1px solid var(--line);border-radius:8px;background:#fff}.step strong{display:block;margin-bottom:6px;color:var(--green)}.source{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+    @media(max-width:900px){.hero{min-height:auto;background:#10201c}.why-what-how,.grid,.cards,.flow{grid-template-columns:1fr}h1{font-size:40px}}
+    </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="meta">
+        <span class="pill">January 16, 2026</span>
+        <span class="pill">11
+min</span>
+        <span class="pill">技术长文</span>
+        <span class="pill">LangChain Accounts</span>
+      </div>
+      <h1>How we built Agent Builder’s memory system</h1>
+      <p class="deck">Why：Agent Builder 面向重复执行同类工作的定制 agent，没有记忆会让用户跨会话反复解释偏好、规则和工具边界。 What：文章说明 Agent Builder 把记忆设计成文件系统形态，并用 AGENTS.md、skills、tools.json 和知识文件对应 procedural、semantic 等记忆类型。 How：底层并不使用真实文件系统，而是把文件存进 Postgres，再通过 Deep Agents 的 virtual filesystem 暴露给模型，让 agent 能读写记忆并在热路径中更新。</p>
+      <div class="why-what-how" aria-label="Why What How">
+        <div class="hero-card"><div class="label">Why</div><p>Agent Builder 面向重复执行同类工作的定制 agent，没有记忆会让用户跨会话反复解释偏好、规则和工具边界。</p></div>
+        <div class="hero-card"><div class="label">What</div><p>文章说明 Agent Builder 把记忆设计成文件系统形态，并用 AGENTS.md、skills、tools.json 和知识文件对应 procedural、semantic 等记忆类型。</p></div>
+        <div class="hero-card"><div class="label">How</div><p>底层并不使用真实文件系统，而是把文件存进 Postgres，再通过 Deep Agents 的 virtual filesystem 暴露给模型，让 agent 能读写记忆并在热路径中更新。</p></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="section">
+      <h2>重复工作让记忆比通用聊天更必要</h2>
+      <p class="lead">Agent Builder 的 agent 专门执行固定工作流，一个会话里的学习常常会直接影响下一次表现。</p>
+      <div class="grid">
+        <div class="cards"><article class="card"><h3>重复工作让记忆比通用聊天更必要</h3><p>Agent Builder 的 agent 专门执行固定工作流，一个会话里的学习常常会直接影响下一次表现。</p></article>
+<article class="card"><h3>文件系统是给模型看的记忆界面</h3><p>AGENTS.md 保存核心指令，skills 保存专门知识，tools.json 限定 MCP 工具集合，其他文件承载可更新知识。</p></article>
+<article class="card"><h3>数据库承载基础设施，filesystem 承载心智模型</h3><p>Postgres 提供工程效率，Deep Agents 的 virtual filesystem 保留模型擅长读写文件的交互方式。</p></article></div>
+        
+        <figure>
+          <img src="assets/source-04.png" alt="COALA Memory Diagram">
+          <figcaption>这张原图支撑页面主线：Agent Builder 的 agent 专门执行固定工作流，一个会话里的学习常常会直接影响下一次表现。</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="section">
+      <h2>这篇文章的论证链路</h2>
+      <div class="flow"><div class="step"><strong>观察</strong>记录真实输入、输出、工具调用和上下文。</div>
+<div class="step"><strong>归纳</strong>把单次行为聚合成模式、失败类型或业务信号。</div>
+<div class="step"><strong>评价</strong>用 traces、datasets 或在线评分验证改动。</div>
+<div class="step"><strong>改进</strong>调整 prompt、工具、模型、memory 或 runtime。</div></div>
+    </section>
+    <p class="source">原文：<a href="https://www.langchain.com/blog/how-we-built-agent-builders-memory">https://www.langchain.com/blog/how-we-built-agent-builders-memory</a></p>
+  </main>
+</body>
+</html>

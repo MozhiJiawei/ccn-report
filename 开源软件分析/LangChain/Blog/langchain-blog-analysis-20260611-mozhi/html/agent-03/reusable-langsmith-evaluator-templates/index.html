@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reusable Evaluators and Evaluator Templates in LangSmith | LangChain Blog 速读</title>
+  <style>
+    :root { --ink:#102033; --muted:#667085; --line:#d9e2ec; --paper:#f7fafc; --panel:#fff; --blue:#4d9de0; --green:#17a673; --deep:#132238; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace; line-height:1.6; }
+    a { color:#0f5c9e; text-decoration:none; border-bottom:1px solid rgba(15,92,158,.3); }
+    .hero { border-bottom:1px solid var(--line); background:linear-gradient(135deg, rgba(77,157,224,.13), rgba(23,166,115,.07)), var(--paper); }
+    .hero-inner { width:min(1180px, calc(100% - 48px)); margin:0 auto; padding:30px 0 34px; display:grid; grid-template-columns:minmax(0,1fr) minmax(380px,.82fr); gap:24px; align-items:start; }
+    .hero-copy,.hero-side { background:rgba(255,255,255,.92); border:1px solid rgba(19,34,56,.14); border-radius:8px; box-shadow:0 18px 46px rgba(19,34,56,.08); }
+    .hero-copy { padding:28px; }
+    .meta { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; font-size:12px; font-weight:700; color:var(--deep); }
+    .meta span { border:1px solid rgba(19,34,56,.16); border-radius:6px; padding:5px 9px; background:#fff; }
+    h1 { margin:0; font-size:clamp(34px,4vw,54px); line-height:1.04; color:var(--deep); }
+    .lead-grid { display:grid; gap:10px; margin-top:22px; }
+    .lead-item { background:#fff; border:1px solid rgba(19,34,56,.14); border-radius:8px; padding:12px 14px; }
+    .lead-item strong { display:block; margin-bottom:7px; color:var(--green); font-size:13px; text-transform:uppercase; }
+    .lead-item p { margin:0; font-size:14px; color:#24344d; }
+    .hero-side { padding:22px; display:grid; gap:16px; }
+    .side-title { margin:0; font-size:22px; line-height:1.3; color:var(--deep); }
+    .logic-map { display:grid; grid-template-columns:1fr 26px 1fr 26px 1fr; gap:8px; align-items:center; padding:20px; min-height:178px; background:#fff; border:1px solid var(--line); border-radius:8px; }
+    .logic-map div { border:1px solid rgba(19,34,56,.16); border-radius:8px; padding:15px 10px; color:var(--muted); font-size:13px; text-align:center; }
+    .logic-map strong { color:var(--deep); font-size:16px; }
+    .logic-map span { height:2px; background:var(--green); }
+    main { width:min(1120px, calc(100% - 48px)); margin:0 auto; padding:46px 0 86px; }
+    section { margin-top:58px; }
+    section:first-child { margin-top:0; }
+    .kicker { color:var(--green); font-weight:800; font-size:13px; text-transform:uppercase; margin:0 0 10px; }
+    h2 { margin:0 0 16px; max-width:920px; color:var(--deep); font-size:32px; line-height:1.18; }
+    .wide-copy { max-width:920px; margin:0; color:var(--muted); font-size:17px; }
+    .card-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:24px; }
+    .card { background:#fff; border:1px solid rgba(19,34,56,.14); border-radius:8px; padding:18px; }
+    .card strong { display:block; color:var(--deep); font-size:18px; margin-bottom:8px; }
+    .card span { color:var(--muted); font-size:14px; }
+    .section-grid { display:grid; gap:20px; margin-top:24px; }
+    .section-card { background:#fff; border-top:4px solid var(--blue); border-radius:8px; padding:20px; box-shadow:0 12px 28px rgba(19,34,56,.07); }
+    .section-card.with-image { display:grid; grid-template-columns:minmax(0,.9fr) minmax(360px,1.1fr); gap:20px; align-items:start; }
+    .section-card h3 { margin:0 0 10px; color:var(--deep); font-size:21px; line-height:1.25; }
+    .section-card p { margin:0; color:var(--muted); font-size:15px; }
+    figure { margin:0; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#07101d; }
+    figure img { display:block; width:100%; max-height:420px; object-fit:contain; background:#07101d; }
+    figcaption { padding:10px 12px; color:#40516a; background:#fff; font-size:12px; }
+    .source-links { margin-top:58px; padding-top:22px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; }
+    @media (max-width: 900px) { .hero-inner,.section-card.with-image,.card-grid { grid-template-columns:1fr; } .logic-map { grid-template-columns:1fr; } .logic-map span { height:18px; width:2px; justify-self:center; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <div class="meta">
+          <span>April 16, 2026</span>
+          <span>The LangChain Team</span>
+          <span>6 min</span>
+          <span>release / product guide</span>
+        </div>
+        <h1>Reusable Evaluators and Evaluator Templates in LangSmith</h1>
+        <div class="lead-grid">
+          <div class="lead-item"><strong>Why</strong><p>Agent 评估常常卡在重复写 evaluator、团队标准不一致和难以复用上，导致改进循环慢且不可比较。</p></div>
+          <div class="lead-item"><strong>What</strong><p>LangSmith 推出 reusable evaluators 和 evaluator templates，让团队把常用评估逻辑保存、参数化并跨数据集或实验复用。</p></div>
+          <div class="lead-item"><strong>How</strong><p>团队可以在 LangSmith 中创建 evaluator，配置模板变量和评分规则，再把它们应用到实验、数据集和 CI 式评估流程中。</p></div>
+        </div>
+      </div>
+      <aside class="hero-side">
+        <h2 class="side-title">评估标准从一次性脚本变成 LangSmith 里的共享资产。</h2>
+        <div class="logic-map" aria-label="article logic"><div>Why<br><strong>问题压力</strong></div><span></span><div>What<br><strong>核心变化</strong></div><span></span><div>How<br><strong>落地机制</strong></div></div>
+      </aside>
+    </div>
+  </header>
+  <main>
+    <section>
+      <p class="kicker">Thesis</p>
+      <h2>Reusable evaluators 解决“同一把尺子如何跨实验复用”的问题。</h2>
+      <p class="wide-copy">Why: Agent 评估常常卡在重复写 evaluator、团队标准不一致和难以复用上，导致改进循环慢且不可比较。 What: LangSmith 推出 reusable evaluators 和 evaluator templates，让团队把常用评估逻辑保存、参数化并跨数据集或实验复用。 How: 团队可以在 LangSmith 中创建 evaluator，配置模板变量和评分规则，再把它们应用到实验、数据集和 CI 式评估流程中。</p>
+      <div class="card-grid">
+        <div class="card"><strong>Reusable</strong><span>同一 evaluator 可跨实验应用</span></div>
+        <div class="card"><strong>Template</strong><span>参数化 rubric 与字段</span></div>
+        <div class="card"><strong>Comparable</strong><span>统一标准让结果可比较</span></div>
+      </div>
+    </section>
+    <section>
+      <p class="kicker">Evidence</p>
+      <h2>评估标准从一次性脚本变成 LangSmith 里的共享资产。</h2>
+      <div class="section-grid">
+        <article class="section-card with-image">
+          <div>
+            <h3>配置页把 evaluator 变成可保存资产</h3>
+            <p>Configure evaluator 截图显示用户可以选择 criteria、correctness、helpfulness 等 evaluator，而不是每次在脚本里重写评分逻辑。</p>
+          </div>
+          <figure><img src="assets/69e00162a04500053fdbcfd0_evals-library-1.png" alt="配置页把 evaluator 变成可保存资产"><figcaption>配置页图显示 evaluator 可以从库中选择并组合，支撑“复用评估资产”的结论。</figcaption></figure>
+        </article>
+        <article class="section-card with-image">
+          <div>
+            <h3>Evaluator library 让团队共享同一套标准</h3>
+            <p>Library 截图展示 evaluator 名称、创建者、描述和分类，说明评估逻辑可以像数据集一样被团队发现、管理和复用。</p>
+          </div>
+          <figure><img src="assets/69e001b3ee6d1cf734174f5f_evals-library-2.png" alt="Evaluator library 让团队共享同一套标准"><figcaption>Evals library 图展示团队级 evaluator 列表，支撑跨实验复用和治理。</figcaption></figure>
+        </article>
+        <article class="section-card with-image">
+          <div>
+            <h3>模板解决相似场景的参数差异</h3>
+            <p>Reusable evaluators 封面不是证据主图，真正关键在于前两张产品图：相同结构可以通过参数和字段绑定适配不同实验。</p>
+          </div>
+          <figure><img src="assets/69e113adb98acef39fe4aa32_Reusable-evaluators.png" alt="模板解决相似场景的参数差异"><figcaption>标题图只用于语境，具体产品证据来自配置页和 library 截图。</figcaption></figure>
+        </article>
+      </div>
+    </section>
+    <div class="source-links"><a href="https://www.langchain.com/blog/reusable-langsmith-evaluator-templates">原文</a> · <a href="https://www.langchain.com/langsmith">langsmith</a></div>
+  </main>
+</body>
+</html>

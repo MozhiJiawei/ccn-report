@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>How Exa built a Web Research Multi-Agent System with LangGraph and LangSmith</title><style>
+:root{--ink:#16201b;--muted:#5f6d65;--line:#dbe3dc;--paper:#fbfcf9;--accent:#1f7a52;--soft:#eef6ef;--warm:#f5efe3}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Noto Sans SC",sans-serif;line-height:1.65}
+a{color:#17643f;text-decoration:none;border-bottom:1px solid rgba(23,100,63,.25)}.wrap{max-width:1120px;margin:0 auto;padding:44px 28px 72px}
+.eyebrow{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:34px;align-items:start;padding:32px 0 26px;border-bottom:1px solid var(--line)}
+h1{font-size:clamp(34px,4.2vw,58px);line-height:1.04;margin:12px 0 18px;letter-spacing:0}.dek{font-size:18px;color:#2f3d35;max-width:760px}.triad{display:grid;gap:10px;margin:24px 0 0}.triad p{margin:0;padding:13px 15px;background:white;border:1px solid var(--line);border-radius:8px}.triad b{color:var(--accent);margin-right:8px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;color:var(--muted);font-size:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff}
+.hero-media{background:var(--warm);border:1px solid var(--line);border-radius:8px;padding:12px}.hero-media img{width:100%;display:block;border-radius:6px}.caption{font-size:13px;color:var(--muted);margin:9px 2px 0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px 0}.point{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px}.point h2{font-size:20px;line-height:1.25;margin:0 0 8px}.point p{margin:0;color:#334139}
+.section{display:grid;grid-template-columns:300px 1fr;gap:26px;border-top:1px solid var(--line);padding:30px 0}.section h2{font-size:25px;line-height:1.18;margin:0}.section p{margin:0;color:#334139;font-size:17px}.evidence{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px}.evidence img{width:100%;display:block;border-radius:6px}
+.chain{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}.chain div{background:var(--soft);border:1px solid #cfe1d3;border-radius:8px;padding:14px}.chain b{display:block;color:#17643f;margin-bottom:4px}
+@media(max-width:900px){.hero,.section{grid-template-columns:1fr}.grid,.chain{grid-template-columns:1fr}.wrap{padding:28px 18px 54px}}
+</style></head>
+<body><main class="wrap">
+<div class="eyebrow">LangChain Blog 速读</div>
+<section class="hero"><div>
+<h1>How Exa built a Web Research Multi-Agent System with LangGraph and LangSmith</h1>
+<p class="dek">Exa 从搜索 API 和 answers endpoint 走向深度研究 API，需要能自主探索网页并稳定输出结构化结果的生产级 agent。</p>
+<div class="triad">
+<p><b>Why</b>Exa 从搜索 API 和 answers endpoint 走向深度研究 API，需要能自主探索网页并稳定输出结构化结果的生产级 agent。</p>
+<p><b>What</b>Exa 用 LangGraph 构建 Planner、Tasks、Observer 多 agent 架构，每天处理数百个研究查询，并在约 15 秒到 3 分钟内返回结构化结果。</p>
+<p><b>How</b>Planner 动态生成并行研究单元，Tasks 使用 Exa API 工具按 JSON schema 输出，Observer 保留全局上下文；LangSmith 追踪 token、缓存和 reasoning token 用量以支撑定价与成本控制。</p>
+</div>
+<div class="meta"><span class="pill">June 30, 2025</span><span class="pill">LangChain</span><span class="pill">case study</span><span class="pill">3 min</span><a class="pill" href="https://www.langchain.com/blog/exa">原文</a></div>
+</div><figure class="hero-media"><img src="assets/04-69cbaaabbf847dfe35ef4847_Diagram.png" alt=""><figcaption class="caption">这张原图支撑文章的架构关系：读者应关注组件如何分工和信息如何流动。</figcaption></figure></section>
+<section class="grid">
+<article class="point"><h2>一句话带走</h2><p>Exa 用 LangGraph 构建 Planner、Tasks、Observer 多 agent 架构，每天处理数百个研究查询，并在约 15 秒到 3 分钟内返回结构化结果。</p></article>
+<article class="point"><h2>关键机制</h2><p>Planner 动态生成并行研究单元，Tasks 使用 Exa API 工具按 JSON schema 输出，Observer 保留全局上下文；LangSmith 追踪 token、缓存和 reasoning token 用量以支撑定价与成本控制。</p></article>
+<article class="point"><h2>阅读定位</h2><p>这是一篇case study，重点看它如何把具体场景、产品能力或架构取舍连成一个可执行判断。</p></article>
+</section>
+<section class="section"><h2>复杂搜索让框架从可选变成关键</h2><div><p>Exa 原 answers endpoint 不依赖框架；当产品演进到长运行、多单元 deep research 时，团队重新评估并选择 LangGraph。</p></div></section><section class="section"><h2>上下文被刻意分层而不是全量共享</h2><div><p>Observer 看全局，单个 task 只接收其他研究单元的清理后结果；snippet 优先、必要时再抓全文，降低 token 成本。</p></div></section><section class="section"><h2>API 消费决定了结构化输出优先</h2><div><p>每个研究单元都带 required output format，并用 function calling 生成 JSON，保证下游客户拿到可解析结果。</p></div></section>
+</main></body></html>

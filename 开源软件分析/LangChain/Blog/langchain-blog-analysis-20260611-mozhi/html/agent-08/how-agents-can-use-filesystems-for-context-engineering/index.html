@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How agents can use filesystems for context engineering | 速读</title>
+  <style>
+:root{--ink:#13231f;--muted:#61706b;--line:#d9e2dd;--paper:#f6f8f5;--panel:#fff;--green:#0f6a55;--blue:#2f638d;--rose:#9a5576;--amber:#ad6a2b}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--paper);line-height:1.62}a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}.page{width:min(1120px,calc(100% - 40px));margin:0 auto}header{min-height:720px;display:grid;align-items:center;padding:64px 0 36px}.eyebrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;color:var(--muted);font-size:13px}.pill{border:1px solid var(--line);background:rgba(255,255,255,.78);border-radius:999px;padding:5px 10px}h1{margin:0;max-width:930px;font-size:clamp(42px,6.3vw,78px);line-height:.98;letter-spacing:0}.dek{margin:28px 0 0;max-width:900px;font-size:20px;color:#213b35}.triad{margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.signal{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--green);border-radius:8px;padding:18px;min-height:145px;box-shadow:0 16px 45px rgba(27,47,42,.08)}.signal:nth-child(2){border-top-color:var(--blue)}.signal:nth-child(3){border-top-color:var(--rose)}.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted);margin-bottom:8px}.signal p{margin:0;font-size:15.5px}.hero-img{margin-top:28px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.hero-img img{display:block;width:100%;max-height:420px;object-fit:contain;background:#f0f3f1}.hero-img figcaption,.evidence figcaption{padding:11px 14px;color:var(--muted);font-size:13px;background:#fff}main{padding:8px 0 76px}section{padding:48px 0;border-top:1px solid var(--line)}h2{margin:0 0 14px;max-width:850px;font-size:clamp(27px,4vw,44px);line-height:1.1;letter-spacing:0}.lead{margin:0;max-width:870px;color:var(--muted);font-size:18px}.cards{margin-top:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;min-height:190px}.card h3{margin:0 0 9px;font-size:19px;line-height:1.25;letter-spacing:0}.card p{margin:0;color:var(--muted);font-size:15px}.evidence{margin:26px 0 0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.evidence img{display:block;width:100%;max-height:560px;object-fit:contain;background:#f0f3f1}.source{display:flex;gap:10px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:14px}.source a{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 12px}@media(max-width:850px){header{min-height:auto}.triad,.cards{grid-template-columns:1fr}h1{font-size:42px}.dek{font-size:18px}}
+</style>
+</head>
+<body>
+  <header>
+    <div class="page">
+      <div class="eyebrow">
+        <span class="pill">技术长文</span>
+        <span class="pill">The LangChain Team, Amy Ru, Akshay Sharma, Gethin Dibben</span>
+        <span class="pill">November 21, 2025</span>
+        <span class="pill">9 min</span>
+      </div>
+      <h1>How agents can use filesystems for context engineering</h1>
+      <p class="dek">Why: 长任务 agent 很快会遇到上下文窗口和状态管理问题；把所有信息塞进 prompt 会变得昂贵、混乱且难以复用。 What: 文章提出文件系统是 context engineering 的关键介质：agent 可以把计划、资料、记忆、中间产物和最终输出组织成可读写文件。 How: agent 通过目录结构、命名约定、读写工具和阶段性文件，把外部知识与任务进展持久化；后续步骤按需读取相关文件，而不是重新加载全部上下文。</p>
+      <div class="triad">
+        <div class="signal"><div class="label">Why</div><p>长任务 agent 很快会遇到上下文窗口和状态管理问题；把所有信息塞进 prompt 会变得昂贵、混乱且难以复用。</p></div>
+        <div class="signal"><div class="label">What</div><p>文章提出文件系统是 context engineering 的关键介质：agent 可以把计划、资料、记忆、中间产物和最终输出组织成可读写文件。</p></div>
+        <div class="signal"><div class="label">How</div><p>agent 通过目录结构、命名约定、读写工具和阶段性文件，把外部知识与任务进展持久化；后续步骤按需读取相关文件，而不是重新加载全部上下文。</p></div>
+      </div>
+      <figure class="hero-img">
+        <img src="assets/image-01.png" alt="How agents can use filesystems for context engineering">
+        <figcaption>文章提出文件系统是 context engineering 的关键介质：agent 可以把计划、资料、记忆、中间产物和最终输出组织成可读写文件。</figcaption>
+      </figure>
+    </div>
+  </header>
+  <main class="page">
+    <section>
+      <h2>文件系统给 agent 一个外部工作记忆</h2>
+      <p class="lead">文章把 context engineering 从提示词技巧扩展到状态设计：让 agent 在文件里保存计划、发现和产物。</p>
+      <div class="cards"><article class="card"><h3>文件系统给 agent 一个外部工作记忆</h3><p>文章把 context engineering 从提示词技巧扩展到状态设计：让 agent 在文件里保存计划、发现和产物。</p></article>
+<article class="card"><h3>目录结构让上下文可以被选择性读取</h3><p>当资料分散到明确文件中，agent 可以只打开当前步骤需要的部分，避免上下文窗口被无关信息占满。</p></article>
+<article class="card"><h3>这种模式支持长任务的可审计性</h3><p>文件记录了 agent 如何推进任务，也让人或另一个 agent 可以接手、检查和复用中间结果。</p></article></div>
+    </section>
+    <section>
+      <h2>目录结构让上下文可以被选择性读取</h2>
+      <p class="lead">当资料分散到明确文件中，agent 可以只打开当前步骤需要的部分，避免上下文窗口被无关信息占满。</p>
+      <figure class="evidence">
+        <img src="assets/image-02.png" alt="How agents can use filesystems for context engineering supporting image">
+        <figcaption>agent 通过目录结构、命名约定、读写工具和阶段性文件，把外部知识与任务进展持久化；后续步骤按需读取相关文件，而不是重新加载全部上下文。</figcaption>
+      </figure>
+    </section>
+    <section>
+      <h2>这篇文章在 LangChain 叙事中的位置</h2>
+      <p class="lead">文章提出文件系统是 context engineering 的关键介质：agent 可以把计划、资料、记忆、中间产物和最终输出组织成可读写文件。 agent 通过目录结构、命名约定、读写工具和阶段性文件，把外部知识与任务进展持久化；后续步骤按需读取相关文件，而不是重新加载全部上下文。</p>
+      <div class="source">
+        <span>原文：</span>
+        <a href="https://www.langchain.com/blog/how-agents-can-use-filesystems-for-context-engineering">How agents can use filesystems for context engineering</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
