@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Introducing Open SWE: An Open-Source Asynchronous Coding Agent</title><style>
+:root{--ink:#16201b;--muted:#5f6d65;--line:#dbe3dc;--paper:#fbfcf9;--accent:#1f7a52;--soft:#eef6ef;--warm:#f5efe3}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Noto Sans SC",sans-serif;line-height:1.65}
+a{color:#17643f;text-decoration:none;border-bottom:1px solid rgba(23,100,63,.25)}.wrap{max-width:1120px;margin:0 auto;padding:44px 28px 72px}
+.eyebrow{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:34px;align-items:start;padding:32px 0 26px;border-bottom:1px solid var(--line)}
+h1{font-size:clamp(34px,4.2vw,58px);line-height:1.04;margin:12px 0 18px;letter-spacing:0}.dek{font-size:18px;color:#2f3d35;max-width:760px}.triad{display:grid;gap:10px;margin:24px 0 0}.triad p{margin:0;padding:13px 15px;background:white;border:1px solid var(--line);border-radius:8px}.triad b{color:var(--accent);margin-right:8px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;color:var(--muted);font-size:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff}
+.hero-media{background:var(--warm);border:1px solid var(--line);border-radius:8px;padding:12px}.hero-media img{width:100%;display:block;border-radius:6px}.caption{font-size:13px;color:var(--muted);margin:9px 2px 0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px 0}.point{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px}.point h2{font-size:20px;line-height:1.25;margin:0 0 8px}.point p{margin:0;color:#334139}
+.section{display:grid;grid-template-columns:300px 1fr;gap:26px;border-top:1px solid var(--line);padding:30px 0}.section h2{font-size:25px;line-height:1.18;margin:0}.section p{margin:0;color:#334139;font-size:17px}.evidence{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px}.evidence img{width:100%;display:block;border-radius:6px}
+.chain{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}.chain div{background:var(--soft);border:1px solid #cfe1d3;border-radius:8px;padding:14px}.chain b{display:block;color:#17643f;margin-bottom:4px}
+@media(max-width:900px){.hero,.section{grid-template-columns:1fr}.grid,.chain{grid-template-columns:1fr}.wrap{padding:28px 18px 54px}}
+</style></head>
+<body><main class="wrap">
+<div class="eyebrow">LangChain Blog 速读</div>
+<section class="hero"><div>
+<h1>Introducing Open SWE: An Open-Source Asynchronous Coding Agent</h1>
+<p class="dek">软件工程 AI 正从补全和 IDE copilot 走向能长期运行的云端异步 agent，开源生态缺少一个完整呈现这种形态的项目。</p>
+<div class="triad">
+<p><b>Why</b>软件工程 AI 正从补全和 IDE copilot 走向能长期运行的云端异步 agent，开源生态缺少一个完整呈现这种形态的项目。</p>
+<p><b>What</b>Open SWE 是 LangChain 发布的开源、云托管异步编码 agent，可以从 GitHub issue 或自定义 UI 接收开发请求，规划、写代码、测试、自审并打开 PR。</p>
+<p><b>How</b>它用 GitHub 集成、Daytona 隔离沙箱、Planner/Programmer/Reviewer 多 agent 流程、LangGraph Platform 持久化与弹性运行支撑长流程。</p>
+</div>
+<div class="meta"><span class="pill">August 6, 2025</span><span class="pill">The LangChain Team</span><span class="pill">release / technical longform</span><span class="pill">7 min</span><a class="pill" href="https://www.langchain.com/blog/introducing-open-swe-an-open-source-asynchronous-coding-agent">原文</a></div>
+</div><figure class="hero-media"><img src="assets/03-69cbaa8429c6654c43489ec2_open-swe-diagram-1.png" alt=""><figcaption class="caption">这张原图支撑文章的架构关系：读者应关注组件如何分工和信息如何流动。</figcaption></figure></section>
+<section class="grid">
+<article class="point"><h2>一句话带走</h2><p>Open SWE 是 LangChain 发布的开源、云托管异步编码 agent，可以从 GitHub issue 或自定义 UI 接收开发请求，规划、写代码、测试、自审并打开 PR。</p></article>
+<article class="point"><h2>关键机制</h2><p>它用 GitHub 集成、Daytona 隔离沙箱、Planner/Programmer/Reviewer 多 agent 流程、LangGraph Platform 持久化与弹性运行支撑长流程。</p></article>
+<article class="point"><h2>阅读定位</h2><p>这是一篇release / technical longform，重点看它如何把具体场景、产品能力或架构取舍连成一个可执行判断。</p></article>
+</section>
+<section class="section"><h2>Open SWE 把编码 agent 放进真实工程流</h2><div><p>它不是只在编辑器里给建议，而是连接仓库、跟踪 issue、输出执行计划、运行测试并提交 PR。文章重点强调异步、云端、可中断和 GitHub 原生协作这些交互形态。</p><figure class="evidence"><img src="assets/04-69cbaa8529c6654c43489f0c_langgraph-open-swe-contro.png" alt=""><figcaption class="caption">这张原图支撑文章主张：读者应关注它展示的场景、对象或关键证据。</figcaption></figure></div></section><section class="section"><h2>多 agent 流程减少直接写代码的脆弱性</h2><div><p>Manager 处理入口，Planner 先研究代码库并形成计划，Programmer 在沙箱中执行，Reviewer 负责检查质量与完整性；计划审阅和运行中反馈让人可以在关键节点介入。</p><figure class="evidence"><img src="assets/05-69cbaa8429c6654c43489f04_open-swe-open-swe-contro.png" alt=""><figcaption class="caption">这张原图支撑文章主张：读者应关注它展示的场景、对象或关键证据。</figcaption></figure></div></section><section class="section"><h2>LangGraph 和 LangSmith承担长流程运行与改进</h2><div><p>LangGraph 编排四类 agent 状态与边界，LangGraph Platform 提供持久化、自动扩缩和长时间运行能力，LangSmith 用于调试和评估 context engineering。</p><figure class="evidence"><img src="assets/06-69cbaa8529c6654c43489f0f_open-swe-homepage.png" alt=""><figcaption class="caption">这张原图支撑产品机制：读者应关注界面如何暴露状态、步骤或可操作控制。</figcaption></figure></div></section>
+</main></body></html>

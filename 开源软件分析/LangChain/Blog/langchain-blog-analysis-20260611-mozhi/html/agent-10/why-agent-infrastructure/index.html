@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Why agent infrastructure matters</title><style>
+:root{--ink:#16201b;--muted:#5f6d65;--line:#dbe3dc;--paper:#fbfcf9;--accent:#1f7a52;--soft:#eef6ef;--warm:#f5efe3}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Noto Sans SC",sans-serif;line-height:1.65}
+a{color:#17643f;text-decoration:none;border-bottom:1px solid rgba(23,100,63,.25)}.wrap{max-width:1120px;margin:0 auto;padding:44px 28px 72px}
+.eyebrow{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:34px;align-items:start;padding:32px 0 26px;border-bottom:1px solid var(--line)}
+h1{font-size:clamp(34px,4.2vw,58px);line-height:1.04;margin:12px 0 18px;letter-spacing:0}.dek{font-size:18px;color:#2f3d35;max-width:760px}.triad{display:grid;gap:10px;margin:24px 0 0}.triad p{margin:0;padding:13px 15px;background:white;border:1px solid var(--line);border-radius:8px}.triad b{color:var(--accent);margin-right:8px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;color:var(--muted);font-size:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff}
+.hero-media{background:var(--warm);border:1px solid var(--line);border-radius:8px;padding:12px}.hero-media img{width:100%;display:block;border-radius:6px}.caption{font-size:13px;color:var(--muted);margin:9px 2px 0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px 0}.point{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px}.point h2{font-size:20px;line-height:1.25;margin:0 0 8px}.point p{margin:0;color:#334139}
+.section{display:grid;grid-template-columns:300px 1fr;gap:26px;border-top:1px solid var(--line);padding:30px 0}.section h2{font-size:25px;line-height:1.18;margin:0}.section p{margin:0;color:#334139;font-size:17px}.evidence{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px}.evidence img{width:100%;display:block;border-radius:6px}
+.chain{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}.chain div{background:var(--soft);border:1px solid #cfe1d3;border-radius:8px;padding:14px}.chain b{display:block;color:#17643f;margin-bottom:4px}
+@media(max-width:900px){.hero,.section{grid-template-columns:1fr}.grid,.chain{grid-template-columns:1fr}.wrap{padding:28px 18px 54px}}
+</style></head>
+<body><main class="wrap">
+<div class="eyebrow">LangChain Blog 速读</div>
+<section class="hero"><div>
+<h1>Why agent infrastructure matters</h1>
+<p class="dek">agentic app 不再只是请求-响应，它们会长时间运行、保留状态、等待人类反馈并承受突发流量，传统 serverless 或微服务容易变脆。</p>
+<div class="triad">
+<p><b>Why</b>agentic app 不再只是请求-响应，它们会长时间运行、保留状态、等待人类反馈并承受突发流量，传统 serverless 或微服务容易变脆。</p>
+<p><b>What</b>文章提出 agent infrastructure 这一层：位于 agent 逻辑和底层计算之间，提供持久执行、状态管理、人机协作、队列扩缩和流式可见性。</p>
+<p><b>How</b>LangGraph Platform 用后台运行、heartbeat、checkpoint/resume、pause/resume API、task queue、水平扩缩和多模式 streaming 支撑生产级 agent。</p>
+</div>
+<div class="meta"><span class="pill">July 27, 2025</span><span class="pill">LangChain</span><span class="pill">technical explainer</span><a class="pill" href="https://www.langchain.com/blog/why-agent-infrastructure">原文</a></div>
+</div><figure class="hero-media"><img src="assets/03-69cbaa966849b7969db84ed3_Why-agent-infrastructure--1-.png" alt=""><figcaption class="caption">这张原图支撑文章主张：读者应关注它展示的场景、对象或关键证据。</figcaption></figure></section>
+<section class="grid">
+<article class="point"><h2>一句话带走</h2><p>文章提出 agent infrastructure 这一层：位于 agent 逻辑和底层计算之间，提供持久执行、状态管理、人机协作、队列扩缩和流式可见性。</p></article>
+<article class="point"><h2>关键机制</h2><p>LangGraph Platform 用后台运行、heartbeat、checkpoint/resume、pause/resume API、task queue、水平扩缩和多模式 streaming 支撑生产级 agent。</p></article>
+<article class="point"><h2>阅读定位</h2><p>这是一篇technical explainer，重点看它如何把具体场景、产品能力或架构取舍连成一个可执行判断。</p></article>
+</section>
+<section class="section"><h2>长流程首先需要能安全暂停和恢复</h2><div><p>agent 可能等待工具、API 或人工反馈，重启会丢进度且代价高；持久执行和 checkpoint 让运行跨过崩溃、暂停和超时。</p></div></section><section class="section"><h2>状态不只是消息缓冲区</h2><div><p>中间结果、工具输出、嵌入文档、多轮上下文都属于 agent state，需要可保存、可恢复、可干预的结构。</p></div></section><section class="section"><h2>流式输出同时服务用户体验和调试</h2><div><p>token-level streaming、custom data streaming 与 generative UI 让中间思考、工具调用和结构化输出可见，并可追溯到具体 graph 节点。</p></div></section>
+</main></body></html>

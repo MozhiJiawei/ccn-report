@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Autonomous context compression - 速读</title>
+  <style>
+    :root {
+      --ink: #121826;
+      --muted: #596273;
+      --paper: #fbfcf8;
+      --line: #d8e0e7;
+      --blue: #2f80ed;
+      --green: #16a36b;
+      --coral: #e65b56;
+      --navy: #101828;
+      --soft: #eef6f3;
+      --gold: #c8892e;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Segoe UI", Arial, sans-serif; line-height: 1.58; }
+    a { color: inherit; }
+    .page { width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
+    .hero { min-height: 88vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr); gap: 42px; align-items: center; padding: 42px 0 32px; }
+    .eyebrow { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; color: var(--muted); font-size: 13px; }
+    .pill { border: 1px solid var(--line); border-radius: 999px; padding: 7px 11px; background: rgba(255,255,255,.76); }
+    h1 { margin: 0; font-size: clamp(42px, 6.5vw, 78px); line-height: .96; letter-spacing: 0; max-width: 860px; }
+    .tagline { margin: 22px 0 0; max-width: 760px; color: #2d3748; font-size: 21px; }
+    .lead { margin: 24px 0 0; max-width: 790px; font-size: 18px; color: #263241; }
+    .lead strong { color: var(--navy); }
+    .triad { margin-top: 26px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .triad div { border-left: 4px solid var(--blue); padding: 6px 14px 4px; min-height: 96px; background: rgba(255,255,255,.5); }
+    .triad b { display: block; margin-bottom: 5px; font-size: 13px; text-transform: uppercase; }
+    .triad span { color: var(--muted); font-size: 15px; }
+    .hero-figure { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: 0 24px 60px rgba(16,24,40,.14); }
+    .hero-figure img { width: 100%; display: block; max-height: 560px; object-fit: contain; background: #fff; }
+    figcaption { padding: 14px 16px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+    .no-image { min-height: 380px; padding: 36px; display: grid; align-content: center; }
+    .no-image b { font-size: 28px; }
+    .band { border-top: 1px solid var(--line); padding: 68px 0; }
+    .section-head { max-width: 820px; margin-bottom: 28px; }
+    h2 { margin: 0; font-size: clamp(30px, 4vw, 48px); line-height: 1.05; letter-spacing: 0; }
+    .section-head p { margin: 13px 0 0; color: var(--muted); font-size: 18px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 24px; min-height: 260px; }
+    .card span { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: #0d5f43; background: var(--soft); font-weight: 760; }
+    .card h3 { margin: 28px 0 10px; font-size: 23px; line-height: 1.18; }
+    .card p, td { margin: 0; color: var(--muted); }
+    .split { display: grid; grid-template-columns: minmax(320px, .9fr) minmax(0, 1.1fr); gap: 30px; align-items: start; }
+    .flow { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; counter-reset: step; }
+    .flow li { counter-increment: step; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px 18px 18px 58px; position: relative; font-weight: 700; }
+    .flow li::before { content: counter(step); position: absolute; left: 18px; top: 16px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #ffe9df; color: #9d341f; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 17px 18px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    tr:last-child th, tr:last-child td { border-bottom: 0; }
+    th { width: 28%; color: var(--ink); }
+    .figures { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .figures figure { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    .figures img { width: 100%; display: block; max-height: 460px; object-fit: contain; background: #fff; }
+    .source { display: inline-block; margin-top: 26px; color: var(--blue); font-weight: 700; }
+    @media (max-width: 860px) {
+      .hero, .split { grid-template-columns: 1fr; min-height: auto; }
+      .triad, .cards, .figures { grid-template-columns: 1fr; }
+      h1 { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">
+          <span class="pill">技术长文</span>
+          <span class="pill">March 11, 2026</span>
+          <span class="pill">The LangChain Team · 4 min</span>
+        </div>
+        <h1>Autonomous context compression</h1>
+        <p class="tagline">Deep Agents 让模型自己在合适时机触发 context compression。</p>
+        <p class="lead"><strong>核心观点：</strong>Why: 固定阈值压缩上下文会忽略工作节奏，可能在复杂工作中间发生。What: Deep Agents 增加 context compression tool，让模型在合适时机主动压缩自己的工作记忆。How: agent 在工作边界、提取结论后、读取大量新上下文前或进入多步流程前，把旧消息压成保留进度的 summary。</p>
+        <div class="triad">
+          <div><b>Why</b><span>固定阈值压缩上下文会忽略工作节奏，可能在复杂工作中间发生。</span></div>
+          <div><b>What</b><span>Deep Agents 增加 context compression tool，让模型在合适时机主动压缩自己的工作记忆。</span></div>
+          <div><b>How</b><span>agent 在工作边界、提取结论后、读取大量新上下文前或进入多步流程前，把旧消息压成保留进度的 summary。</span></div>
+        </div>
+      </div>
+      <figure class="hero-figure"><img src="assets/context-compression.png" alt="展示 context compression 工具或提示，支撑自主压缩机制。"><figcaption>展示 context compression 工具或提示，支撑自主压缩机制。</figcaption></figure>
+    </section>
+
+    <section class="band">
+      <div class="section-head">
+        <h2>文章的主张集中在这三点</h2>
+        <p>这些子观点都服务于首屏结论，帮助读者快速抓住文章的判断框架。</p>
+      </div>
+      <div class="cards"><article class="card"><span>01</span><h3>压缩时机比阈值更重要</h3><p>deepagents 可按模型 profile 在 85% context limit 压缩，但文章认为好时机和坏时机差异很大。</p></article>
+<article class="card"><span>02</span><h3>工具化让模型接管一部分 harness 调参</h3><p>用户不需要知道 context window，也不需要手动输入 /compact。</p></article>
+<article class="card"><span>03</span><h3>适用场景围绕工作边界和上下文更替</h3><p>完成一个 deliverable、抽取研究结论、准备长草稿、开始 migration 或新需求推翻旧信息时都适合压缩。</p></article></div>
+    </section>
+
+    <section class="band">
+      <div class="split">
+        <div>
+          <div class="section-head">
+            <h2>机制链路从这里读</h2>
+            <p>文章不是平铺信息，而是在这条链路上说明产品、技术或组织变化。</p>
+          </div>
+          <ol class="flow"><li>Working memory</li>
+<li>Compression decision</li>
+<li>Summary</li>
+<li>Next task</li></ol>
+        </div>
+        <div>
+          <table><tr><th>Default</th><td>Deep Agents CLI enabled；SDK opt-in。</td></tr>
+<tr><th>Baseline</th><td>deepagents 按 model profiles 在 85% context limit compact。</td></tr>
+<tr><th>Principle</th><td>让 harness 在可能时利用底层 reasoning models 的进步，减少手工调参。</td></tr></table>
+          <a class="source" href="https://www.langchain.com/blog/autonomous-context-compression">打开原文</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="band"><div class="section-head"><h2>原文图片支撑的观点</h2><p>只保留与附近观点直接相关的原图。</p></div><div class="figures"><figure><img src="assets/compression-example.png" alt="支撑压缩前后工作记忆变化。"><figcaption>支撑压缩前后工作记忆变化。</figcaption></figure></div></section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,458 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fault Tolerance in LangGraph | LangChain Blog 速读</title>
+  <style>
+    :root {
+      --ink: #101826;
+      --muted: #526073;
+      --line: #d9e3ef;
+      --paper: #f6f9fc;
+      --panel: #ffffff;
+      --night: #050b14;
+      --blue: #1f6feb;
+      --sky: #73bdf4;
+      --teal: #0f766e;
+      --amber: #b45309;
+      --red: #b42318;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      line-height: 1.62;
+    }
+
+    a { color: var(--blue); }
+
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      align-items: start;
+      padding: 38px 6vw 30px;
+      color: #f7fbff;
+      background:
+        linear-gradient(120deg, rgba(5, 11, 20, 0.96) 0%, rgba(7, 18, 33, 0.92) 47%, rgba(10, 27, 47, 0.82) 100%),
+        url("assets/fault-tolerance-hero.png") center / cover no-repeat;
+    }
+
+    .hero-inner {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      color: #cfe7ff;
+      font-size: 14px;
+    }
+
+    .pill {
+      border: 1px solid rgba(115, 189, 244, 0.35);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    h1 {
+      max-width: 1030px;
+      margin: 0 0 16px;
+      font-size: clamp(38px, 6.3vw, 76px);
+      line-height: 1.01;
+      letter-spacing: 0;
+      font-weight: 700;
+    }
+
+    .deck {
+      max-width: 1020px;
+      margin: 0;
+      color: #dcecff;
+      font-size: clamp(18px, 1.9vw, 24px);
+    }
+
+    .why-what-how {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 26px;
+    }
+
+    .hero-card {
+      min-height: 142px;
+      padding: 18px;
+      border: 1px solid rgba(115, 189, 244, 0.28);
+      border-radius: 8px;
+      background: rgba(5, 11, 20, 0.72);
+      backdrop-filter: blur(6px);
+    }
+
+    .label {
+      margin-bottom: 8px;
+      color: #82d4ff;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .hero-card p {
+      margin: 0;
+      color: #f1f7ff;
+      font-size: 16px;
+    }
+
+    .flow-strip {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr auto 1.1fr;
+      align-items: center;
+      gap: 10px;
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid rgba(115, 189, 244, 0.25);
+      border-radius: 8px;
+      background: rgba(1, 6, 14, 0.68);
+    }
+
+    .flow-node {
+      min-height: 74px;
+      padding: 12px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .flow-node strong {
+      display: block;
+      margin-bottom: 5px;
+      color: #ffffff;
+      font-size: 15px;
+    }
+
+    .flow-node span {
+      color: #cfe3f8;
+      font-size: 13px;
+    }
+
+    .arrow {
+      color: #73bdf4;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 44px 0 72px;
+    }
+
+    .section {
+      padding: 40px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section:first-child { border-top: 0; }
+
+    h2 {
+      max-width: 900px;
+      margin: 0 0 16px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 850px;
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 12px 30px rgba(18, 31, 51, 0.06);
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .rule {
+      display: grid;
+      grid-template-columns: 126px 1fr;
+      gap: 14px;
+      padding: 15px 0;
+      border-top: 1px solid #e7eef7;
+    }
+
+    .rule:first-child { border-top: 0; padding-top: 0; }
+
+    .term {
+      font-family: "JetBrains Mono", Consolas, monospace;
+      color: var(--blue);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .rule p, .panel p { margin: 0; color: var(--muted); }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .card {
+      min-height: 190px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 21px;
+      line-height: 1.2;
+    }
+
+    .card p { margin: 0; color: var(--muted); }
+
+    figure {
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid #172338;
+      border-radius: 8px;
+      background: var(--night);
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    figcaption {
+      padding: 12px 14px 14px;
+      color: #dce8f8;
+      background: #07111f;
+      font-size: 14px;
+    }
+
+    .saga {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .saga-step {
+      position: relative;
+      min-height: 136px;
+      padding: 18px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .saga-step::after {
+      content: "undo if later step fails";
+      position: absolute;
+      right: 12px;
+      bottom: 10px;
+      color: #7c8797;
+      font-size: 12px;
+    }
+
+    .saga-step strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--teal);
+      font-size: 18px;
+    }
+
+    .saga-step p { margin: 0; color: var(--muted); }
+
+    .callout {
+      margin-top: 22px;
+      padding: 22px;
+      border-left: 5px solid var(--blue);
+      border-radius: 8px;
+      background: #eef6ff;
+      color: #244363;
+      font-size: 18px;
+    }
+
+    .codeish {
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 0.95em;
+    }
+
+    footer {
+      padding: 26px 0 48px;
+      color: var(--muted);
+      font-size: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 860px) {
+      .hero { min-height: auto; padding-top: 28px; }
+      .why-what-how, .cards, .grid, .saga { grid-template-columns: 1fr; }
+      .flow-strip { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); text-align: center; }
+      .rule { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="meta">
+          <span class="pill">LangChain Blog</span>
+          <span class="pill">June 4, 2026</span>
+          <span class="pill">Quanzheng Long, Sydney Runkle</span>
+          <span class="pill">7 min</span>
+        </div>
+        <h1>LangGraph 的容错重点，是把失败恢复放进节点执行模型</h1>
+        <p class="deck">Why：生产 agent 会遇到网络故障、工具错误、LLM 限流和长时间卡住的问题；一次长时间运行半路失败，重头再来不可持续。What：文章把 LangGraph 的容错归纳为三件事：<span class="codeish">RetryPolicy</span> 处理瞬时错误，<span class="codeish">TimeoutPolicy</span> 防止节点无限挂起，<span class="codeish">error_handler</span> 在重试耗尽后进入清理、告警、降级或补偿路径。How：这些策略直接挂在 <span class="codeish">StateGraph.add_node</span> 的节点上，由运行时在 checkpoint 中原子记录失败并调度处理器，使 SAGA 这类多步骤副作用流程能续跑到正确的补偿步骤。</p>
+        <div class="why-what-how">
+          <div class="hero-card">
+            <div class="label">Why</div>
+            <p>生产流程里的 1% 瞬时失败会在几十个步骤中放大，尤其当 agent 已经调用外部系统、付款或订票时。</p>
+          </div>
+          <div class="hero-card">
+            <div class="label">What</div>
+            <p>重试、超时和错误处理器不是外围模板代码，而是 LangGraph 节点级执行语义的一部分。</p>
+          </div>
+          <div class="hero-card">
+            <div class="label">How</div>
+            <p>节点失败后先按策略重试；超时被视作瞬时失败；重试耗尽时把失败上下文写入 checkpoint 并调度处理器。</p>
+          </div>
+        </div>
+        <div class="flow-strip" aria-label="LangGraph fault tolerance flow">
+          <div class="flow-node"><strong>Node attempt</strong><span>模型、工具或确定性逻辑的一次执行</span></div>
+          <div class="arrow">→</div>
+          <div class="flow-node"><strong>Retry / timeout</strong><span>只对可恢复错误或卡住的尝试重新调度</span></div>
+          <div class="arrow">→</div>
+          <div class="flow-node"><strong>Checkpoint</strong><span>失败状态作为 graph run 状态的一部分持久化</span></div>
+          <div class="arrow">→</div>
+          <div class="flow-node"><strong>Error handler</strong><span>带着节点名和异常进入补偿、降级或通知路径</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <section class="section grid">
+        <div>
+          <h2>三种策略贴在节点旁边，容错才不会变成散落的模板代码</h2>
+          <p class="lead">文章强调 LangGraph 控制 graph 的执行，因此也适合控制每个步骤失败时发生什么。策略配置和业务节点放在同一个 <span class="codeish">add_node</span> 调用里：节点逻辑、重试、超时和失败后路径形成一个局部、可审计的单元。</p>
+          <div class="panel">
+            <div class="rule">
+              <div class="term">RetryPolicy</div>
+              <p>对每次节点尝试应用指数退避、可选 jitter 和 <span class="codeish">retry_on</span> 判定。默认只重试连接错误、HTTP 5xx 和若干瞬时错误，不默认重试 <span class="codeish">ValueError</span>、<span class="codeish">TypeError</span> 等常见程序错误。</p>
+            </div>
+            <div class="rule">
+              <div class="term">TimeoutPolicy</div>
+              <p>给单次尝试设置硬性运行时长上限，或基于可观察进展的 idle 上限。超时触发后节点尝试会被取消，并抛出 <span class="codeish">NodeTimeoutError</span>。</p>
+            </div>
+            <div class="rule">
+              <div class="term">error_handler</div>
+              <p>只在重试耗尽后运行，接收包含失败节点名和异常的 <span class="codeish">NodeError</span>，用于清理、告警、死信写入、模型降级或面向用户的失败路径。</p>
+            </div>
+          </div>
+        </div>
+        <figure>
+          <img src="assets/fault-tolerance-hero.png" alt="Fault tolerance in LangGraph article cover">
+          <figcaption>原文封面把主题明确限定在 LangGraph 的三类容错原语；页面后续内容围绕这三类原语如何组合，而不是泛泛讨论可靠性。</figcaption>
+        </figure>
+      </section>
+
+      <section class="section">
+        <h2>超时是“卡住太久”的瞬时失败，重试策略决定它是否值得再试</h2>
+        <p class="lead">文章把 timeout 解释成瞬时失败的特殊情况：不是函数立刻报错，而是一次尝试长时间没有完成或没有可观察进展。没有显式超时，卡住的 HTTP 调用或冻结的子进程可能让整个 graph run 无限挂起。</p>
+        <div class="cards">
+          <div class="card">
+            <h3><span class="codeish">run_timeout</span> 是硬上限</h3>
+            <p>单次节点尝试超过指定 wall-clock 时间就被取消，适合明确不愿等待超过 N 秒的步骤。</p>
+          </div>
+          <div class="card">
+            <h3><span class="codeish">idle_timeout</span> 看进展</h3>
+            <p>channel writes、streamed chunks、child task events、LangChain callback events 等信号会刷新空闲计时；活跃流式输出不会被误杀。</p>
+          </div>
+          <div class="card">
+            <h3>可用 heartbeat 显式保活</h3>
+            <p>如果节点内部能主动发出进度信号，可以用 heartbeat 刷新策略，区分真正卡死和仍在推进的长流程。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section grid">
+        <div>
+          <h2>错误处理器的关键，是重试耗尽后的原子转移</h2>
+          <p class="lead">文章最重要的运行时细节在这里：当原节点失败时，LangGraph 会把 <span class="codeish">ERROR</span> 写入 checkpoint，并在同一步调度 handler 作为新执行项。如果宿主进程在 handler 中途崩溃，下一次恢复会重新调度 handler，而不是回到已经失败的原节点。</p>
+          <div class="callout">这让失败处理不只是 <span class="codeish">try/except</span> 的语法糖，而是可恢复执行的一部分：流程一旦进入失败分支，就能在 checkpoint 语义下继续完成清理或补偿。</div>
+        </div>
+        <div class="panel stack">
+          <div class="rule">
+            <div class="term">触发时机</div>
+            <p>只在 retries exhausted 后触发；每次异常都要执行的逻辑仍然应放在节点内部。</p>
+          </div>
+          <div class="rule">
+            <div class="term">失败上下文</div>
+            <p>handler 可从 <span class="codeish">NodeError</span> 读取失败节点名与异常对象，从而决定补偿范围或降级路径。</p>
+          </div>
+          <div class="rule">
+            <div class="term">递归边界</div>
+            <p>error handler 不能再配置另一个 error handler，避免无限递归式失败处理。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>SAGA 例子说明：不是重试整个流程，而是补偿已经产生的副作用</h2>
+        <p class="lead">原文用航班预订解释多步骤副作用：预留座位、处理支付、出票分别调用外部系统。天真地重试整条链路会留下坏状态；正确做法是每一步单独重试，某一步重试耗尽后，只撤销已经完成或状态未知的步骤。</p>
+        <div class="saga">
+          <div class="saga-step">
+            <strong>Reserve seat</strong>
+            <p>座位预留是外部副作用；后续支付或出票失败时，补偿节点需要知道它是否已经完成。</p>
+          </div>
+          <div class="saga-step">
+            <strong>Process payment</strong>
+            <p>支付失败不能简单重跑全部流程；重试耗尽后需要进入失败事件、通知或退款相关路径。</p>
+          </div>
+          <div class="saga-step">
+            <strong>Issue ticket</strong>
+            <p>出票失败时，checkpoint 中的步骤状态决定补偿节点撤销哪些已执行动作。</p>
+          </div>
+        </div>
+        <div class="callout">LangGraph 的组合价值在于：默认重试策略可作用到所有常规节点，任一节点耗尽重试后原子转到统一的 <span class="codeish">compensate</span> 节点，并靠持久状态判断哪些步骤需要撤销。</div>
+      </section>
+
+      <footer>
+        原文： <a href="https://www.langchain.com/blog/fault-tolerance-in-langgraph">Fault Tolerance in LangGraph: Retries, Timeouts, and Error Handlers</a>. 事实点来自原文可见内容与页面元信息。
+      </footer>
+    </div>
+  </main>
+</body>
+</html>

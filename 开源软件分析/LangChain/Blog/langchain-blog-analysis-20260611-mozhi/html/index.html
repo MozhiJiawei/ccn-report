@@ -1,0 +1,768 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>LangChain Blog 年度速读索引</title><style>
+  :root{--ink:#12221d;--muted:#5f6f68;--line:#dfe7df;--paper:#fbfaf5;--soft:#eef5f0;--green:#0f4b3b;--gold:#c9952d;--blue:#2e5f88}
+  *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  a{color:inherit;text-decoration:none} .wrap{max-width:1220px;margin:0 auto;padding:42px 40px 64px}
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);font-weight:700}
+  h1{font-family:Georgia,serif;font-size:56px;line-height:.96;margin:10px 0 18px;letter-spacing:0}
+  h2{font-family:Georgia,serif;font-size:30px;line-height:1.05;margin:46px 0 16px}
+  h3{font-size:17px;line-height:1.2;margin:0 0 8px}.lead{font-size:19px;max-width:880px;color:#24362f}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}.pill{border:1px solid var(--line);background:white;border-radius:999px;padding:7px 11px;color:var(--muted);font-size:13px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:white;border:1px solid var(--line);border-radius:8px;padding:16px;box-shadow:0 8px 24px rgba(31,54,45,.05)}
+  .card p{margin:0;color:#44524d}.small{font-size:13px;color:var(--muted)}.bar{height:10px;background:#e8ede8;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--gold))}
+  table{width:100%;border-collapse:collapse;background:white;border:1px solid var(--line)}th,td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{font-size:12px;text-transform:uppercase;color:var(--muted);background:#f4f7f3}
+  .post-title{font-weight:750}.why{color:#23433a}.tag{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 8px;margin:2px;background:#fbfdfb;color:#52635c}.tag.valuable{border-color:#d6a63b;background:#fff7df;color:#7a5700;font-weight:800}
+  .split{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:start}.quote{border-left:3px solid var(--gold);padding-left:14px;color:#33443e}
+</style></head><body><main class="wrap">
+  <div class="eyebrow">LangChain Blog · 2026-01-01 至 2026-06-09</div>
+  <h1>93 篇文章的年度速读索引</h1>
+  <p class="lead">每篇文章都压缩成“为什么 / 是什么 / 怎么做到”：为什么写、核心变化是什么、靠什么实现。读者可以从这里进入单篇 5 秒速读页，也可以直接看趋势总览。</p>
+  <div class="meta"><a class="pill" href="trend-summary.html">趋势总结页</a><a class="pill" href="valuable-articles.html">高价值文章</a><a class="pill" href="all-blog-summaries.md">Markdown 汇总</a><span class="pill">93 篇单篇速读</span><span class="pill">43 篇高价值</span></div>
+  <section class="grid">
+    <article class="card"><h3>其他</h3><p>27 篇涉及这个主题</p><div class="bar" style="margin-top:12px"><span style="width:29%"></span></div></article><article class="card"><h3>上下文工程与记忆</h3><p>22 篇涉及这个主题</p><div class="bar" style="margin-top:12px"><span style="width:24%"></span></div></article><article class="card"><h3>评测与持续改进</h3><p>21 篇涉及这个主题</p><div class="bar" style="margin-top:12px"><span style="width:23%"></span></div></article><article class="card"><h3>运行时基础设施</h3><p>15 篇涉及这个主题</p><div class="bar" style="margin-top:12px"><span style="width:16%"></span></div></article><article class="card"><h3>可观测性</h3><p>8 篇涉及这个主题</p><div class="bar" style="margin-top:12px"><span style="width:9%"></span></div></article>
+  </section>
+  <h2>文章清单</h2>
+  <table><thead><tr><th>#</th><th>文章</th><th>5 秒带走</th><th>主题</th><th>来源</th></tr></thead><tbody>
+  <tr>
+    <td class="small">1</td>
+    <td><a class="post-title" href="agent-01/designing-efficient-verifiers-for-legal-agents/index.html">Designing Efficient Verifiers for Legal Agents</a><span class="tag valuable">高价值</span><div class="small">June 2, 2026 · agent-01</div></td>
+    <td class="why">法律工作跨文档、标准细、误放行代价高；LAB 里很多工作项含 50+ 条 criteria，逐条调用 frontier verifier 会让评测和 RL 后训练成本迅速放大。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/designing-efficient-verifiers-for-legal-agents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">2</td>
+    <td><a class="post-title" href="agent-01/fault-tolerance-in-langgraph/index.html">Fault Tolerance in LangGraph: Retries, Timeouts, and Error Handlers</a><span class="tag valuable">高价值</span><div class="small">June 4, 2026 · agent-01</div></td>
+    <td class="why">生产 agent 会遇到网络故障、工具错误、LLM 限流和长时间卡住的问题；任务跑了数小时后半路失败，重头再来不可持续。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/fault-tolerance-in-langgraph">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">3</td>
+    <td><a class="post-title" href="agent-01/introducing-rubrics-for-deepagents/index.html">Introducing Rubrics: Build Agents that Evaluate and Correct Their Work</a><span class="tag valuable">高价值</span><div class="small">June 2, 2026 · agent-01</div></td>
+    <td class="why">复杂 agent 往往方向正确却没有真正达标，开发者还要手动检查、重跑和诊断。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-rubrics-for-deepagents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">4</td>
+    <td><a class="post-title" href="agent-01/model-neutrality/index.html">Why Model Neutrality Matters More Than Cloud Neutrality</a><div class="small">June 4, 2026 · agent-01</div></td>
+    <td class="why">模型本身变化太快，把业务逻辑交给单一厂商 harness 会把迁移成本压到最难拆的层。</td>
+    <td><span class="tag">其他</span><span class="tag">模型/研究策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/model-neutrality">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">5</td>
+    <td><a class="post-title" href="agent-01/interpreter-skills/index.html">Building workflows for agents with Skills and Interpreters</a><span class="tag valuable">高价值</span><div class="small">May 29, 2026 · agent-01</div></td>
+    <td class="why">只靠文字说明包装流程时，agent 在长任务中容易跳步、压缩流程或临场改写实现。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/interpreter-skills">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">6</td>
+    <td><a class="post-title" href="agent-01/how-to-build-a-custom-agent-harness/index.html">How to Build a Custom Agent Harness</a><div class="small">June 3, 2026 · agent-01</div></td>
+    <td class="why">agent 的效果取决于 harness 是否把任务需要的上下文、工具和环境交给模型。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-to-build-a-custom-agent-harness">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">7</td>
+    <td><a class="post-title" href="agent-01/lyft-built-a-self-serve-ai-agent-platform-for-customer-support-with-langgraph-and-langsmith/index.html">How Lyft Built a Self-Serve AI Agent Platform for Customer Support with LangGraph and LangSmith</a><span class="tag valuable">高价值</span><div class="small">May 27, 2026 · agent-01</div></td>
+    <td class="why">Lyft 客服场景扩张后，靠 MLE 把领域专家需求翻译成 agent 配置的模式太慢。</td>
+    <td><span class="tag">其他</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/lyft-built-a-self-serve-ai-agent-platform-for-customer-support-with-langgraph-and-langsmith">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">8</td>
+    <td><a class="post-title" href="agent-01/give-your-ai-agent-its-own-computer/index.html">Give your agent its own computer</a><div class="small">June 5, 2026 · agent-01</div></td>
+    <td class="why">会运行代码、安装依赖、处理文件和保持长会话的 agent，不能直接共享开发者电脑或普通容器边界。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/give-your-ai-agent-its-own-computer">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">9</td>
+    <td><a class="post-title" href="agent-01/how-auth-proxy-secures-network-access-for-langsmith-agent-sandboxes/index.html">How Auth Proxy secures network access for LangSmith agent sandboxes</a><span class="tag valuable">高价值</span><div class="small">May 21, 2026 · agent-01</div></td>
+    <td class="why">sandbox 里的 agent 仍要联网和鉴权，直接把长期 secret 放进 runtime 会扩大泄露面。</td>
+    <td><span class="tag">其他</span><span class="tag">治理/安全/合规</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-auth-proxy-secures-network-access-for-langsmith-agent-sandboxes">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">10</td>
+    <td><a class="post-title" href="agent-01/mission-control-operating-self-hosted-langsmith-on-kubernetes/index.html">Mission Control: Operating Self-Hosted LangSmith on Kubernetes</a><div class="small">May 26, 2026 · agent-01</div></td>
+    <td class="why">自托管 LangSmith 带来基础设施控制权，也把 Helm、kubectl、日志、dashboard 和支持脚本的切换成本交给平台团队。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/mission-control-operating-self-hosted-langsmith-on-kubernetes">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">11</td>
+    <td><a class="post-title" href="agent-01/token-streams-to-agent-streams/index.html">From Token Streams to Agent Streams</a><span class="tag valuable">高价值</span><div class="small">May 21, 2026 · agent-01</div></td>
+    <td class="why">graph-shaped agent 的运行过程包含工具、subagent、状态、审批和媒体，token delta stream 不再够用。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/token-streams-to-agent-streams">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">12</td>
+    <td><a class="post-title" href="agent-01/financial-ai-that-investigates-macro-trends-eu-economic-analysis-with-you-com-and-langchain/index.html">EU macroeconomic analysis with Deep Agents, LangSmith, and the You.com Finance Research API</a><div class="small">May 20, 2026 · agent-01</div></td>
+    <td class="why">宏观金融研究既要全域数据覆盖，又要深挖异常国家和保留审计链；把所有问题塞进一个大查询会稀释检索预算。</td>
+    <td><span class="tag">其他</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/financial-ai-that-investigates-macro-trends-eu-economic-analysis-with-you-com-and-langchain">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">13</td>
+    <td><a class="post-title" href="agent-01/how-we-built-langsmith-engine-our-agent-for-improving-agents/index.html">How We Built LangSmith Engine, Our Agent for Improving Agents</a><span class="tag valuable">高价值</span><div class="small">May 19, 2026 · agent-01</div></td>
+    <td class="why">生产 agent 可能反复使用错工具、参数错误、低效执行或漏用工具，单条 trace 难以变成系统改进。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-we-built-langsmith-engine-our-agent-for-improving-agents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">14</td>
+    <td><a class="post-title" href="agent-02/interrupt-2026-overview/index.html">Everything we shipped at Interrupt</a><div class="small">May 14, 2026 · agent-02</div></td>
+    <td class="why">Agent 团队从原型走向生产时，瓶颈不只在模型调用，还包括发现失败、运行长流程、管理上下文和治理整个生命周期。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/interrupt-2026-overview">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">15</td>
+    <td><a class="post-title" href="agent-02/deep-agents-0-6/index.html">New in Deep Agents v0.6</a><div class="small">May 13, 2026 · agent-02</div></td>
+    <td class="why">长流程 agent 的瓶颈已经不只是模型答案质量，而是模型成本、上下文膨胀、检查点存储和前端可观测性一起限制生产化。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/deep-agents-0-6">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">16</td>
+    <td><a class="post-title" href="agent-02/introducing-context-hub/index.html">Introducing LangSmith Context Hub</a><div class="small">May 13, 2026 · agent-02</div></td>
+    <td class="why">生产 agent 的行为越来越依赖 AGENTS.md、skills、policy、examples 这类文件，散落在个人电脑或仓库里会让复用、审阅和环境切换变难。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-context-hub">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">17</td>
+    <td><a class="post-title" href="agent-02/introducing-langsmith-engine/index.html">Introducing Langsmith Engine</a><div class="small">May 13, 2026 · agent-02</div></td>
+    <td class="why">agent 团队虽然能收集 traces，但 trace 本身不会说明该修什么；团队需要把已观察到的失败转成评测、prompt 改动、harness 更新和验证结果。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-langsmith-engine">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">18</td>
+    <td><a class="post-title" href="agent-02/introducing-llm-gateway/index.html">LangSmith LLM Gateway: runtime governance built into the agent lifecycle</a><span class="tag valuable">高价值</span><div class="small">May 13, 2026 · agent-02</div></td>
+    <td class="why">agent 进入生产后，团队需要在运行时控制模型供应商访问、成本、路由、可靠性和策略，而不是让每个应用各自处理。</td>
+    <td><span class="tag">其他</span><span class="tag">治理/安全/合规</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-llm-gateway">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">19</td>
+    <td><a class="post-title" href="agent-02/introducing-managed-deep-agents/index.html">Managed Deep Agents: the fastest way to ship a production deep agent</a><span class="tag valuable">高价值</span><div class="small">May 13, 2026 · agent-02</div></td>
+    <td class="why">团队采用 deep agents 时会被长流程执行、sandbox、可观测性、部署和运维拖住，而他们真正想投入的是领域行为。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-managed-deep-agents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">20</td>
+    <td><a class="post-title" href="agent-02/introducing-smithdb/index.html">We built SmithDB, the data layer for agent observability</a><span class="tag valuable">高价值</span><div class="small">May 13, 2026 · agent-02</div></td>
+    <td class="why">agent 可观测性会产生高容量、深层嵌套的 traces，包含运行、消息、工具调用、反馈和评测数据，通用存储很难支撑快速调试和分析。</td>
+    <td><span class="tag">可观测性</span><span class="tag">可观测数据层</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-smithdb">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">21</td>
+    <td><a class="post-title" href="agent-02/langsmith-sandboxes-generally-available/index.html">LangSmith Sandboxes are Generally Available</a><div class="small">May 13, 2026 · agent-02</div></td>
+    <td class="why">生产 agent 越来越需要执行代码、操作文件和调用工具，因此隔离、清理、可靠性和可观测性都变成平台问题。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/langsmith-sandboxes-generally-available">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">22</td>
+    <td><a class="post-title" href="agent-02/delta-channels-evolving-agent-runtime/index.html">Delta Channels: How We’re Evolving our Runtime for Long-Running Agents</a><span class="tag valuable">高价值</span><div class="small">May 12, 2026 · agent-02</div></td>
+    <td class="why">持久化 agent runtime 需要 checkpoint 来支持恢复、中断、streaming 和 human-in-the-loop，但长运行会让完整状态快照成本暴涨。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/delta-channels-evolving-agent-runtime">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">23</td>
+    <td><a class="post-title" href="agent-02/the-agent-development-lifecycle/index.html">The Agent Development Lifecycle: Build, Test, Deploy &amp; Monitor AI Agents | LangChain</a><span class="tag valuable">高价值</span><div class="small">May 9, 2026 · agent-02</div></td>
+    <td class="why">团队可以很快做出 agent 原型，但生产表现取决于测试、部署、监控和持续迭代；把 agent 当成一次性 prompt 会留下质量和可靠性缺口。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/the-agent-development-lifecycle">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">24</td>
+    <td><a class="post-title" href="agent-02/building-a-company-due-diligence-agent-with-deep-agents-langsmith-and-parallel/index.html">Building a Company Due Diligence Agent with Deep Agents, LangSmith, and Parallel</a><span class="tag valuable">高价值</span><div class="small">May 8, 2026 · agent-02</div></td>
+    <td class="why">公司尽调需要多步网页研究、证据收集、来源比较和综合判断，是浅层单次调用 agent 容易失效的典型任务。</td>
+    <td><span class="tag">其他</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/building-a-company-due-diligence-agent-with-deep-agents-langsmith-and-parallel">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">25</td>
+    <td><a class="post-title" href="agent-02/customers-madrigal/index.html">How Madrigal Built a Flexible and Scalable Multi-Agent Research and Intelligence Platform for Pharma with LangChain and LangSmith</a><div class="small">April 29, 2026 · agent-02</div></td>
+    <td class="why">制药研究和情报工作横跨科学、临床、市场和商业来源，人工综合速度慢，一次性自动化也很难适应不断变化的问题。</td>
+    <td><span class="tag">其他</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/customers-madrigal">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">26</td>
+    <td><a class="post-title" href="agent-02/how-harmonic-rebuilt-scout-on-deep-agents-and-4xd-retention-with-langsmith/index.html">How Harmonic rebuilt Scout on Deep Agents and 4x’d retention with LangSmith</a><div class="small">June 3, 2026 · agent-02</div></td>
+    <td class="why">Scout 这类创业公司发现产品需要足够深入的研究能力，用户才会把它当成可信工作流，而不是一次性搜索框。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-harmonic-rebuilt-scout-on-deep-agents-and-4xd-retention-with-langsmith">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">27</td>
+    <td><a class="post-title" href="agent-02/how-rippling-went-ai-native-across-every-product-in-6-months-with-deep-agents-and-langsmith/index.html">How Rippling built production AI in 6 months with Deep Agents and LangSmith</a><span class="tag valuable">高价值</span><div class="small">June 1, 2026 · agent-02</div></td>
+    <td class="why">公司级 AI 推进不能靠孤立原型；要快速覆盖多个产品，需要共享 agent 模式、调试能力、评测和运维可见性。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-rippling-went-ai-native-across-every-product-in-6-months-with-deep-agents-and-langsmith">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">28</td>
+    <td><a class="post-title" href="agent-03/tuning-deep-agents-different-models/index.html">tuning-deep-agents-different-models</a><span class="tag valuable">高价值</span><div class="small">April 29, 2026 · agent-03</div></td>
+    <td class="why">Deep Agents 过去用一套通用 prompts、tools 和 middleware 覆盖所有大模型，但不同模型的提示指南和工具约定差异很大。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/tuning-deep-agents-different-models">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">29</td>
+    <td><a class="post-title" href="agent-03/april-2026-langchain-newsletter/index.html">april-2026-langchain-newsletter</a><div class="small">April 27, 2026 · agent-03</div></td>
+    <td class="why">四月内容围绕 Interrupt 倒计时，把社区注意力集中到 agent improvement loop、开放 harness 与生产部署。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/april-2026-langchain-newsletter">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">30</td>
+    <td><a class="post-title" href="agent-03/langsmith-langchain-oss-eu-ai-act/index.html">How LangSmith and LangChain OSS Help You Meet EU AI Act Requirements</a><div class="small">April 27, 2026 · agent-03</div></td>
+    <td class="why">欧盟 AI Act 的 GPAI 截止日临近，团队需要把合规义务翻译成可执行的工程控制，而不是在最后阶段补文档。</td>
+    <td><span class="tag">其他</span><span class="tag">治理/安全/合规</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/langsmith-langchain-oss-eu-ai-act">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">31</td>
+    <td><a class="post-title" href="agent-03/may-2026-langchain-newsletter/index.html">Fixing agent failures in production: Interrupt 2026 recap | LangChain Newsletter</a><div class="small">May 27, 2026 · agent-03</div></td>
+    <td class="why">五月通讯承接 Interrupt 2026，把主题从发布清单收束到一个问题：生产 agent 失败后，团队怎样更快定位、修复并规模化复用改进。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/may-2026-langchain-newsletter">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">32</td>
+    <td><a class="post-title" href="agent-03/credit-genie-insights-agent-financial-assistant/index.html">How Credit Genie used Insights Agent to improve their AI financial assistant</a><div class="small">April 22, 2026 · agent-03</div></td>
+    <td class="why">Credit Genie 的 AI 金融助手已经在生产中服务用户，但团队需要知道失败集中在哪里，才能把客服压力和用户困惑转成可修复的产品问题。</td>
+    <td><span class="tag">可观测性</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/credit-genie-insights-agent-financial-assistant">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">33</td>
+    <td><a class="post-title" href="agent-03/runtime-behind-production-deep-agents/index.html">The Runtime Behind Production Deep Agents</a><span class="tag valuable">高价值</span><div class="small">April 20, 2026 · agent-03</div></td>
+    <td class="why">Deep Agents 要从 demo 进入生产，瓶颈不只是模型能力，而是长时工作、并发工具、状态恢复和人类介入这些运行时问题。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/runtime-behind-production-deep-agents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">34</td>
+    <td><a class="post-title" href="agent-03/agentic-engineering-redefining-software-engineering/index.html">Agentic Engineering: How Swarms of AI Agents Are Redefining Software Engineering</a><div class="small">April 20, 2026 · agent-03</div></td>
+    <td class="why">软件工程正在从单个 copilots 走向多 agent 协作，团队需要重新理解工程组织方式，而不是只把 AI 当成代码补全。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/agentic-engineering-redefining-software-engineering">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">35</td>
+    <td><a class="post-title" href="agent-03/reusable-langsmith-evaluator-templates/index.html">Reusable Evaluators and Evaluator Templates in LangSmith</a><span class="tag valuable">高价值</span><div class="small">April 16, 2026 · agent-03</div></td>
+    <td class="why">Agent 评估常常卡在重复写 evaluator、团队标准不一致和难以复用上，导致改进循环慢且不可比较。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/reusable-langsmith-evaluator-templates">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">36</td>
+    <td><a class="post-title" href="agent-03/running-subagents-in-the-background/index.html">Running Subagents in the Background</a><span class="tag valuable">高价值</span><div class="small">April 16, 2026 · agent-03</div></td>
+    <td class="why">复杂 agent 不适合把所有工作分支都阻塞在主对话里，尤其是研究、检索、代码检查这类耗时工作会拖慢交互。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/running-subagents-in-the-background">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">37</td>
+    <td><a class="post-title" href="agent-03/secure-agents-cisco-ai-defense/index.html">A Developer’s First 10 Minutes: Secure LangChain Agents with Cisco AI Defense</a><span class="tag valuable">高价值</span><div class="small">April 16, 2026 · agent-03</div></td>
+    <td class="why">企业 agent 接入工具和数据后，安全团队需要在开发早期就检测 prompt injection、数据泄露和不安全输出，而不是上线后补救。</td>
+    <td><span class="tag">其他</span><span class="tag">治理/安全/合规</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/secure-agents-cisco-ai-defense">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">38</td>
+    <td><a class="post-title" href="agent-03/our-docs-test-themselves/index.html">How We Made Our Docs Test Themselves</a><div class="small">April 15, 2026 · agent-03</div></td>
+    <td class="why">文档里的代码示例很容易随 API 演进失效，读者遇到坏示例时会直接损失信任和开发时间。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/our-docs-test-themselves">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">39</td>
+    <td><a class="post-title" href="agent-03/deep-agents-deploy-an-open-alternative-to-claude-managed-agents/index.html">Deep Agents Deploy: an open alternative to Claude Managed Agents</a><div class="small">April 9, 2026 · agent-03</div></td>
+    <td class="why">团队想要托管式 coding/deep agent 的便利性，但也需要开放、可迁移、可自定义的部署路径。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/deep-agents-deploy-an-open-alternative-to-claude-managed-agents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">40</td>
+    <td><a class="post-title" href="agent-03/human-judgment-in-the-agent-improvement-loop/index.html">Human judgment in the agent improvement loop</a><span class="tag valuable">高价值</span><div class="small">April 9, 2026 · agent-03</div></td>
+    <td class="why">Agent 失败往往不是简单的对错题，自动指标很难完整表达专家对质量、风险和业务语境的判断。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/human-judgment-in-the-agent-improvement-loop">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">41</td>
+    <td><a class="post-title" href="agent-03/interrupt-preview-meet-the-mc/index.html">Interrupt Preview: Meet the MC</a><div class="small">April 9, 2026 · agent-03</div></td>
+    <td class="why">Interrupt 2026 不只是产品大会预告，文章通过主持人视角提前设定会议的讨论气质和关注问题。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/interrupt-preview-meet-the-mc">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">42</td>
+    <td><a class="post-title" href="agent-04/introducing-langchain-labs/index.html">introducing-langchain-labs</a><div class="small">May 14, 2026 · agent-04</div></td>
+    <td class="why">agent 每次运行都会留下 traces、反馈、eval 结果和生产行为，但难点是把这些信号转成可复用改进。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">模型/研究策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-langchain-labs">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">43</td>
+    <td><a class="post-title" href="agent-04/previewing-interrupt-2026-agents-at-enterprise-scale/index.html">previewing-interrupt-2026-agents-at-enterprise-scale</a><div class="small">April 9, 2026 · agent-04</div></td>
+    <td class="why">去年 Interrupt 的生产化答案已经是 yes；今年真正悬而未决的是，当 agent 不再是概念验证，企业级系统要怎样运行。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/previewing-interrupt-2026-agents-at-enterprise-scale">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">44</td>
+    <td><a class="post-title" href="agent-04/arcade-dev-tools-now-in-langsmith-fleet/index.html">arcade-dev-tools-now-in-langsmith-fleet</a><div class="small">April 7, 2026 · agent-04</div></td>
+    <td class="why">Fleet 里的 agent 要跨 Salesforce、Notion、Slack 等工具工作，真正的瓶颈不是多接几个 API，而是连接、授权和治理会迅速膨胀。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/arcade-dev-tools-now-in-langsmith-fleet">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">45</td>
+    <td><a class="post-title" href="agent-04/deep-agents-v0-5/index.html">deep-agents-v0-5</a><div class="small">April 7, 2026 · agent-04</div></td>
+    <td class="why">长时间研究、代码分析和多步骤操作会阻塞 supervisor agent，单线程等待让 Deep Agents 难以处理更重的工作。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/deep-agents-v0-5">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">46</td>
+    <td><a class="post-title" href="agent-04/how-my-agents-self-heal-in-production/index.html">how-my-agents-self-heal-in-production</a><span class="tag valuable">高价值</span><div class="small">April 3, 2026 · agent-04</div></td>
+    <td class="why">部署后的回归问题通常需要人工看日志、判断是否由本次改动引入、再写修复；这正是 coding agent 可以闭环处理的生产运维工作。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-my-agents-self-heal-in-production">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">47</td>
+    <td><a class="post-title" href="agent-04/open-models-have-crossed-a-threshold/index.html">open-models-have-crossed-a-threshold</a><span class="tag valuable">高价值</span><div class="small">April 2, 2026 · agent-04</div></td>
+    <td class="why">agent 工作如果总用最强闭源模型，成本和延迟会成为规模化瓶颈；开源/开放权重模型是否能承担核心 agent 行为，需要 eval 证据。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">模型/研究策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/open-models-have-crossed-a-threshold">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">48</td>
+    <td><a class="post-title" href="agent-04/march-2026-langchain-newsletter/index.html">march-2026-langchain-newsletter</a><div class="small">April 1, 2026 · agent-04</div></td>
+    <td class="why">三月更新很多，单条公告分散；newsletter 用一个月度视角把产品、开源、活动和客户动态合到一起。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/march-2026-langchain-newsletter">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">49</td>
+    <td><a class="post-title" href="agent-04/announcing-the-langchain-mongodb-partnership-the-ai-agent-stack-that-runs-on-the-database-you-already-trust/index.html">announcing-the-langchain-mongodb-partnership-the-ai-agent-stack-that-runs-on-the-database-you-already-trust</a><div class="small">March 31, 2026 · agent-04</div></td>
+    <td class="why">agent 原型进入生产后会遇到持久状态、企业数据检索、结构化查询、部署和观测问题，而这些数据通常已经在 MongoDB Atlas 里。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/announcing-the-langchain-mongodb-partnership-the-ai-agent-stack-that-runs-on-the-database-you-already-trust">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">50</td>
+    <td><a class="post-title" href="agent-04/better-harness-a-recipe-for-harness-hill-climbing-with-evals/index.html">better-harness-a-recipe-for-harness-hill-climbing-with-evals</a><span class="tag valuable">高价值</span><div class="small">April 8, 2026 · agent-04</div></td>
+    <td class="why">agent 质量往往不是只改模型就能提升，真正可更新的是 harness；但 autonomous harness improvement 需要可靠学习信号。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/better-harness-a-recipe-for-harness-hill-climbing-with-evals">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">51</td>
+    <td><a class="post-title" href="agent-04/traces-start-agent-improvement-loop/index.html">traces-start-agent-improvement-loop</a><span class="tag valuable">高价值</span><div class="small">March 31, 2026 · agent-04</div></td>
+    <td class="why">agent 出错时，代码只能说明它被允许做什么，不能说明某次运行实际发生了什么；系统性改进需要运行证据。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/traces-start-agent-improvement-loop">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">52</td>
+    <td><a class="post-title" href="agent-04/agent-evaluation-readiness-checklist/index.html">agent-evaluation-readiness-checklist</a><span class="tag valuable">高价值</span><div class="small">March 27, 2026 · agent-04</div></td>
+    <td class="why">agent evaluation 和传统测试不同，需要先看运行轨迹、失败模式和行为目标；直接堆测试会得到脆弱信号。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/agent-evaluation-readiness-checklist">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">53</td>
+    <td><a class="post-title" href="agent-04/customers-kensho/index.html">customers-kensho</a><span class="tag valuable">高价值</span><div class="small">March 26, 2026 · agent-04</div></td>
+    <td class="why">金融数据分散在多个系统中，专业用户花大量时间查找、验证和整合信息；AI agent 若没有可信数据层，答案很难被信任。</td>
+    <td><span class="tag">其他</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/customers-kensho">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">54</td>
+    <td><a class="post-title" href="agent-04/how-middleware-lets-you-customize-your-agent-harness/index.html">how-middleware-lets-you-customize-your-agent-harness</a><span class="tag valuable">高价值</span><div class="small">March 26, 2026 · agent-04</div></td>
+    <td class="why">标准 agent loop 很简洁，但生产场景常需要 PII 检测、工具选择、上下文管理等应用特定逻辑；只改 prompt 和 tools 不够。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-middleware-lets-you-customize-your-agent-harness">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">55</td>
+    <td><a class="post-title" href="agent-04/how-we-build-evals-for-deep-agents/index.html">how-we-build-evals-for-deep-agents</a><span class="tag valuable">高价值</span><div class="small">March 26, 2026 · agent-04</div></td>
+    <td class="why">Deep Agents 的行为由 evals 牵引；如果 eval 数据和指标不贴近生产行为，分数提升可能只是错觉。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-we-build-evals-for-deep-agents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">56</td>
+    <td><a class="post-title" href="agent-05/how-moda-builds-production-grade-ai-design-agents-with-deep-agents/index.html">How Moda Builds Production-Grade AI Design Agents with Deep Agents</a><span class="tag valuable">高价值</span><div class="small">March 24, 2026 · agent-05</div></td>
+    <td class="why">AI 做视觉设计的难点不是生成一张漂亮图，而是让非设计师在品牌、版式和多轮修改里保持控制。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-moda-builds-production-grade-ai-design-agents-with-deep-agents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">57</td>
+    <td><a class="post-title" href="agent-05/agent-observability-needs-feedback-to-power-learning/index.html">Agent observability needs feedback to power learning</a><div class="small">May 5, 2026 · agent-05</div></td>
+    <td class="why">只看 trace 能定位 agent 做了什么，却无法判断结果是否有用。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/agent-observability-needs-feedback-to-power-learning">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">58</td>
+    <td><a class="post-title" href="agent-05/continual-learning-for-ai-agents/index.html">Continual learning for AI agents</a><div class="small">April 5, 2026 · agent-05</div></td>
+    <td class="why">continual learning 不该只等同于更新模型权重，因为 agent 的行为还由运行框架和上下文共同决定。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/continual-learning-for-ai-agents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">59</td>
+    <td><a class="post-title" href="agent-05/join-langchain-at-google-cloud-next-2026/index.html">Join LangChain at Google Cloud Next 2026</a><div class="small">March 23, 2026 · agent-05</div></td>
+    <td class="why">参会者需要快速判断 LangChain 在 Google Cloud Next 2026 能提供哪些 agent 生产化帮助。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/join-langchain-at-google-cloud-next-2026">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">60</td>
+    <td><a class="post-title" href="agent-05/two-different-types-of-agent-authorization/index.html">Two different types of agent authorization</a><div class="small">March 23, 2026 · agent-05</div></td>
+    <td class="why">agent 调用企业工具时，最危险的模糊地带是它以谁的身份取数和行动。</td>
+    <td><span class="tag">其他</span><span class="tag">治理/安全/合规</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/two-different-types-of-agent-authorization">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">61</td>
+    <td><a class="post-title" href="agent-05/your-harness-your-memory/index.html">Your harness, your memory</a><div class="small">April 11, 2026 · agent-05</div></td>
+    <td class="why">agent memory 决定体验是否持续变好，但 memory 不是可随意替换的插件。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/your-harness-your-memory">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">62</td>
+    <td><a class="post-title" href="agent-05/introducing-langsmith-fleet/index.html">Introducing LangSmith Fleet</a><div class="small">March 19, 2026 · agent-05</div></td>
+    <td class="why">自然语言创建 agent 降低了门槛，也把治理焦点推到分享、凭证和审计。</td>
+    <td><span class="tag">其他</span><span class="tag">治理/安全/合规</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-langsmith-fleet">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">63</td>
+    <td><a class="post-title" href="agent-05/polly-langsmith-ga/index.html">Polly is generally available everywhere you work in LangSmith</a><div class="small">March 18, 2026 · agent-05</div></td>
+    <td class="why">agent 调试的难点是失败原因藏在很长的 trace、prompt 和 conversation 中。</td>
+    <td><span class="tag">可观测性</span><span class="tag">可观测数据层</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/polly-langsmith-ga">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">64</td>
+    <td><a class="post-title" href="agent-05/open-swe-an-open-source-framework-for-internal-coding-agents/index.html">Open SWE: An Open-Source Framework for Internal Coding Agents</a><span class="tag valuable">高价值</span><div class="small">March 17, 2026 · agent-05</div></td>
+    <td class="why">多家公司内部 coding agent 已经收敛到相似生产架构，但每家从零搭建成本高。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/open-swe-an-open-source-framework-for-internal-coding-agents">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">65</td>
+    <td><a class="post-title" href="agent-05/introducing-deploy-cli/index.html">Introducing deploy cli</a><div class="small">March 16, 2026 · agent-05</div></td>
+    <td class="why">agent 上线不该卡在手动搭 Docker 和基础设施。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-deploy-cli">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">66</td>
+    <td><a class="post-title" href="agent-05/nvidia-enterprise/index.html">LangChain Announces Enterprise Agentic AI Platform Built with NVIDIA</a><div class="small">March 16, 2026 · agent-05</div></td>
+    <td class="why">企业 agent 从原型走向生产时，瓶颈常是基础设施、观测、部署和模型选择。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/nvidia-enterprise">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">67</td>
+    <td><a class="post-title" href="agent-05/how-coding-agents-are-reshaping-engineering-product-and-design/index.html">How Coding Agents Are Reshaping Engineering, Product and Design</a><div class="small">March 10, 2026 · agent-05</div></td>
+    <td class="why">当 coding agents 让初版代码非常便宜，EPD 的核心工作不再只是把 PRD 交给工程实现。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-coding-agents-are-reshaping-engineering-product-and-design">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">68</td>
+    <td><a class="post-title" href="agent-05/the-anatomy-of-an-agent-harness/index.html">The Anatomy of an Agent Harness</a><span class="tag valuable">高价值</span><div class="small">March 10, 2026 · agent-05</div></td>
+    <td class="why">原始模型不能持久记忆、访问实时知识、搭环境或执行复杂工作。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/the-anatomy-of-an-agent-harness">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">69</td>
+    <td><a class="post-title" href="agent-05/autonomous-context-compression/index.html">Autonomous context compression</a><span class="tag valuable">高价值</span><div class="small">March 11, 2026 · agent-05</div></td>
+    <td class="why">固定阈值压缩上下文会忽略工作节奏，可能在复杂工作中间发生。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/autonomous-context-compression">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">70</td>
+    <td><a class="post-title" href="agent-06/evaluating-skills/index.html">Evaluating Skills</a><span class="tag valuable">高价值</span><div class="small">March 5, 2026 · agent-06</div></td>
+    <td class="why">技能会改变编码 agent 的行为，凭感觉判断很容易漏掉退化。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">评测/改进系统</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/evaluating-skills">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">71</td>
+    <td><a class="post-title" href="agent-06/langchain-skills/index.html">LangChain Skills</a><div class="small">March 4, 2026 · agent-06</div></td>
+    <td class="why">通用编码 agent 在 LangChain 生态里会缺少领域操作知识。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/langchain-skills">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">72</td>
+    <td><a class="post-title" href="agent-06/langsmith-cli-skills/index.html">LangSmith CLI &amp; Skills</a><div class="small">2026-03-04 · agent-06</div></td>
+    <td class="why">LangSmith 的调试、数据集和评估流程正在进入 terminal-first 的 agent 开发循环。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/langsmith-cli-skills">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">73</td>
+    <td><a class="post-title" href="agent-06/febraury-2026-langchain-newsletter/index.html">February 2026: LangChain Newsletter</a><div class="small">2026-03-03 · agent-06</div></td>
+    <td class="why">2 月动态集中在把 agent 从实验推向日常构建、监控和活动社区。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/febraury-2026-langchain-newsletter">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">74</td>
+    <td><a class="post-title" href="agent-06/how-we-built-agent-builders-memory-system/index.html">How we built Agent Builder's memory system</a><span class="tag valuable">高价值</span><div class="small">2026-02-21 · agent-06</div></td>
+    <td class="why">Agent Builder 面向重复执行同类任务的自定义 agent，没有记忆会让用户在不同会话里反复校正同一件事。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-we-built-agent-builders-memory-system">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">75</td>
+    <td><a class="post-title" href="agent-06/how-to-use-memory-in-agent-builder/index.html">How to Use Memory in Agent Builder</a><div class="small">2026-02-19 · agent-06</div></td>
+    <td class="why">Agent Builder 的记忆会随着反馈变好，但用户需要理解怎样把短期对话沉淀成长期行为。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-to-use-memory-in-agent-builder">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">76</td>
+    <td><a class="post-title" href="agent-06/customers-monday/index.html">monday Service + LangSmith: Building a Code-First Evaluation Strategy from Day 1</a><div class="small">2026-02-18 · agent-06</div></td>
+    <td class="why">monday Service 的 ReAct service agents 会在多步推理和工具调用中级联出错，质量不能等 Alpha 用户发现。</td>
+    <td><span class="tag">评测与持续改进</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/customers-monday">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">77</td>
+    <td><a class="post-title" href="agent-06/new-in-agent-builder-all-new-agent-chat-file-uploads-tool-registry/index.html">New in Agent Builder: all new agent chat, file uploads + tool registry</a><div class="small">2026-02-18 · agent-06</div></td>
+    <td class="why">创建专门 agent 之前，用户常常只想先用已有工具完成一个临时任务。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/new-in-agent-builder-all-new-agent-chat-file-uploads-tool-registry">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">78</td>
+    <td><a class="post-title" href="agent-06/improving-deep-agents-with-harness-engineering/index.html">Improving Deep Agents with harness engineering</a><span class="tag valuable">高价值</span><div class="small">2026-02-17 · agent-06</div></td>
+    <td class="why">模型能力很强但输出尖峰明显，agent 质量常由 prompt、tools、middleware 等 harness 决定。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/improving-deep-agents-with-harness-engineering">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">79</td>
+    <td><a class="post-title" href="agent-06/join-us-for-interrupt-the-agent-conference/index.html">Join us for Interrupt: The Agent Conference</a><div class="small">2026-02-12 · agent-06</div></td>
+    <td class="why">LangChain 想把过去一年客户、伙伴和 builder 的 agent 生产经验集中到一个线下场景。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/join-us-for-interrupt-the-agent-conference">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">80</td>
+    <td><a class="post-title" href="agent-06/on-agent-frameworks-and-agent-observability/index.html">On Agent Frameworks and Agent Observability</a><div class="small">2026-02-12 · agent-06</div></td>
+    <td class="why">agent frameworks 常被质疑会被模型进步淘汰，但团队仍需要更快构建、更少重复代码和可生产化路径。</td>
+    <td><span class="tag">可观测性</span><span class="tag">可观测数据层</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/on-agent-frameworks-and-agent-observability">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">81</td>
+    <td><a class="post-title" href="agent-06/the-two-patterns-by-which-agents-connect-sandboxes/index.html">The two patterns by which agents connect sandboxes</a><span class="tag valuable">高价值</span><div class="small">2026-02-10 · agent-06</div></td>
+    <td class="why">越来越多 agent 需要一台隔离的 computer 来运行代码、安装包和访问文件，关键问题从是否 sandbox 变成如何连接 sandbox。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">运行/部署基座</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/the-two-patterns-by-which-agents-connect-sandboxes">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">82</td>
+    <td><a class="post-title" href="agent-06/langsmith-is-now-available-in-google-cloud-marketplace/index.html">LangSmith is Now Available in Google Cloud Marketplace</a><div class="small">2026-02-09 · agent-06</div></td>
+    <td class="why">企业在 Google Cloud 上构建 AI 应用时，希望采购、计费、合规部署和既有数据基础设施能保持在同一云环境。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/langsmith-is-now-available-in-google-cloud-marketplace">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">83</td>
+    <td><a class="post-title" href="agent-07/january-2026-langchain-newsletter/index.html">January 2026: LangChain Newsletter</a><div class="small">January 29, 2026 · agent-07</div></td>
+    <td class="why">一月更新回答的是同一个运营问题：agent 不只要更容易搭出来，还要能被观察、评估和持续改进。</td>
+    <td><span class="tag">其他</span><span class="tag">生态/活动/商业策略</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/january-2026-langchain-newsletter">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">84</td>
+    <td><a class="post-title" href="agent-07/agent-observability-powers-agent-evaluation/index.html">Agent observability powers agent evaluation</a><span class="tag valuable">高价值</span><div class="small">January 27, 2026 · agent-07</div></td>
+    <td class="why">Agent 失败常常藏在多步推理、工具调用、上下文和状态变化里，单看日志很难知道系统为什么偏离目标。</td>
+    <td><span class="tag">可观测性</span><span class="tag">可观测数据层</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/agent-observability-powers-agent-evaluation">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">85</td>
+    <td><a class="post-title" href="agent-07/production-monitoring/index.html">You don’t know what your agent will do until it’s in production</a><span class="tag valuable">高价值</span><div class="small">February 26, 2026 · agent-07</div></td>
+    <td class="why">传统监控假设输入和代码路径相对固定，但 agent 面对自然语言、非确定性模型和多步工具调用，上线后才会暴露真实行为。</td>
+    <td><span class="tag">可观测性</span><span class="tag">可观测数据层</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/production-monitoring">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">86</td>
+    <td><a class="post-title" href="agent-07/introducing-agent-builder-template-library/index.html">Deploy agents instantly with Agent Builder templates</a><div class="small">January 21, 2026 · agent-07</div></td>
+    <td class="why">很多团队知道想自动化什么，却不想从空白 prompt 开始连接工具、写指令和调试流程。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/introducing-agent-builder-template-library">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">87</td>
+    <td><a class="post-title" href="agent-07/from-traces-to-insights-understanding-agent-behavior-at-scale/index.html">From Traces to Insights: Understanding Agent Behavior at Scale</a><span class="tag valuable">高价值</span><div class="small">January 20, 2026 · agent-07</div></td>
+    <td class="why">生产 agent 每天会生成成千上万条 traces，人工逐条阅读无法回答用户如何使用、哪里失败、模式如何变化。</td>
+    <td><span class="tag">可观测性</span><span class="tag">可观测数据层</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/from-traces-to-insights-understanding-agent-behavior-at-scale">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">88</td>
+    <td><a class="post-title" href="agent-07/customers-remote/index.html">How Remote uses LangChain and LangGraph to onboard thousands of customers with AI</a><div class="small">January 19, 2026 · agent-07</div></td>
+    <td class="why">Remote 的客户入职涉及大型 HR、薪资和合规数据迁移，直接把 50MB Excel 或 SQL 导出塞进 LLM 会撞上上下文和幻觉风险。</td>
+    <td><span class="tag">运行时基础设施</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/customers-remote">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">89</td>
+    <td><a class="post-title" href="agent-07/how-we-built-agent-builders-memory/index.html">How we built Agent Builder’s memory system</a><span class="tag valuable">高价值</span><div class="small">January 16, 2026 · agent-07</div></td>
+    <td class="why">Agent Builder 面向重复执行同类工作的定制 agent，没有记忆会让用户跨会话反复解释偏好、规则和工具边界。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-we-built-agent-builders-memory">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">90</td>
+    <td><a class="post-title" href="agent-07/choosing-the-right-multi-agent-architecture/index.html">Choosing the Right Multi-Agent Architecture</a><span class="tag valuable">高价值</span><div class="small">January 14, 2026 · agent-07</div></td>
+    <td class="why">单 agent 最简单，但当能力数量、上下文和团队边界膨胀时，系统需要更清晰的协调方式来避免 prompt 混乱。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/choosing-the-right-multi-agent-architecture">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">91</td>
+    <td><a class="post-title" href="agent-07/langsmith-agent-builder-generally-available/index.html">Now GA: LangSmith Agent Builder</a><div class="small">January 13, 2026 · agent-07</div></td>
+    <td class="why">非开发同事也需要把日常研究、跟进、更新和跨工具操作自动化，但传统 workflow builder 约束先画清每一步。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">上下文/记忆/工具表面</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/langsmith-agent-builder-generally-available">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">92</td>
+    <td><a class="post-title" href="agent-07/in-software-the-code-documents-the-app-in-ai-the-traces-do/index.html">In software, the code documents the app. In AI, the traces do.</a><div class="small">January 10, 2026 · agent-07</div></td>
+    <td class="why">传统软件的决策逻辑写在代码里，agent 的关键决策却在模型运行时发生，读代码只能看到脚手架。</td>
+    <td><span class="tag">可观测性</span><span class="tag">可观测数据层</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/in-software-the-code-documents-the-app-in-ai-the-traces-do">原文</a></td>
+  </tr>
+
+  <tr>
+    <td class="small">93</td>
+    <td><a class="post-title" href="agent-08/how-we-built-langchains-gtm-agent/index.html">How we built LangChain’s GTM Agent</a><span class="tag valuable">高价值</span><div class="small">March 9, 2026 · agent-08</div></td>
+    <td class="why">LangChain 的 GTM 团队需要把分散在 CRM、网页、新闻和内部材料里的公司线索变成可行动的账户研究，而不是让销售手工拼上下文。</td>
+    <td><span class="tag">上下文工程与记忆</span><span class="tag">客户/领域应用</span></td>
+    <td><a class="small" href="https://www.langchain.com/blog/how-we-built-langchains-gtm-agent">原文</a></td>
+  </tr></tbody></table>
+</main></body></html>

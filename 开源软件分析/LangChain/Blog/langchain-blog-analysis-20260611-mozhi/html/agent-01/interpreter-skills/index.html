@@ -1,0 +1,81 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Building workflows for agents with Skills and Interpreters | LangChain Blog 速读</title>
+  <style>
+    :root { --ink:#111827; --muted:#536172; --paper:#f4f7fb; --panel:#fff; --line:#d8e2ef; --blue:#155eef; --teal:#0f766e; --amber:#a15c07; --night:#07111f; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; line-height:1.62; }
+    a { color:var(--blue); }
+    .hero { min-height:88vh; display:grid; align-items:start; padding:36px 6vw 28px; color:#f8fbff; background:linear-gradient(120deg, rgba(7,17,31,.97), rgba(14,36,57,.9) 55%, rgba(12,65,72,.78)), url("assets/source-02.png") center / cover no-repeat; }
+    .hero-inner { width:min(1180px,100%); margin:0 auto; }
+    .meta { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; color:#d3e8ff; font-size:14px; }
+    .pill { border:1px solid rgba(167,213,255,.34); border-radius:999px; padding:5px 10px; background:rgba(255,255,255,.07); }
+    h1 { max-width:1060px; margin:0 0 14px; font-size:clamp(36px,5.9vw,72px); line-height:1.03; letter-spacing:0; }
+    .deck { max-width:1030px; margin:0; color:#e4f0ff; font-size:clamp(17px,1.65vw,23px); }
+    .why-what-how { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:24px; }
+    .hero-card { min-height:136px; padding:17px; border:1px solid rgba(167,213,255,.28); border-radius:8px; background:rgba(7,17,31,.76); }
+    .label { margin-bottom:8px; color:#8ad7ff; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0; }
+    .hero-card p { margin:0; color:#f3f8ff; font-size:16px; }
+    .wrap { width:min(1120px,88vw); margin:0 auto; padding:44px 0 56px; }
+    .section { margin:0 0 34px; }
+    h2 { margin:0 0 12px; font-size:clamp(25px,3vw,38px); line-height:1.16; letter-spacing:0; }
+    .lead { margin:0 0 16px; max-width:900px; color:var(--muted); font-size:18px; }
+    .grid { display:grid; grid-template-columns:1.05fr .95fr; gap:22px; align-items:start; }
+    .panel, figure { margin:0; padding:20px; border:1px solid var(--line); border-radius:8px; background:var(--panel); box-shadow:0 10px 28px rgba(15,23,42,.06); }
+    figure img { display:block; width:100%; max-height:520px; object-fit:contain; border-radius:6px; background:#eef3f8; }
+    figcaption { margin-top:11px; color:#536172; font-size:14px; }
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .card { padding:18px; min-height:150px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .card h3 { margin:0 0 8px; font-size:20px; line-height:1.25; }
+    .card p { margin:0; color:#4b596a; }
+    .flow { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px; }
+    .step { min-height:118px; padding:16px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .step strong { display:block; margin-bottom:6px; color:var(--teal); }
+    .source { margin-top:36px; padding-top:22px; border-top:1px solid var(--line); color:#5c6878; font-size:14px; }
+    @media (max-width: 900px) { .why-what-how, .grid, .cards, .flow { grid-template-columns:1fr; } .hero { min-height:auto; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="meta">
+        <span class="pill">May 29, 2026</span>
+        <span class="pill">13 min</span>
+        <span class="pill">技术长文</span>
+        <span class="pill">Hunter Lovell</span>
+      </div>
+      <h1>Building workflows for agents with Skills and Interpreters</h1>
+      <p class="deck">Why：只靠文字说明包装流程时，agent 在长流程中容易跳步、压缩流程或临场改写实现。What：Interpreter skills 把 skill 变成“说明 + TypeScript API”，让确定性部分进入可测试代码，模型只负责判断何时调用和如何使用结果。How：SKILL.md 继续负责发现与约束，index.ts 暴露模块函数；agent 在解释器里 import 后执行，函数可处理状态、工具结果和 subagent 调度。</p>
+      <div class="why-what-how" aria-label="Why What How">
+        <div class="hero-card"><div class="label">Why</div><p>只靠文字说明包装流程时，agent 在长任务中容易跳步、压缩流程或临场改写实现。</p></div>
+        <div class="hero-card"><div class="label">What</div><p>Interpreter skills 把 skill 变成“说明 + TypeScript API”，让确定性部分进入可测试代码，模型只负责判断何时调用和如何使用结果。</p></div>
+        <div class="hero-card"><div class="label">How</div><p>SKILL.md 继续负责发现与约束，index.ts 暴露模块函数；agent 在解释器里 import 后执行，函数可处理状态、工具结果和 subagent 调度。</p></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="section">
+      <h2>它把“照说明做”改成“调用已知 API”。</h2>
+      <div class="grid">
+        <div class="panel"><p class="lead">普通 skill 告诉 agent 如何执行流程，核心行为仍依赖模型逐步遵循说明。Interpreter skill 则把固定步骤放入模块，降低同一流程每次被重新发明的概率。</p></div>
+        <figure>
+          <img src="assets/source-02.png" alt="Building workflows for agents with Skills and Interpreters source image">
+          <figcaption>这张截图靠近 interpreter skill 的定义：skill 文档负责发现，模块代码负责可执行行为。</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="section">
+      <div class="cards">
+        <article class="card"><h3>Repo triage 展示了代码化流程的价值。</h3><p>文章中的 GitHub triage routine 会获取开放事项、为每项生成浓缩描述、排队聚类并返回结构化结果。模型不需要在上下文里背着 300 个中间状态前进。</p></article>
+        <article class="card"><h3>可评估性也更具体。</h3><p>prompt-only 流程只能问“看起来有没有遵循说明”；interpreter skill 可以问 agent 是否调用了预期函数、是否传入正确输入、返回结构是否符合预期。</p></article>
+        <article class="card"><h3>解释器状态让技能能处理数据而不是堆 stdout。</h3><p>CSV 示例里 parse、join、filter、validate、summarize 都是 skill 模块操作，agent 负责组合，skill 作者负责这些动词的确定含义。</p></article>
+      </div>
+    </section>
+    
+    <footer class="source">原文： <a href="https://www.langchain.com/blog/interpreter-skills">Building workflows for agents with Skills and Interpreters</a>. 原文作者： Hunter Lovell.</footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Everything we shipped at Interrupt | LangChain Blog 速读</title>
+  <style>
+    :root {
+      --ink: #10141f;
+      --muted: #596172;
+      --paper: #fbfaf6;
+      --line: #d8d3c6;
+      --blue: #2f7de1;
+      --teal: #1b8f8a;
+      --green: #748d2f;
+      --sand: #ebe4d5;
+      --panel: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; text-decoration-color: rgba(47, 125, 225, .45); text-underline-offset: 3px; }
+
+    .page {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 28px 28px 64px;
+    }
+
+    .hero {
+      min-height: 680px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(360px, .98fr);
+      gap: 42px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 34px;
+    }
+
+    .kicker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: rgba(255, 255, 255, .58);
+    }
+
+    h1 {
+      font-size: clamp(48px, 7vw, 94px);
+      line-height: .88;
+      letter-spacing: 0;
+      margin: 0 0 26px;
+      max-width: 760px;
+      font-weight: 500;
+    }
+
+    .thesis {
+      font-size: 22px;
+      line-height: 1.45;
+      max-width: 720px;
+      margin: 0 0 30px;
+    }
+
+    .thesis strong {
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      color: var(--blue);
+      margin-right: 8px;
+    }
+
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-top: 28px;
+    }
+
+    .hero-meta div {
+      padding: 14px 16px 16px 0;
+      min-height: 82px;
+    }
+
+    .hero-meta div + div {
+      border-left: 1px solid var(--line);
+      padding-left: 16px;
+    }
+
+    .hero-meta span {
+      display: block;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .hero-meta b {
+      display: block;
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 600;
+    }
+
+    .poster {
+      margin: 0;
+      border: 1px solid var(--ink);
+      background: #fff;
+      transform: rotate(.5deg);
+      box-shadow: 10px 10px 0 var(--sand);
+    }
+
+    .poster img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .poster figcaption {
+      padding: 14px 16px 16px;
+      font-size: 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--ink);
+      background: #fff;
+    }
+
+    .section {
+      padding: 64px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section h2 {
+      font-size: clamp(31px, 4.3vw, 56px);
+      line-height: 1;
+      letter-spacing: 0;
+      font-weight: 500;
+      margin: 0 0 22px;
+      max-width: 850px;
+    }
+
+    .section > p {
+      max-width: 780px;
+      font-size: 20px;
+      margin: 0 0 30px;
+      color: #2a3040;
+    }
+
+    .point-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 30px;
+    }
+
+    .point {
+      border-top: 3px solid var(--ink);
+      padding: 18px 0 0;
+    }
+
+    .point:nth-child(2) { border-color: var(--teal); }
+    .point:nth-child(3) { border-color: var(--green); }
+
+    .point h3 {
+      font-size: 24px;
+      line-height: 1.12;
+      margin: 0 0 10px;
+      font-weight: 600;
+    }
+
+    .point p {
+      margin: 0;
+      font-size: 17px;
+      color: var(--muted);
+    }
+
+    .two-up {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
+      gap: 32px;
+      align-items: center;
+    }
+
+    .figure {
+      margin: 0;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .figure figcaption {
+      padding: 12px 14px 14px;
+      font-size: 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      background: rgba(235, 228, 213, .3);
+    }
+
+    .release-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      margin-top: 30px;
+    }
+
+    .release {
+      background: var(--paper);
+      padding: 22px;
+    }
+
+    .release h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.15;
+    }
+
+    .release p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 32px;
+    }
+
+    .strip .figure img {
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .final-note {
+      display: grid;
+      grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+      gap: 36px;
+      align-items: start;
+      padding-top: 64px;
+    }
+
+    .final-note h2 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: .98;
+      font-weight: 500;
+    }
+
+    .final-note p {
+      margin: 0 0 18px;
+      font-size: 20px;
+      color: #2a3040;
+    }
+
+    .source-link {
+      display: inline-flex;
+      margin-top: 8px;
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      color: var(--blue);
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .two-up,
+      .final-note {
+        grid-template-columns: 1fr;
+      }
+
+      .hero { min-height: 0; }
+      .point-grid,
+      .strip,
+      .release-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero" aria-labelledby="title">
+      <div>
+        <div class="kicker">
+          <span class="pill">LangChain Blog</span>
+          <span>Jacob Talbot</span>
+          <span>May 14, 2026</span>
+          <span>11 min</span>
+        </div>
+        <h1 id="title">Everything we shipped at Interrupt</h1>
+        <p class="thesis"><strong>为什么</strong>Agent 团队从原型走向生产时，瓶颈不只在模型调用，还包括发现失败、运行长流程、管理上下文和治理整个生命周期。<strong>是什么</strong>Interrupt 2026 集中发布 LangSmith Engine、SmithDB、Managed Deep Agents、Sandboxes GA、Context Hub、LLM Gateway、Fleet、Deep Agents 0.6 和 LangChain Labs，呈现一套生产 agent 平台叙事。<strong>怎么做</strong>这些发布把 traces、运行时基础设施、上下文管理、治理、封装 agent 和应用研究连接起来：Engine 从 traces 生成修复和 evals，Sandboxes 与 Managed Deep Agents 承担执行层，Context Hub 与 Gateway 把行为上下文和策略并入同一流程。</p>
+        <div class="hero-meta" aria-label="article metadata">
+          <div><span>文章类型</span><b>发布总览</b></div>
+          <div><span>核心判断</span><b>agent 生命周期需要一体化平台</b></div>
+          <div><span>产品中心</span><b>LangSmith + Deep Agents + Labs</b></div>
+        </div>
+      </div>
+
+      <figure class="poster">
+        <img src="assets/hero-everything-we-shipped.png" alt="Interrupt 2026 poster reading Everything we shipped at Interrupt">
+        <figcaption>封面把文章定位成 Interrupt 2026 的发布总览；正文真正展开的是从调试到运行、治理与协作的一组平台能力。</figcaption>
+      </figure>
+    </section>
+
+    <section class="section">
+      <h2>核心观点</h2>
+      <p>Interrupt 2026 集中发布 LangSmith Engine、SmithDB、Managed Deep Agents、Sandboxes GA、Context Hub、LLM Gateway、Fleet、Deep Agents 0.6 和 LangChain Labs，呈现一套生产 agent 平台叙事。</p>
+      <div class="point-grid"><article class="point"><h3>为什么</h3><p>Agent 团队从原型走向生产时，瓶颈不只在模型调用，还包括发现失败、运行长流程、管理上下文和治理整个生命周期。</p></article><article class="point"><h3>是什么</h3><p>Interrupt 2026 集中发布 LangSmith Engine、SmithDB、Managed Deep Agents、Sandboxes GA、Context Hub、LLM Gateway、Fleet、Deep Agents 0.6 和 LangChain Labs，呈现一套生产 agent 平台叙事。</p></article><article class="point"><h3>怎么做到</h3><p>这些发布把 traces、运行时基础设施、上下文管理、治理、封装 agent 和应用研究连接起来：Engine 从 traces 生成修复和 evals，Sandboxes 与 Managed Deep Agents 承担执行层，Context Hub 与 Gateway 把行为上下文和策略并入同一流程。</p></article></div>
+    </section>
+
+    <section class="section two-up">
+      <div>
+          <h2>关键机制</h2>
+          <p>这些发布把 traces、运行时基础设施、上下文管理、治理、封装 agent 和应用研究连接起来：Engine 从 traces 生成修复和 evals，Sandboxes 与 Managed Deep Agents 承担执行层，Context Hub 与 Gateway 把行为上下文和策略并入同一流程。</p>
+          <p>Agent 团队从原型走向生产时，瓶颈不只在模型调用，还包括发现失败、运行长流程、管理上下文和治理整个生命周期。</p>
+        </div>
+      <figure class="figure">
+        <img src="assets/sandboxes-ui.png" alt="LangSmith Sandboxes dashboard showing resource usage, running sandboxes and snapshots">
+        <figcaption>这张截图直接支撑“运行层被产品化”的观点：资源配额、sandbox 列表和 snapshot 管理都出现在同一控制台。</figcaption>
+      </figure>
+    </section>
+
+    <section class="section">
+      <h2>治理不是外接报表，而是模型调用路径的一部分。</h2>
+      <p>LLM Gateway 的位置在 agent 和模型供应商之间。文章强调 base_url swap 的接入方式，以及组织、workspace、user、API key 级别的 hard spend caps、实时成本 rollups、请求与响应侧的数据保护、trace continuity 和管理审计。</p>
+      <div class="strip">
+        <figure class="figure">
+          <img src="assets/llm-gateway-spend-visibility.png" alt="LLM Gateway cost control policy screen">
+          <figcaption>Spend policy 出现在调用链路入口，说明成本控制和运行 trace 不再分离。</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="assets/context-hub.png" alt="Context Hub editor showing AGENTS.md and skills files">
+          <figcaption>Context Hub 把 AGENTS.md、skills 和环境标签放进协作界面，支撑“上下文可版本化”的结论。</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="assets/fleet-prebuilt.png" alt="Fleet GTM prebuilt agent with tools and instructions">
+          <figcaption>Fleet 的预置 agents 展示了 LangChain 想把复杂 agent 能力包装成可配置工作流。</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>发布清单覆盖了 agent 平台的四个层面。</h2>
+      <p>如果只看产品名会显得分散；按层面重排后，文章主线更清楚：观测与改进、运行基础设施、治理与协作、agent 能力与研究。</p>
+      <div class="release-list">
+        <article class="release">
+          <h3><a href="https://www.langchain.com/blog/introducing-langsmith-engine">LangSmith Engine</a></h3>
+          <p>从生产 traces 中聚类问题，生成修复 PR、在线 evaluator 与离线 eval 样本。</p>
+        </article>
+        <article class="release">
+          <h3><a href="https://www.langchain.com/blog/introducing-smithdb">SmithDB</a></h3>
+          <p>面向 agent observability 的 Rust 数据层，基于 Apache DataFusion、Vortex、对象存储和 Postgres metastore；原文称核心 LangSmith 体验最高快 15 倍。</p>
+        </article>
+        <article class="release">
+          <h3><a href="https://www.langchain.com/blog/introducing-managed-deep-agents">Managed Deep Agents</a></h3>
+          <p>API-first 托管运行时，支持 durable threads、streaming runs、checkpointing、human-in-the-loop、context/files 与 sandbox-backed execution。</p>
+        </article>
+        <article class="release">
+          <h3><a href="https://www.langchain.com/blog/langsmith-sandboxes-generally-available">LangSmith Sandboxes GA</a></h3>
+          <p>为 agent 提供隔离代码执行环境，带 filesystem、shell、package manager、persistent state 和网络边界。</p>
+        </article>
+        <article class="release">
+          <h3><a href="https://www.langchain.com/blog/introducing-context-hub">Context Hub</a></h3>
+          <p>集中管理 agent 行为上下文，包括 AGENTS.md、skills、policies、examples，并支持 versioning、tags、comments。</p>
+        </article>
+        <article class="release">
+          <h3><a href="https://www.langchain.com/blog/introducing-llm-gateway">LangSmith LLM Gateway</a></h3>
+          <p>运行时治理层，提供 spend caps、PII/secrets redaction、policy events、trace continuity 与 audit logging。</p>
+        </article>
+        <article class="release">
+          <h3><a href="https://smith.langchain.com/agents?skipOnboarding=true">LangSmith Fleet updates</a></h3>
+          <p>Fleet 获得 sandbox access、5 个 prebuilt agents，并在 Developer 与 Plus plans 中包含由 Fireworks 支持的免费模型用量。</p>
+        </article>
+        <article class="release">
+          <h3><a href="https://www.langchain.com/blog/deep-agents-0-6">Deep Agents 0.6</a> + <a href="https://www.langchain.com/blog/introducing-langchain-labs">LangChain Labs</a></h3>
+          <p>Deep Agents 0.6 增加 code interpreter、typed streaming、DeltaChannel；LangChain Labs 聚焦用 agent traces 推动 continual learning。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="final-note">
+      <h2>读完带走这一句。</h2>
+      <div>
+        <p>Interrupt 2026 的核心信号是：LangChain 正把 agent engineering 从“框架与观测工具”推向“生产平台”。这篇总览的价值，在于它把多个单独公告合成一条平台路线：trace 发现问题，runtime 执行工作，context 决定行为，gateway 管住边界，Labs 把真实使用转成持续改进。</p>
+        <p><a class="source-link" href="https://www.langchain.com/blog/interrupt-2026-overview">Open original article</a></p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

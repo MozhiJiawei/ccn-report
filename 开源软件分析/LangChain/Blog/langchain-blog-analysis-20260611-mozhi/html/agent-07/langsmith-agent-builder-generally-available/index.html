@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Now GA: LangSmith Agent Builder | LangChain Blog 速读</title>
+  <style>
+    :root{--ink:#17221f;--muted:#5b6864;--paper:#f6f7f1;--panel:#fff;--line:#d7dfd8;--green:#0d604c;--blue:#265f8f;--rose:#9a5474;--amber:#a86525;--dark:#10201c}
+    *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Arial,"Microsoft YaHei",sans-serif;line-height:1.62} a{color:var(--green)}
+    .hero{min-height:88vh;display:grid;align-items:start;padding:42px 6vw 30px;background:linear-gradient(135deg,#10201c 0%,#12372f 55%,#1f5b4d 100%);color:#f8fbf8}
+    .hero-inner{width:min(1180px,100%);margin:0 auto}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;color:#d9ebe4;font-size:13px}.pill{border:1px solid rgba(255,255,255,.26);border-radius:999px;padding:5px 10px;background:rgba(255,255,255,.08)}
+    h1{max-width:980px;margin:0 0 18px;font-size:clamp(38px,5.6vw,74px);line-height:1.02;letter-spacing:0}.deck{max-width:1050px;margin:0 0 24px;color:#ebf6ef;font-size:clamp(17px,1.6vw,22px)}
+    .why-what-how{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}.hero-card{min-height:150px;padding:18px;border:1px solid rgba(255,255,255,.22);border-radius:8px;background:rgba(12,36,31,.78)}.label{margin-bottom:8px;color:#aee2c7;font-size:13px;font-weight:800;text-transform:uppercase}.hero-card p{margin:0;color:#fff;font-size:16px}
+    .wrap{width:min(1120px,88vw);margin:0 auto;padding:46px 0 64px}.section{margin:0 0 34px}.grid{display:grid;grid-template-columns:1.02fr .98fr;gap:22px;align-items:start}h2{margin:0 0 12px;font-size:clamp(25px,3vw,38px);line-height:1.15;letter-spacing:0}.lead{margin:0 0 16px;color:var(--muted);font-size:18px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card,.panel,figure{border:1px solid var(--line);border-radius:8px;background:var(--panel);box-shadow:0 10px 28px rgba(20,42,36,.06)}.card{padding:18px;min-height:168px}.card h3{margin:0 0 8px;font-size:19px;line-height:1.25}.card p{margin:0;color:#465551}
+    figure{margin:0;padding:18px}figure img{display:block;width:100%;max-height:520px;object-fit:contain;border-radius:6px;background:#eef2ee}figcaption{margin-top:10px;color:var(--muted);font-size:14px}.panel{padding:20px}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.step{min-height:108px;padding:15px;border:1px solid var(--line);border-radius:8px;background:#fff}.step strong{display:block;margin-bottom:6px;color:var(--green)}.source{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+    @media(max-width:900px){.hero{min-height:auto;background:#10201c}.why-what-how,.grid,.cards,.flow{grid-template-columns:1fr}h1{font-size:40px}}
+    </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="meta">
+        <span class="pill">January 13, 2026</span>
+        <span class="pill">2
+min</span>
+        <span class="pill">release</span>
+        <span class="pill">LangChain Accounts</span>
+      </div>
+      <h1>Now GA: LangSmith Agent Builder</h1>
+      <p class="deck">Why：非开发同事也需要把日常研究、跟进、更新和跨工具操作自动化，但传统 workflow builder 约束先画清每一步。 What：LangSmith Agent Builder GA，把自然语言目标转成可部署 agent，自动生成指令、选择工具，并在需要时使用 subagents。 How：用户用反馈迭代 agent，借 memory 学习偏好，通过 MCP 接工具、共享克隆、选择模型，并可嵌入产品或 API 调用。</p>
+      <div class="why-what-how" aria-label="Why What How">
+        <div class="hero-card"><div class="label">Why</div><p>非开发同事也需要把日常研究、跟进、更新和跨工具操作自动化，但传统 workflow builder 约束先画清每一步。</p></div>
+        <div class="hero-card"><div class="label">What</div><p>LangSmith Agent Builder GA，把自然语言目标转成可部署 agent，自动生成指令、选择工具，并在需要时使用 subagents。</p></div>
+        <div class="hero-card"><div class="label">How</div><p>用户用反馈迭代 agent，借 memory 学习偏好，通过 MCP 接工具、共享克隆、选择模型，并可嵌入产品或 API 调用。</p></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="section">
+      <h2>自然语言目标替代流程图起步</h2>
+      <p class="lead">用户描述 daily brief、competitor update 或 PRD-to-Linear 目标，Agent Builder 负责形成可运行 agent。</p>
+      <div class="grid">
+        <div class="cards"><article class="card"><h3>自然语言目标替代流程图起步</h3><p>用户描述 daily brief、competitor update 或 PRD-to-Linear 目标，Agent Builder 负责形成可运行 agent。</p></article>
+<article class="card"><h3>agent 可以从助手演进为团队资产</h3><p>共享、克隆、扩展工具和嵌入 API 让个人自动化逐步变成团队工作方式。</p></article>
+<article class="card"><h3>GA 版本强调可扩展性而不只无代码</h3><p>MCP、模型选择、subagents 与 memory 让 no-code 起点保留生产化扩展路径。</p></article></div>
+        
+        <figure>
+          <img src="assets/source-02.png" alt="Now GA: LangSmith Agent Builder">
+          <figcaption>这张原图支撑页面主线：用户描述 daily brief、competitor update 或 PRD-to-Linear 目标，Agent Builder 负责形成可运行 agent。</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="section">
+      <h2>这篇文章的论证链路</h2>
+      <div class="flow"><div class="step"><strong>观察</strong>记录真实输入、输出、工具调用和上下文。</div>
+<div class="step"><strong>归纳</strong>把单次行为聚合成模式、失败类型或业务信号。</div>
+<div class="step"><strong>评价</strong>用 traces、datasets 或在线评分验证改动。</div>
+<div class="step"><strong>改进</strong>调整 prompt、工具、模型、memory 或 runtime。</div></div>
+    </section>
+    <p class="source">原文：<a href="https://www.langchain.com/blog/langsmith-agent-builder-generally-available">https://www.langchain.com/blog/langsmith-agent-builder-generally-available</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,81 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EU macroeconomic analysis with Deep Agents, LangSmith, and the You.com Finance Research API | LangChain Blog 速读</title>
+  <style>
+    :root { --ink:#111827; --muted:#536172; --paper:#f4f7fb; --panel:#fff; --line:#d8e2ef; --blue:#155eef; --teal:#0f766e; --amber:#a15c07; --night:#07111f; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; line-height:1.62; }
+    a { color:var(--blue); }
+    .hero { min-height:88vh; display:grid; align-items:start; padding:36px 6vw 28px; color:#f8fbff; background:linear-gradient(120deg, rgba(7,17,31,.97), rgba(14,36,57,.9) 55%, rgba(12,65,72,.78)), url("assets/source-04.png") center / cover no-repeat; }
+    .hero-inner { width:min(1180px,100%); margin:0 auto; }
+    .meta { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; color:#d3e8ff; font-size:14px; }
+    .pill { border:1px solid rgba(167,213,255,.34); border-radius:999px; padding:5px 10px; background:rgba(255,255,255,.07); }
+    h1 { max-width:1060px; margin:0 0 14px; font-size:clamp(36px,5.9vw,72px); line-height:1.03; letter-spacing:0; }
+    .deck { max-width:1030px; margin:0; color:#e4f0ff; font-size:clamp(17px,1.65vw,23px); }
+    .why-what-how { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:24px; }
+    .hero-card { min-height:136px; padding:17px; border:1px solid rgba(167,213,255,.28); border-radius:8px; background:rgba(7,17,31,.76); }
+    .label { margin-bottom:8px; color:#8ad7ff; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0; }
+    .hero-card p { margin:0; color:#f3f8ff; font-size:16px; }
+    .wrap { width:min(1120px,88vw); margin:0 auto; padding:44px 0 56px; }
+    .section { margin:0 0 34px; }
+    h2 { margin:0 0 12px; font-size:clamp(25px,3vw,38px); line-height:1.16; letter-spacing:0; }
+    .lead { margin:0 0 16px; max-width:900px; color:var(--muted); font-size:18px; }
+    .grid { display:grid; grid-template-columns:1.05fr .95fr; gap:22px; align-items:start; }
+    .panel, figure { margin:0; padding:20px; border:1px solid var(--line); border-radius:8px; background:var(--panel); box-shadow:0 10px 28px rgba(15,23,42,.06); }
+    figure img { display:block; width:100%; max-height:520px; object-fit:contain; border-radius:6px; background:#eef3f8; }
+    figcaption { margin-top:11px; color:#536172; font-size:14px; }
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .card { padding:18px; min-height:150px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .card h3 { margin:0 0 8px; font-size:20px; line-height:1.25; }
+    .card p { margin:0; color:#4b596a; }
+    .flow { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px; }
+    .step { min-height:118px; padding:16px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .step strong { display:block; margin-bottom:6px; color:var(--teal); }
+    .source { margin-top:36px; padding-top:22px; border-top:1px solid var(--line); color:#5c6878; font-size:14px; }
+    @media (max-width: 900px) { .why-what-how, .grid, .cards, .flow { grid-template-columns:1fr; } .hero { min-height:auto; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="meta">
+        <span class="pill">May 20, 2026</span>
+        <span class="pill">18 min</span>
+        <span class="pill">案例 / 技术长文</span>
+        <span class="pill">Srimanth Tangedipalli, Karan Singh, Saurabh Sharma, Akhil Pothana</span>
+      </div>
+      <h1>EU macroeconomic analysis with Deep Agents, LangSmith, and the You.com Finance Research API</h1>
+      <p class="deck">Why：宏观金融研究既要全域数据覆盖，又要深挖异常国家和保留审计链；把所有问题塞进一个大查询会稀释检索预算。What：文章展示 EU 2025 GDP 研究 agent，用 You.com Finance Research API、Deep Agents 和 LangSmith 生成带 citations、workpapers 和最终报告的分析。How：orchestrator 把 Shape A 数据表、异常检测、分解和 country investigation 分给多个 subagent，并用 LangSmith trace 把每个结论追溯到 API call 与来源 URL。</p>
+      <div class="why-what-how" aria-label="Why What How">
+        <div class="hero-card"><div class="label">Why</div><p>宏观金融研究既要全域数据覆盖，又要深挖异常国家和保留审计链；把所有问题塞进一个大查询会稀释检索预算。</p></div>
+        <div class="hero-card"><div class="label">What</div><p>文章展示 EU 2025 GDP 研究 agent，用 You.com Finance Research API、Deep Agents 和 LangSmith 生成带 citations、workpapers 和最终报告的分析。</p></div>
+        <div class="hero-card"><div class="label">How</div><p>orchestrator 把 Shape A 数据表、异常检测、分解和 country investigation 分给多个 subagent，并用 LangSmith trace 把每个结论追溯到 API call 与来源 URL。</p></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="section">
+      <h2>预算模型决定了 query shape。</h2>
+      <div class="grid">
+        <div class="panel"><p class="lead">Finance Research API 每次调用有有限 compute 和 retrieval budget。文章把查询分成 Shape A 数据表、Shape B 单国解释、Shape C 机制比较，避免多国多维度解释把预算摊薄。</p></div>
+        <figure>
+          <img src="assets/source-04.png" alt="EU macroeconomic analysis with Deep Agents, LangSmith, and the You.com Finance Research API source image">
+          <figcaption>这张架构图支撑 workflow：orchestrator 通过多个专门 subagent 把数据检索、异常判断、分解和国家调查串起来。</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="section">
+      <div class="cards">
+        <article class="card"><h3>subagent 分层让宽覆盖和深调查同时存在。</h3><p>landscape scanner 取 27 个 EU 成员国数据，anomaly analyst 计算均值并标出偏离 2 个百分点以上国家，decomposers 并行补充支出和行业分解，country investigators 聚焦异常国家。</p></article>
+        <article class="card"><h3>文件系统 workpapers 控制上下文膨胀。</h3><p>CompositeBackend 把 agent 内部状态和文件写入分开；subagents 把 landscape_scan、anomaly_analysis、country workpapers 写入文件，orchestrator 读回后合成 final_report。</p></article>
+        <article class="card"><h3>观察性是金融场景的结果的一部分。</h3><p>完整运行约 45 分钟、约 20 次 API calls。每个 you_finance_research 调用、内置工具调用和 orchestrator 决策都被 LangSmith 捕获，最终 claim 可回溯到具体工具调用和来源。</p></article>
+      </div>
+    </section>
+    
+    <footer class="source">原文： <a href="https://www.langchain.com/blog/financial-ai-that-investigates-macro-trends-eu-economic-analysis-with-you-com-and-langchain">EU macroeconomic analysis with Deep Agents, LangSmith, and the You.com Finance Research API</a>. 原文作者： Srimanth Tangedipalli, Karan Singh, Saurabh Sharma, Akhil Pothana.</footer>
+  </main>
+</body>
+</html>

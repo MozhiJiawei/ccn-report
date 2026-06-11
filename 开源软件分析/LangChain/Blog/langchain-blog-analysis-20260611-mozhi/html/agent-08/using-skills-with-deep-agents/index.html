@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Using skills with Deep Agents | 速读</title>
+  <style>
+:root{--ink:#13231f;--muted:#61706b;--line:#d9e2dd;--paper:#f6f8f5;--panel:#fff;--green:#0f6a55;--blue:#2f638d;--rose:#9a5576;--amber:#ad6a2b}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--paper);line-height:1.62}a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}.page{width:min(1120px,calc(100% - 40px));margin:0 auto}header{min-height:720px;display:grid;align-items:center;padding:64px 0 36px}.eyebrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;color:var(--muted);font-size:13px}.pill{border:1px solid var(--line);background:rgba(255,255,255,.78);border-radius:999px;padding:5px 10px}h1{margin:0;max-width:930px;font-size:clamp(42px,6.3vw,78px);line-height:.98;letter-spacing:0}.dek{margin:28px 0 0;max-width:900px;font-size:20px;color:#213b35}.triad{margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.signal{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--green);border-radius:8px;padding:18px;min-height:145px;box-shadow:0 16px 45px rgba(27,47,42,.08)}.signal:nth-child(2){border-top-color:var(--blue)}.signal:nth-child(3){border-top-color:var(--rose)}.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted);margin-bottom:8px}.signal p{margin:0;font-size:15.5px}.hero-img{margin-top:28px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.hero-img img{display:block;width:100%;max-height:420px;object-fit:contain;background:#f0f3f1}.hero-img figcaption,.evidence figcaption{padding:11px 14px;color:var(--muted);font-size:13px;background:#fff}main{padding:8px 0 76px}section{padding:48px 0;border-top:1px solid var(--line)}h2{margin:0 0 14px;max-width:850px;font-size:clamp(27px,4vw,44px);line-height:1.1;letter-spacing:0}.lead{margin:0;max-width:870px;color:var(--muted);font-size:18px}.cards{margin-top:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;min-height:190px}.card h3{margin:0 0 9px;font-size:19px;line-height:1.25;letter-spacing:0}.card p{margin:0;color:var(--muted);font-size:15px}.evidence{margin:26px 0 0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.evidence img{display:block;width:100%;max-height:560px;object-fit:contain;background:#f0f3f1}.source{display:flex;gap:10px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:14px}.source a{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 12px}@media(max-width:850px){header{min-height:auto}.triad,.cards{grid-template-columns:1fr}h1{font-size:42px}.dek{font-size:18px}}
+</style>
+</head>
+<body>
+  <header>
+    <div class="page">
+      <div class="eyebrow">
+        <span class="pill">技术长文</span>
+        <span class="pill">Lance Martin, Sydney Runkle, Shrikar Seshadri, Sydney Runkle, Hunter Lovell</span>
+        <span class="pill">November 25, 2025</span>
+        <span class="pill">3 min</span>
+      </div>
+      <h1>Using skills with Deep Agents</h1>
+      <p class="dek">Why: Deep Agents 面对复杂任务时不能只靠一段系统提示词，需要把可复用流程、领域知识和工具使用方法封装成可调用能力。 What: 文章说明 skills 如何扩展 Deep Agents：skill 是一组指令、脚本和资源，agent 可在需要时加载，从而获得特定工作流能力。 How: 做法是把技能说明写成结构化文件，配套脚本和资产放在技能目录中；agent 根据任务选择相关 skill，读取说明后执行其中定义的流程。</p>
+      <div class="triad">
+        <div class="signal"><div class="label">Why</div><p>Deep Agents 面对复杂任务时不能只靠一段系统提示词，需要把可复用流程、领域知识和工具使用方法封装成可调用能力。</p></div>
+        <div class="signal"><div class="label">What</div><p>文章说明 skills 如何扩展 Deep Agents：skill 是一组指令、脚本和资源，agent 可在需要时加载，从而获得特定工作流能力。</p></div>
+        <div class="signal"><div class="label">How</div><p>做法是把技能说明写成结构化文件，配套脚本和资产放在技能目录中；agent 根据任务选择相关 skill，读取说明后执行其中定义的流程。</p></div>
+      </div>
+      <figure class="hero-img">
+        <img src="assets/image-01.png" alt="Using skills with Deep Agents">
+        <figcaption>文章说明 skills 如何扩展 Deep Agents：skill 是一组指令、脚本和资源，agent 可在需要时加载，从而获得特定工作流能力。</figcaption>
+      </figure>
+    </div>
+  </header>
+  <main class="page">
+    <section>
+      <h2>Skill 把长提示词拆成按需加载的能力包</h2>
+      <p class="lead">文章的核心是上下文经济：常驻系统提示保留通用行为，具体领域流程只在任务触发时进入上下文。</p>
+      <div class="cards"><article class="card"><h3>Skill 把长提示词拆成按需加载的能力包</h3><p>文章的核心是上下文经济：常驻系统提示保留通用行为，具体领域流程只在任务触发时进入上下文。</p></article>
+<article class="card"><h3>一个 skill 同时携带说明、脚本和资产</h3><p>它不只是文本片段，还能包含示例、代码、模板或本地资源，让 agent 复用已经沉淀好的操作路径。</p></article>
+<article class="card"><h3>Deep Agents 因为有文件系统而适合使用 skills</h3><p>agent 可以浏览技能目录、读取 SKILL.md、运行附带脚本，并把中间产物写入工作区，形成更稳定的长任务执行方式。</p></article></div>
+    </section>
+    <section>
+      <h2>一个 skill 同时携带说明、脚本和资产</h2>
+      <p class="lead">它不只是文本片段，还能包含示例、代码、模板或本地资源，让 agent 复用已经沉淀好的操作路径。</p>
+      <figure class="evidence">
+        <img src="assets/image-02.png" alt="Using skills with Deep Agents supporting image">
+        <figcaption>做法是把技能说明写成结构化文件，配套脚本和资产放在技能目录中；agent 根据任务选择相关 skill，读取说明后执行其中定义的流程。</figcaption>
+      </figure>
+    </section>
+    <section>
+      <h2>这篇文章在 LangChain 叙事中的位置</h2>
+      <p class="lead">文章说明 skills 如何扩展 Deep Agents：skill 是一组指令、脚本和资源，agent 可在需要时加载，从而获得特定工作流能力。 做法是把技能说明写成结构化文件，配套脚本和资产放在技能目录中；agent 根据任务选择相关 skill，读取说明后执行其中定义的流程。</p>
+      <div class="source">
+        <span>原文：</span>
+        <a href="https://www.langchain.com/blog/using-skills-with-deep-agents">Using skills with Deep Agents</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

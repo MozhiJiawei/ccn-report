@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>How Captide agents running on LangGraph Platform compress investment research from days to seconds</title><style>
+:root{--ink:#16201b;--muted:#5f6d65;--line:#dbe3dc;--paper:#fbfcf9;--accent:#1f7a52;--soft:#eef6ef;--warm:#f5efe3}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Noto Sans SC",sans-serif;line-height:1.65}
+a{color:#17643f;text-decoration:none;border-bottom:1px solid rgba(23,100,63,.25)}.wrap{max-width:1120px;margin:0 auto;padding:44px 28px 72px}
+.eyebrow{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:34px;align-items:start;padding:32px 0 26px;border-bottom:1px solid var(--line)}
+h1{font-size:clamp(34px,4.2vw,58px);line-height:1.04;margin:12px 0 18px;letter-spacing:0}.dek{font-size:18px;color:#2f3d35;max-width:760px}.triad{display:grid;gap:10px;margin:24px 0 0}.triad p{margin:0;padding:13px 15px;background:white;border:1px solid var(--line);border-radius:8px}.triad b{color:var(--accent);margin-right:8px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;color:var(--muted);font-size:14px}.pill{border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:#fff}
+.hero-media{background:var(--warm);border:1px solid var(--line);border-radius:8px;padding:12px}.hero-media img{width:100%;display:block;border-radius:6px}.caption{font-size:13px;color:var(--muted);margin:9px 2px 0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px 0}.point{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px}.point h2{font-size:20px;line-height:1.25;margin:0 0 8px}.point p{margin:0;color:#334139}
+.section{display:grid;grid-template-columns:300px 1fr;gap:26px;border-top:1px solid var(--line);padding:30px 0}.section h2{font-size:25px;line-height:1.18;margin:0}.section p{margin:0;color:#334139;font-size:17px}.evidence{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px}.evidence img{width:100%;display:block;border-radius:6px}
+.chain{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}.chain div{background:var(--soft);border:1px solid #cfe1d3;border-radius:8px;padding:14px}.chain b{display:block;color:#17643f;margin-bottom:4px}
+@media(max-width:900px){.hero,.section{grid-template-columns:1fr}.grid,.chain{grid-template-columns:1fr}.wrap{padding:28px 18px 54px}}
+</style></head>
+<body><main class="wrap">
+<div class="eyebrow">LangChain Blog 速读</div>
+<section class="hero"><div>
+<h1>How Captide agents running on LangGraph Platform compress investment research from days to seconds</h1>
+<p class="dek">投资研究要处理海量公司披露、同业比较和事件线索，传统 RAG 基础设施和人工流程难以在速度、规模与可审计性之间兼顾。</p>
+<div class="triad">
+<p><b>Why</b>投资研究要处理海量公司披露、同业比较和事件线索，传统 RAG 基础设施和人工流程难以在速度、规模与可审计性之间兼顾。</p>
+<p><b>What</b>Captide 在 LangGraph Platform 上运行金融领域 agent，基于 14,000 多家上市公司的结构化披露库，把原本耗时数小时或数天的研究压缩到秒级探索。</p>
+<p><b>How</b>LangGraph Platform 支撑成千上万个表格单元并发调用、会话状态保存与生成式 UI；LangSmith 追踪成本、准确率、延迟并用循环 eval 捕捉常见和边界请求。</p>
+</div>
+<div class="meta"><span class="pill">June 24, 2025</span><span class="pill">LangChain</span><span class="pill">case study</span><a class="pill" href="https://www.langchain.com/blog/captide">原文</a></div>
+</div><figure class="hero-media"><img src="assets/04-69cbaaad3d52c1b3e56ea69c_image.png" alt=""><figcaption class="caption">这张原图支撑产品机制：读者应关注界面如何暴露状态、步骤或可操作控制。</figcaption></figure></section>
+<section class="grid">
+<article class="point"><h2>一句话带走</h2><p>Captide 在 LangGraph Platform 上运行金融领域 agent，基于 14,000 多家上市公司的结构化披露库，把原本耗时数小时或数天的研究压缩到秒级探索。</p></article>
+<article class="point"><h2>关键机制</h2><p>LangGraph Platform 支撑成千上万个表格单元并发调用、会话状态保存与生成式 UI；LangSmith 追踪成本、准确率、延迟并用循环 eval 捕捉常见和边界请求。</p></article>
+<article class="point"><h2>阅读定位</h2><p>这是一篇case study，重点看它如何把具体场景、产品能力或架构取舍连成一个可执行判断。</p></article>
+</section>
+<section class="section"><h2>金融 agent 的负载既有长推理也有大并发</h2><div><p>从连续问答到 spreadsheet-like 批量填充，Captide 需要同时处理上下文一致性和瞬时高并发。</p><figure class="evidence"><img src="assets/05-69cbaaad3d52c1b3e56ea69f_image-1.png" alt=""><figcaption class="caption">这张原图支撑产品机制：读者应关注界面如何暴露状态、步骤或可操作控制。</figcaption></figure></div></section><section class="section"><h2>产品专家能直接参与 agent 行为迭代</h2><div><p>LangGraph Studio 的 low-code 界面让金融 domain experts 把客户反馈和行业知识带入 prompt 与 agent 设计。</p><figure class="evidence"><img src="assets/06-69cbaaad3d52c1b3e56ea6a2_image-2.png" alt=""><figcaption class="caption">这张原图支撑产品机制：读者应关注界面如何暴露状态、步骤或可操作控制。</figcaption></figure></div></section><section class="section"><h2>生成式 UI 让研究路径可追溯</h2><div><p>agent 会把交互式 React 组件和步骤更新流式推到界面，让用户看到检查了哪些来源、发现了什么以及为何得出结论。</p><figure class="evidence"><img src="assets/11-6a21b46ce3c7b10f36e622cc_image-20-19-.png" alt=""><figcaption class="caption">这张原图支撑产品机制：读者应关注界面如何暴露状态、步骤或可操作控制。</figcaption></figure></div></section>
+</main></body></html>

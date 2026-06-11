@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fastweb + Vodafone: Transforming Customer Experience with AI Agents using LangGraph and LangSmith | LangChain Blog 速读</title>
+  <style>
+    :root{--ink:#17221f;--muted:#5b6864;--paper:#f6f7f1;--panel:#fff;--line:#d7dfd8;--green:#0d604c;--blue:#265f8f;--rose:#9a5474;--amber:#a86525;--dark:#10201c}
+    *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Arial,"Microsoft YaHei",sans-serif;line-height:1.62} a{color:var(--green)}
+    .hero{min-height:88vh;display:grid;align-items:start;padding:42px 6vw 30px;background:linear-gradient(135deg,#10201c 0%,#12372f 55%,#1f5b4d 100%);color:#f8fbf8}
+    .hero-inner{width:min(1180px,100%);margin:0 auto}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;color:#d9ebe4;font-size:13px}.pill{border:1px solid rgba(255,255,255,.26);border-radius:999px;padding:5px 10px;background:rgba(255,255,255,.08)}
+    h1{max-width:980px;margin:0 0 18px;font-size:clamp(38px,5.6vw,74px);line-height:1.02;letter-spacing:0}.deck{max-width:1050px;margin:0 0 24px;color:#ebf6ef;font-size:clamp(17px,1.6vw,22px)}
+    .why-what-how{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}.hero-card{min-height:150px;padding:18px;border:1px solid rgba(255,255,255,.22);border-radius:8px;background:rgba(12,36,31,.78)}.label{margin-bottom:8px;color:#aee2c7;font-size:13px;font-weight:800;text-transform:uppercase}.hero-card p{margin:0;color:#fff;font-size:16px}
+    .wrap{width:min(1120px,88vw);margin:0 auto;padding:46px 0 64px}.section{margin:0 0 34px}.grid{display:grid;grid-template-columns:1.02fr .98fr;gap:22px;align-items:start}h2{margin:0 0 12px;font-size:clamp(25px,3vw,38px);line-height:1.15;letter-spacing:0}.lead{margin:0 0 16px;color:var(--muted);font-size:18px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card,.panel,figure{border:1px solid var(--line);border-radius:8px;background:var(--panel);box-shadow:0 10px 28px rgba(20,42,36,.06)}.card{padding:18px;min-height:168px}.card h3{margin:0 0 8px;font-size:19px;line-height:1.25}.card p{margin:0;color:#465551}
+    figure{margin:0;padding:18px}figure img{display:block;width:100%;max-height:520px;object-fit:contain;border-radius:6px;background:#eef2ee}figcaption{margin-top:10px;color:var(--muted);font-size:14px}.panel{padding:20px}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.step{min-height:108px;padding:15px;border:1px solid var(--line);border-radius:8px;background:#fff}.step strong{display:block;margin-bottom:6px;color:var(--green)}.source{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+    @media(max-width:900px){.hero{min-height:auto;background:#10201c}.why-what-how,.grid,.cards,.flow{grid-template-columns:1fr}h1{font-size:40px}}
+    </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="meta">
+        <span class="pill">December 16, 2025</span>
+        <span class="pill">7
+min</span>
+        <span class="pill">案例</span>
+        <span class="pill">LangChain Accounts</span>
+      </div>
+      <h1>Fastweb + Vodafone: Transforming Customer Experience with AI Agents using LangGraph and LangSmith</h1>
+      <p class="deck">Why：电信客服需要在账单、激活、漫游和技术支持之间快速完成上下文判断，传统 chatbot 与人工多系统查询都难以兼顾规模和一致性。 What：Fastweb + Vodafone 用 LangGraph 和 LangSmith 建成两类 agent：面向客户的 Super TOBi，以及辅助坐席的 Super Agent。 How：Super TOBi 用 Supervisor 与 Use Case 图编排 guardrails、澄清、路由和 action tags；Super Agent 给坐席提供诊断、合规指引和可溯源解释。</p>
+      <div class="why-what-how" aria-label="Why What How">
+        <div class="hero-card"><div class="label">Why</div><p>电信客服需要在账单、激活、漫游和技术支持之间快速完成上下文判断，传统 chatbot 与人工多系统查询都难以兼顾规模和一致性。</p></div>
+        <div class="hero-card"><div class="label">What</div><p>Fastweb + Vodafone 用 LangGraph 和 LangSmith 建成两类 agent：面向客户的 Super TOBi，以及辅助坐席的 Super Agent。</p></div>
+        <div class="hero-card"><div class="label">How</div><p>Super TOBi 用 Supervisor 与 Use Case 图编排 guardrails、澄清、路由和 action tags；Super Agent 给坐席提供诊断、合规指引和可溯源解释。</p></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="section">
+      <h2>Super TOBi 把对话和交易合在同一流程</h2>
+      <p class="lead">Supervisor 负责入口、安全过滤和路由，Use Case agents 调用客户 API，并可返回 action tags 触发业务操作。</p>
+      <div class="grid">
+        <div class="cards"><article class="card"><h3>Super TOBi 把对话和交易合在同一流程</h3><p>Supervisor 负责入口、安全过滤和路由，Use Case agents 调用客户 API，并可返回 action tags 触发业务操作。</p></article>
+<article class="card"><h3>业务指标说明 agent 已进入高规模生产</h3><p>文章给出近 950 万客户覆盖、90% correctness、82% resolution 和 5.2/7 CES 等信号。</p></article>
+<article class="card"><h3>Super Agent 把人类坐席变成更强入口</h3><p>内部 agent 不直接对客户说话，而是为顾问提供即时诊断、来源依据和合规建议。</p></article></div>
+        
+        <figure>
+          <img src="assets/source-02.png" alt="Fastweb + Vodafone: Transforming Customer Experience with AI Agents using LangGraph and LangSmith">
+          <figcaption>这张原图支撑页面主线：Supervisor 负责入口、安全过滤和路由，Use Case agents 调用客户 API，并可返回 action tags 触发业务操作。</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="section">
+      <h2>这篇文章的论证链路</h2>
+      <div class="flow"><div class="step"><strong>观察</strong>记录真实输入、输出、工具调用和上下文。</div>
+<div class="step"><strong>归纳</strong>把单次行为聚合成模式、失败类型或业务信号。</div>
+<div class="step"><strong>评价</strong>用 traces、datasets 或在线评分验证改动。</div>
+<div class="step"><strong>改进</strong>调整 prompt、工具、模型、memory 或 runtime。</div></div>
+    </section>
+    <p class="source">原文：<a href="https://www.langchain.com/blog/customers-vodafone-italy">https://www.langchain.com/blog/customers-vodafone-italy</a></p>
+  </main>
+</body>
+</html>
