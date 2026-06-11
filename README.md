@@ -10,16 +10,15 @@ AI 生成报告交付件归档仓库。
 .
 |-- AGENTS.md
 |-- README.md
-|-- reports/
-|   |-- 大厂动态/
-|   |   |-- Anthropic/
-|   |   `-- OpenAI/
-|   |-- 开源软件分析/
-|   |   |-- LangChain/
-|   |   `-- OpenHarness/
-|   `-- 学术论文分析/
-|       |-- Agent/
-|       `-- 推理/
+|-- 大厂动态/
+|   |-- Anthropic/
+|   `-- OpenAI/
+|-- 开源软件分析/
+|   |-- LangChain/
+|   `-- OpenHarness/
+|-- 学术论文分析/
+|   |-- Agent/
+|   `-- 推理/
 |-- scripts/
 |   |-- check_report_archive.py
 |   `-- pre_commit_gate.py
@@ -30,15 +29,15 @@ AI 生成报告交付件归档仓库。
 报告必须归档到二级分类目录下的独立子目录，不能直接放在大类或二级分类根目录。
 
 ```text
-reports/<大类>/<对象或方向>/<report-slug>-<YYYYMMDD>-<creator>/
+<大类>/<对象或方向>/<report-slug>-<YYYYMMDD>-<creator>/
 ```
 
 示例：
 
 ```text
-reports/大厂动态/OpenAI/gpt-5-market-scan-20260611-mozhi/
-reports/开源软件分析/LangChain/langgraph-runtime-review-20260611-mozhi/
-reports/学术论文分析/Agent/multi-agent-planning-survey-20260611-mozhi/
+大厂动态/OpenAI/gpt-5-market-scan-20260611-mozhi/
+开源软件分析/LangChain/langgraph-runtime-review-20260611-mozhi/
+学术论文分析/Agent/multi-agent-planning-survey-20260611-mozhi/
 ```
 
 目录名规则：

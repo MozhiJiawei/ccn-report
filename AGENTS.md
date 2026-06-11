@@ -6,30 +6,30 @@
 
 - 只归档正式交付件、必要源材料、QA 记录和报告说明。
 - 不归档临时草稿、缓存、运行日志、未整理的中间导出。
-- 仓库根目录只保存说明、模板、脚本和分类入口。
+- 仓库根目录只保存说明、脚本和分类入口。
 
 ## Directory Rules
 
 报告必须进入两层分类后再创建独立报告目录：
 
 ```text
-reports/<大类>/<对象或方向>/<report-slug>-<YYYYMMDD>-<creator>/
+<大类>/<对象或方向>/<report-slug>-<YYYYMMDD>-<creator>/
 ```
 
 当前大类：
 
-- `reports/大厂动态/`
-- `reports/开源软件分析/`
-- `reports/学术论文分析/`
+- `大厂动态/`
+- `开源软件分析/`
+- `学术论文分析/`
 
 示例二级目录：
 
-- `reports/大厂动态/Anthropic/`
-- `reports/大厂动态/OpenAI/`
-- `reports/开源软件分析/LangChain/`
-- `reports/开源软件分析/OpenHarness/`
-- `reports/学术论文分析/Agent/`
-- `reports/学术论文分析/推理/`
+- `大厂动态/Anthropic/`
+- `大厂动态/OpenAI/`
+- `开源软件分析/LangChain/`
+- `开源软件分析/OpenHarness/`
+- `学术论文分析/Agent/`
+- `学术论文分析/推理/`
 
 ## Report Directory Naming
 

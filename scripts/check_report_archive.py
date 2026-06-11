@@ -7,12 +7,12 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-REPORTS_ROOT = REPO_ROOT / "reports"
 REPORT_DIR_RE = re.compile(
     r"^(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)-(?P<date>\d{8})-(?P<creator>[a-z0-9]+(?:-[a-z0-9]+)*)$"
 )
 ALLOWED_TOP_LEVEL = {"大厂动态", "开源软件分析", "学术论文分析"}
 IGNORED_NAMES = {".gitkeep"}
+PROJECT_ROOT_NAMES = {".git", ".github", ".gitignore", "AGENTS.md", "README.md", "scripts"}
 
 
 def fail(message: str, errors: list[str]) -> None:
@@ -32,16 +32,18 @@ def is_valid_report_dir_name(name: str) -> bool:
     return True
 
 
-def check_reports_root(errors: list[str]) -> None:
-    if not REPORTS_ROOT.exists():
-        fail("Missing reports/ directory.", errors)
-        return
+def check_repo_root(errors: list[str]) -> None:
+    for category_name in sorted(ALLOWED_TOP_LEVEL):
+        if not (REPO_ROOT / category_name).is_dir():
+            fail(f"Missing top-level category directory: {category_name}/", errors)
 
-    for item in REPORTS_ROOT.iterdir():
+    for item in REPO_ROOT.iterdir():
         if item.name in IGNORED_NAMES:
             continue
+        if item.name in PROJECT_ROOT_NAMES:
+            continue
         if not item.is_dir():
-            fail(f"reports/ must only contain category directories: {item.relative_to(REPO_ROOT)}", errors)
+            fail(f"Repository root contains an unexpected file: {item.relative_to(REPO_ROOT)}", errors)
             continue
         if item.name not in ALLOWED_TOP_LEVEL:
             fail(
@@ -79,12 +81,12 @@ def check_subject(subject: Path, errors: list[str]) -> None:
 
 def main() -> int:
     errors: list[str] = []
-    check_reports_root(errors)
+    check_repo_root(errors)
 
-    if REPORTS_ROOT.exists():
-        for category in REPORTS_ROOT.iterdir():
-            if category.is_dir() and category.name in ALLOWED_TOP_LEVEL:
-                check_category(category, errors)
+    for category_name in sorted(ALLOWED_TOP_LEVEL):
+        category = REPO_ROOT / category_name
+        if category.is_dir():
+            check_category(category, errors)
 
     if errors:
         print("Report archive validation failed:")
