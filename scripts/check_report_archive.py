@@ -8,7 +8,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR_RE = re.compile(
-    r"^(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)-(?P<date>\d{8})-(?P<creator>[a-z0-9]+(?:-[a-z0-9]+)*)$"
+    r"^(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)-(?P<date>\d{8})-(?P<creator>[\w\u4e00-\u9fff-]+)$"
 )
 ALLOWED_TOP_LEVEL = {"大厂动态", "开源软件分析", "学术论文分析"}
 IGNORED_NAMES = {".gitkeep"}

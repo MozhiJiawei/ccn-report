@@ -45,7 +45,7 @@ AI 生成报告交付件归档仓库。
 
 - `<report-slug>`：小写字母、数字和短横线，例如 `gpt-5-market-scan`。
 - `<YYYYMMDD>`：8 位日期，例如 `20260611`。
-- `<creator>`：小写字母、数字和短横线，例如 `mozhi`。
+- `<creator>`：中文、英文字母、数字、短横线或下划线，例如 `mozhi`、`墨之`、`mozhi-jiawei`。
 
 每个报告目录内部结构由交付形态决定。HTML、PPTX、PDF、图片包、源材料和 QA 记录都可以按该报告自身需要组织。
 
