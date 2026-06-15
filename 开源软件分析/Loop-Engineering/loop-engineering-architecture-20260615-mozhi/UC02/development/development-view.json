@@ -1,0 +1,650 @@
+{
+  "view": "development",
+  "title": "Loop Engineering UC02 开发视图",
+  "summary": "围绕 UC02「执行 Loop」抽取的开发视图中间模型：从 pattern registry 出发，经脚手架与多工具运行面接线，落到 GitHub Actions harness，以及 state/budget/run-log/verifier 支撑契约。",
+  "description": "该仓库并没有一个统一常驻的 loop runtime。开发者维护的是一组可复用模式元数据、copyable starter、按工具改写的运行面示例、可插入 CI 的 automation harness，以及约束 loop 持续运行的状态与门禁契约。",
+  "scope": "只解释 UC02 的实现切片：patterns/registry、starters、examples/grok、examples/claude-code、examples/codex、examples/github-actions，以及 loop-init、loop-audit、loop-cost、loop-budget、loop-verifier 等共享支撑。省略 docs 站点、stories、web-captures、assets、dist 和运行期生成物。",
+  "style_profile": "ref-default",
+  "layout_suggestion": {
+    "strategy": "layered-groups"
+  },
+  "build_roots": [
+    {
+      "id": "repo-root",
+      "paths": [
+        "package.json",
+        "scripts/"
+      ],
+      "reason": "主仓脚本负责校验 registry、一致性检查，以及串起 tools 的构建与测试。"
+    },
+    {
+      "id": "pattern-root",
+      "paths": [
+        "patterns/"
+      ],
+      "reason": "模式注册表是 UC02 的业务源头，定义可运行 loop 的 cadence、skills、state、starter 与 cost。"
+    },
+    {
+      "id": "starter-root",
+      "paths": [
+        "starters/",
+        "templates/"
+      ],
+      "reason": "starter 与模板资产承载不同工具面的复制入口和状态/技能骨架。"
+    },
+    {
+      "id": "example-root",
+      "paths": [
+        "examples/grok/",
+        "examples/claude-code/",
+        "examples/codex/",
+        "examples/github-actions/"
+      ],
+      "reason": "examples 把同一模式和状态契约映射到不同调度与调用面。"
+    },
+    {
+      "id": "tool-roots",
+      "paths": [
+        "tools/loop-init/",
+        "tools/loop-audit/",
+        "tools/loop-cost/"
+      ],
+      "reason": "三个 npm CLI 分别负责脚手架、readiness 审计与成本估算。"
+    }
+  ],
+  "module_dependencies": [
+    {
+      "source": "loop-init-cli",
+      "target": "pattern-registry",
+      "dependency_type": "read-time",
+      "reason": "CLI 读取 pattern id、state 文件和预算常量，并通过同步脚本校验覆盖全部 registry 模式。"
+    },
+    {
+      "source": "loop-init-cli",
+      "target": "starter-assets",
+      "dependency_type": "packaged-assets",
+      "reason": "发布包直接捆绑 starters 与 templates，scaffold 时复制到目标仓库。"
+    },
+    {
+      "source": "runtime-surface-examples",
+      "target": "loop-control-contract",
+      "dependency_type": "shared-contract",
+      "reason": "Grok、Claude、Codex 只改变调度与 prompt 表达，仍共享 STATE、worktree、verifier 与 budget guard 契约。"
+    },
+    {
+      "source": "automation-harness",
+      "target": "runtime-surface-examples",
+      "dependency_type": "semantic-alignment",
+      "reason": "GitHub Actions 复用同一 triage 语义与状态 schema，只把交互式 `/loop` 换成 workflow trigger + Invoke agent。"
+    },
+    {
+      "source": "audit-cost-tooling",
+      "target": "pattern-registry",
+      "dependency_type": "metadata-consumer",
+      "reason": "loop-cost 打包 registry 为 registry.json；loop-audit 把 registry 是否存在视为 readiness 信号。"
+    },
+    {
+      "source": "audit-cost-tooling",
+      "target": "loop-control-contract",
+      "dependency_type": "policy-check",
+      "reason": "loop-audit 与 loop-cost 共同消费 budget、run-log、verifier 与 LOOP/STATE 约束。"
+    }
+  ],
+  "ownership_notes": [
+    {
+      "module": "pattern-registry",
+      "note": "这里是 UC02 的单一模式语义源；改 cadence、skills、starter 或 token cost 时，应同步检查 examples 与 tools。"
+    },
+    {
+      "module": "starter-assets",
+      "note": "starter 代表开发者复制进外部项目的骨架，不应把复制后产生的具体项目状态或日志回灌成仓库源码模块。"
+    },
+    {
+      "module": "loop-control-contract",
+      "note": "状态、预算、run-log 和 verifier 是跨工具共享契约，不属于 Grok、Claude、Codex 任一单独 runtime。"
+    },
+    {
+      "module": "automation-harness",
+      "note": "GitHub Actions 只提供触发和上下文收集壳层，真正的 agent 实现故意留在 Invoke agent 接线点。"
+    }
+  ],
+  "groups": [
+    {
+      "id": "pattern-source",
+      "label": "模式源层",
+      "color_role": "orange",
+      "layout_hint": {
+        "order": 1
+      }
+    },
+    {
+      "id": "scaffold",
+      "label": "脚手架装配层",
+      "color_role": "blue",
+      "layout_hint": {
+        "order": 2
+      }
+    },
+    {
+      "id": "runtime-wiring",
+      "label": "运行面接线层",
+      "color_role": "green",
+      "layout_hint": {
+        "order": 3
+      }
+    },
+    {
+      "id": "loop-contract",
+      "label": "状态与门禁层",
+      "color_role": "purple",
+      "layout_hint": {
+        "order": 4
+      }
+    },
+    {
+      "id": "assurance",
+      "label": "审计估算层",
+      "color_role": "red",
+      "layout_hint": {
+        "order": 5
+      }
+    }
+  ],
+  "elements": [
+    {
+      "id": "pattern-registry",
+      "label": "Pattern Registry",
+      "type": "subsystem",
+      "group": "pattern-source",
+      "code_kind": "schema",
+      "paths": [
+        "patterns/registry.yaml",
+        "patterns/registry.schema.json",
+        "patterns/README.md",
+        "patterns/*.md",
+        "scripts/validate-registry.mjs"
+      ],
+      "responsibility": "维护 7 个 loop pattern 的规范化元数据与文档入口，包括 cadence、risk、tools、skills、state、starter、week_one_mode 与 token cost，并用 schema + validator 保持一致性。",
+      "exposes": [
+        "patterns/registry.yaml#patterns[]",
+        "patterns/<pattern>.md",
+        "npm run validate:registry"
+      ],
+      "depends_on": [],
+      "evidence_ids": [
+        "ev-pattern-registry",
+        "ev-pattern-readme",
+        "ev-registry-validator"
+      ]
+    },
+    {
+      "id": "loop-init-cli",
+      "label": "loop-init CLI",
+      "type": "component",
+      "group": "scaffold",
+      "code_kind": "package",
+      "paths": [
+        "tools/loop-init/src/cli.ts",
+        "tools/loop-init/package.json",
+        "tools/loop-init/README.md",
+        "scripts/check-loop-init-sync.mjs"
+      ],
+      "responsibility": "把 pattern/tool 选择翻译成可复制脚手架：挑选 starter，复制 skills/agents，生成 STATE/LOOP、loop-budget.md、loop-run-log.md，并给出首条 loop 命令。",
+      "exposes": [
+        "npx @cobusgreyling/loop-init <target> --pattern <id> --tool <grok|claude|codex>",
+        "PATTERN_STARTERS / STATE_FILES / PATTERN_BUDGET 映射",
+        "scripts/check-loop-init-sync.mjs"
+      ],
+      "depends_on": [
+        "pattern-registry",
+        "starter-assets",
+        "loop-control-contract"
+      ],
+      "evidence_ids": [
+        "ev-loop-init-cli",
+        "ev-loop-init-readme",
+        "ev-loop-init-sync"
+      ]
+    },
+    {
+      "id": "starter-assets",
+      "label": "Starter Assets",
+      "type": "subsystem",
+      "group": "scaffold",
+      "code_kind": "repository",
+      "paths": [
+        "starters/README.md",
+        "starters/minimal-loop/",
+        "starters/minimal-loop-claude/",
+        "starters/minimal-loop-codex/",
+        "starters/pr-babysitter/",
+        "starters/ci-sweeper/",
+        "starters/dependency-sweeper/",
+        "starters/post-merge-cleanup/",
+        "starters/changelog-drafter/",
+        "templates/"
+      ],
+      "responsibility": "提供按 pattern 与 tool 预裁剪好的复制资产，约定 `.grok` / `.claude` / `.codex` 目录放置方式，并把 LOOP、STATE、技能与 verifier 骨架装进 starter。",
+      "exposes": [
+        "starters/<pattern-or-tool-variant>/",
+        "templates/SKILL.md.*",
+        "templates/STATE.md.template"
+      ],
+      "depends_on": [
+        "pattern-registry",
+        "loop-control-contract"
+      ],
+      "evidence_ids": [
+        "ev-starters-readme",
+        "ev-minimal-starter",
+        "ev-loop-config"
+      ]
+    },
+    {
+      "id": "runtime-surface-examples",
+      "label": "Runtime Surface Examples",
+      "type": "subsystem",
+      "group": "runtime-wiring",
+      "code_kind": "module",
+      "paths": [
+        "examples/README.md",
+        "examples/grok/README.md",
+        "examples/claude-code/",
+        "examples/codex/"
+      ],
+      "responsibility": "把同一 pattern 与 loop contract 映射到交互式运行面：Grok `/loop`、Claude Code `/loop`、Codex Automations，以及各自的 worktree / verifier 提示。",
+      "exposes": [
+        "examples/grok/*.md",
+        "examples/claude-code/*.md",
+        "examples/codex/*.md"
+      ],
+      "depends_on": [
+        "pattern-registry",
+        "starter-assets",
+        "loop-control-contract"
+      ],
+      "evidence_ids": [
+        "ev-examples-index",
+        "ev-grok-example",
+        "ev-claude-example",
+        "ev-codex-example",
+        "ev-primitives"
+      ]
+    },
+    {
+      "id": "automation-harness",
+      "label": "GitHub Actions Harness",
+      "type": "subsystem",
+      "group": "runtime-wiring",
+      "code_kind": "adapter",
+      "paths": [
+        "examples/github-actions/README.md",
+        "examples/github-actions/*.yml"
+      ],
+      "responsibility": "提供无 TUI 场景的事件触发壳层：schedule / workflow_run / push 收集上下文、准备 STATE，再在 Invoke agent 步骤接上 Codex CLI、repository_dispatch 或自定义 harness。",
+      "exposes": [
+        "examples/github-actions/daily-triage.yml",
+        "examples/github-actions/ci-sweeper.yml",
+        "examples/github-actions/post-merge-cleanup.yml",
+        "Invoke agent step contract"
+      ],
+      "depends_on": [
+        "runtime-surface-examples",
+        "loop-control-contract"
+      ],
+      "evidence_ids": [
+        "ev-gha-readme",
+        "ev-gha-daily",
+        "ev-primitives"
+      ]
+    },
+    {
+      "id": "loop-control-contract",
+      "label": "Loop Control Contract",
+      "type": "subsystem",
+      "group": "loop-contract",
+      "code_kind": "shared-lib",
+      "paths": [
+        "templates/STATE.md.template",
+        "templates/loop-budget.md.template",
+        "templates/loop-run-log.md.template",
+        "skills/loop-budget/SKILL.md",
+        "skills/loop-verifier/SKILL.md",
+        "starters/minimal-loop/LOOP.md",
+        "scripts/append-run-log.mjs"
+      ],
+      "responsibility": "定义 loop 的持久化状态、预算上限、kill switch、run-log 记录格式，以及 maker/checker verifier 契约，保证不同工具面的 loop 能以同一控制面持续运行。",
+      "exposes": [
+        "STATE.md / <pattern>-state.md convention",
+        "loop-budget skill contract",
+        "loop-verifier skill contract",
+        "scripts/append-run-log.mjs '<json-object>' [loop-run-log.md]"
+      ],
+      "depends_on": [],
+      "evidence_ids": [
+        "ev-loop-config",
+        "ev-budget-skill",
+        "ev-verifier-skill",
+        "ev-run-log-script"
+      ]
+    },
+    {
+      "id": "audit-cost-tooling",
+      "label": "Audit & Cost CLIs",
+      "type": "subsystem",
+      "group": "assurance",
+      "code_kind": "package",
+      "paths": [
+        "tools/loop-audit/src/auditor.ts",
+        "tools/loop-audit/README.md",
+        "tools/loop-cost/src/estimator.ts",
+        "tools/loop-cost/scripts/bundle-registry.mjs",
+        "tools/loop-cost/README.md"
+      ],
+      "responsibility": "把 UC02 的持续执行风险转换成可检查规则：loop-cost 依据 pattern cadence 与 level 估算日耗，loop-audit 检查 state、skills、verifier、workflow、budget、run-log 与 activity 证据。",
+      "exposes": [
+        "npx @cobusgreyling/loop-audit <target> [--suggest|--json|--md]",
+        "npx @cobusgreyling/loop-cost --pattern <id> --level <L1|L2|L3>",
+        "EstimateResult / AuditResult JSON shape"
+      ],
+      "depends_on": [
+        "pattern-registry",
+        "loop-control-contract",
+        "automation-harness"
+      ],
+      "evidence_ids": [
+        "ev-audit-code",
+        "ev-audit-readme",
+        "ev-cost-code",
+        "ev-cost-bundle"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "source": "starter-assets",
+      "target": "pattern-registry",
+      "label": "starter 目录与 pattern registry 的 starter/state/level 约定保持对应",
+      "summary_label": "映射模式",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-pattern-registry",
+        "ev-starters-readme"
+      ]
+    },
+    {
+      "source": "loop-init-cli",
+      "target": "pattern-registry",
+      "label": "读取 pattern id、state 文件名与预算映射，并用同步脚本保证 CLI 覆盖全部 registry 模式",
+      "summary_label": "读取模式",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-loop-init-cli",
+        "ev-loop-init-sync",
+        "ev-pattern-registry"
+      ]
+    },
+    {
+      "source": "loop-init-cli",
+      "target": "starter-assets",
+      "label": "从 starters 与 templates 复制技能、agent、STATE、LOOP 和模板资产到目标仓库",
+      "summary_label": "复制资产",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-loop-init-cli",
+        "ev-loop-init-readme",
+        "ev-starters-readme"
+      ]
+    },
+    {
+      "source": "loop-init-cli",
+      "target": "loop-control-contract",
+      "label": "脚手架过程中生成 loop-budget.md、loop-run-log.md，并补齐 loop-budget / verifier 支撑件",
+      "summary_label": "生成门禁",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-loop-init-cli",
+        "ev-loop-init-readme",
+        "ev-budget-skill",
+        "ev-verifier-skill"
+      ]
+    },
+    {
+      "source": "runtime-surface-examples",
+      "target": "pattern-registry",
+      "label": "按 registry 中的 cadence、pattern 名称与支持工具集合，维护 Grok、Claude、Codex 的运行示例",
+      "summary_label": "映射模式",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-pattern-registry",
+        "ev-examples-index",
+        "ev-grok-example",
+        "ev-claude-example",
+        "ev-codex-example"
+      ]
+    },
+    {
+      "source": "runtime-surface-examples",
+      "target": "loop-control-contract",
+      "label": "共享 STATE、loop-triage、worktree 与 verifier 约定，只把不同 agent runtime 的 prompt 与调度语法写成各自文档",
+      "summary_label": "共享契约",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-examples-index",
+        "ev-claude-example",
+        "ev-codex-example",
+        "ev-primitives",
+        "ev-verifier-skill"
+      ]
+    },
+    {
+      "source": "automation-harness",
+      "target": "runtime-surface-examples",
+      "label": "复用同一 triage 语义与状态 schema，只把交互式 `/loop` 调度替换成 workflow trigger 与 Invoke agent 壳层",
+      "summary_label": "替换调度",
+      "kind": "dependency",
+      "inferred": true,
+      "evidence_ids": [
+        "ev-gha-readme",
+        "ev-gha-daily",
+        "ev-primitives",
+        "ev-examples-index"
+      ]
+    },
+    {
+      "source": "automation-harness",
+      "target": "loop-control-contract",
+      "label": "workflow 先确保 STATE.md 存在并上传状态工件；budget、run-log、verifier 继续沿用同一跨工具契约",
+      "summary_label": "写回状态",
+      "kind": "dependency",
+      "inferred": true,
+      "evidence_ids": [
+        "ev-gha-readme",
+        "ev-gha-daily",
+        "ev-budget-skill",
+        "ev-verifier-skill"
+      ]
+    },
+    {
+      "source": "audit-cost-tooling",
+      "target": "pattern-registry",
+      "label": "loop-cost 把 registry 打包为 registry.json 用于估算，loop-audit 也把 registry 视为 readiness 信号之一",
+      "summary_label": "消费注册表",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-cost-bundle",
+        "ev-cost-code",
+        "ev-audit-code",
+        "ev-pattern-registry"
+      ]
+    },
+    {
+      "source": "audit-cost-tooling",
+      "target": "loop-control-contract",
+      "label": "核算 budget 上限、检查 run-log 与 activity、审计 verifier、LOOP、STATE 和安全门禁是否足以支撑持续执行",
+      "summary_label": "审计门禁",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-audit-code",
+        "ev-audit-readme",
+        "ev-cost-code",
+        "ev-budget-skill",
+        "ev-run-log-script",
+        "ev-verifier-skill"
+      ]
+    },
+    {
+      "source": "audit-cost-tooling",
+      "target": "automation-harness",
+      "label": "把 .github/workflows、调度存在性与 loop activity 作为 readiness 和运行证据的一部分",
+      "summary_label": "检查工作流",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-audit-code",
+        "ev-audit-readme",
+        "ev-gha-daily"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-pattern-registry",
+      "path": "patterns/registry.yaml",
+      "reason": "统一列出 pattern 的 cadence、tools、skills、state、starter、week_one_mode 与 cost，是 UC02 的模式元数据源。"
+    },
+    {
+      "id": "ev-pattern-readme",
+      "path": "patterns/README.md",
+      "reason": "说明“pick pattern -> scaffold -> scheduling -> run week one -> audit”的主流程，并把 7 个模式视为可复用运行模式。"
+    },
+    {
+      "id": "ev-registry-validator",
+      "path": "scripts/validate-registry.mjs",
+      "reason": "校验 registry schema、pattern 文档文件与 starter 路径对齐，证明 registry 是受约束的维护单元。"
+    },
+    {
+      "id": "ev-loop-init-cli",
+      "path": "tools/loop-init/src/cli.ts",
+      "reason": "CLI 代码直接声明 PATTERN_STARTERS、STATE_FILES、PATTERN_BUDGET，并复制 skills/agents、LOOP、budget 与 run-log。"
+    },
+    {
+      "id": "ev-loop-init-readme",
+      "path": "tools/loop-init/README.md",
+      "reason": "README 把 loop-init 定义为 pattern/tool 到 starter、budget、run-log、loop-budget skill 的脚手架入口。"
+    },
+    {
+      "id": "ev-loop-init-sync",
+      "path": "scripts/check-loop-init-sync.mjs",
+      "reason": "同步脚本强制 loop-init CLI 覆盖 registry 中全部 pattern id，体现元数据到脚手架的显式依赖。"
+    },
+    {
+      "id": "ev-starters-readme",
+      "path": "starters/README.md",
+      "reason": "列出按 tool 和 pattern 切分的 copyable starter，是开发者复制 loop 骨架的正式入口。"
+    },
+    {
+      "id": "ev-minimal-starter",
+      "path": "starters/minimal-loop/README.md",
+      "reason": "展示最小 starter 如何复制 loop-triage、STATE.md 与 LOOP.md，并在 L2 时补 verifier。"
+    },
+    {
+      "id": "ev-loop-config",
+      "path": "starters/minimal-loop/LOOP.md",
+      "reason": "LOOP.md 明确 budget、kill switch、run-log 和 human gates，是跨工具共享控制面样例。"
+    },
+    {
+      "id": "ev-examples-index",
+      "path": "examples/README.md",
+      "reason": "明确“同一 patterns，不同 tools；共享 skills 与 state schema，只有 scheduling 和 invocation 不同”。"
+    },
+    {
+      "id": "ev-grok-example",
+      "path": "examples/grok/README.md",
+      "reason": "把 `/loop`、scheduler_create、worktree isolation、skills、MCP、sub-agents 组合成 Grok 运行面。"
+    },
+    {
+      "id": "ev-claude-example",
+      "path": "examples/claude-code/daily-triage.md",
+      "reason": "展示 Claude Code 如何以 `/loop`、`.claude/skills`、`.claude/agents` 与 worktree/verifier 运行同一模式。"
+    },
+    {
+      "id": "ev-codex-example",
+      "path": "examples/codex/daily-triage.md",
+      "reason": "展示 Codex Automations 如何运行同一 triage prompt，并在 `.codex/agents/verifier.toml` 中挂 verifier。"
+    },
+    {
+      "id": "ev-gha-readme",
+      "path": "examples/github-actions/README.md",
+      "reason": "说明 GitHub Actions 负责 gather context、update state，并在 Invoke agent 步骤接入 Codex CLI、repository_dispatch 或自定义脚本。"
+    },
+    {
+      "id": "ev-gha-daily",
+      "path": "examples/github-actions/daily-triage.yml",
+      "reason": "workflow 模板明确 schedule/workflow_dispatch 触发、Ensure STATE.md exists 与 Upload state artifact。"
+    },
+    {
+      "id": "ev-primitives",
+      "path": "docs/primitives.md",
+      "reason": "把 `/loop`、scheduled tasks、GitHub Actions、worktree、skills、sub-agents、state 解释为同一 loop 控制系统的基础原语。"
+    },
+    {
+      "id": "ev-verifier-skill",
+      "path": "skills/loop-verifier/SKILL.md",
+      "reason": "定义 maker/checker split 中 verifier 的输入、检查项与 APPROVE/REJECT/ESCALATE_HUMAN 输出契约。"
+    },
+    {
+      "id": "ev-budget-skill",
+      "path": "skills/loop-budget/SKILL.md",
+      "reason": "定义每次 loop run 前后如何读取 budget、统计 24h spend、限流、早退并记录 run-log。"
+    },
+    {
+      "id": "ev-run-log-script",
+      "path": "scripts/append-run-log.mjs",
+      "reason": "给出 loop-run-log 的 JSON append 与 30 天窗口修剪实现，是 run-log 契约的具体脚本支撑。"
+    },
+    {
+      "id": "ev-audit-code",
+      "path": "tools/loop-audit/src/auditor.ts",
+      "reason": "auditor 直接检查 state、skills、verifier、worktree、.github/workflows、budget、run-log 与 loopActivity。"
+    },
+    {
+      "id": "ev-audit-readme",
+      "path": "tools/loop-audit/README.md",
+      "reason": "README 说明 loop-audit 的 readiness 信号集合及 L3 对 verifier、cost observability 和 activity 的要求。"
+    },
+    {
+      "id": "ev-cost-code",
+      "path": "tools/loop-cost/src/estimator.ts",
+      "reason": "估算器根据 cadence、L1/L2/L3 与 early-exit/action 成本混合，输出每日 token spend 场景。"
+    },
+    {
+      "id": "ev-cost-bundle",
+      "path": "tools/loop-cost/scripts/bundle-registry.mjs",
+      "reason": "构建脚本把 patterns/registry.yaml 打包到 tools/loop-cost/registry.json，证明 cost 工具显式消费 pattern 元数据。"
+    }
+  ],
+  "omissions": [
+    "docs 站点页面、stories、web-captures、assets 视觉资源不进入开发视图，因为它们不直接实现 UC02 的运行接线。",
+    "tools/*/dist、package-lock.json 与根目录 dogfood 产物（STATE.md、loop-budget.md、loop-run-log.md）未升格为元素，只在证据中借用其契约含义。",
+    "单个 pattern 文档未拆成 7 个节点；它们被折叠进 Pattern Registry，避免把开发视图退化成目录树。"
+  ],
+  "uncertainties": [
+    "GitHub Actions 与交互式 `/loop` 示例共享 triage 语义和状态契约，但仓库没有提供一个统一可导入的 agent runtime，因此两条边被标记为 inferred。",
+    "loop-init 中 PATTERN_BUDGET 注释说明其“镜像” registry cost caps，但预算常量并非自动从 registry 生成，存在未来漂移风险。",
+    "Issue Triage 仍复用 minimal-loop starter，本视图把它并入 Starter Assets，而没有单列专用 starter 模块。"
+  ],
+  "review_notes": [
+    "刻意保持 7 个核心维护单元，贴近参考图的“大卡片 + 短依赖标签”密度。",
+    "关系全部使用 dependency，并为每条边提供不超过 10 个中文字符的 summary_label。",
+    "开发分组通过 group 与 color_role 表达，不依赖额外大框。"
+  ]
+}

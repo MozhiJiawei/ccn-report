@@ -1,0 +1,229 @@
+{
+  "view": "use-case-catalog",
+  "title": "Loop Engineering 用例目录",
+  "summary": "本版将用例目录收敛为两个主能力：先定义 Loop，再执行 Loop。7 个 pattern 不再平铺成 7 个顶级 P0，而是作为“执行 Loop”的运行模式与入口面；维护者相关能力退居辅助位置。",
+  "description": "仓库的主叙事不是“提供了 7 个彼此独立的产品”，而是“帮助采用者设计一条 loop，并把它接到具体运行面上持续执行”。因此把 pattern 选择、脚手架、状态与预算配置、readiness 审计、成本估算、升级边界设计统一归入“定义 Loop”，把按 cadence 或事件触发的 7 种运行模式统一归入“执行 Loop”。",
+  "style_profile": "ref-default",
+  "catalog_columns": [
+    "编号",
+    "用例",
+    "主参与者",
+    "入口面",
+    "优先级",
+    "说明"
+  ],
+  "actors": [
+    {
+      "id": "loop-designer",
+      "label": "Loop 设计者/配置者"
+    },
+    {
+      "id": "loop-operator",
+      "label": "Loop 操作者"
+    },
+    {
+      "id": "repo-maintainer",
+      "label": "仓库维护者"
+    }
+  ],
+  "use_cases": [
+    {
+      "id": "uc-define-loop",
+      "code": "UC01",
+      "label": "定义 Loop",
+      "primary_actor": "loop-designer",
+      "entry_surfaces": [
+        "README.md（Quick Links / Getting Started）",
+        "docs/pattern-picker.md",
+        "docs/loop-design-checklist.md",
+        "starters/README.md",
+        "tools/loop-init/",
+        "tools/loop-cost/",
+        "tools/loop-audit/"
+      ],
+      "priority": "P0",
+      "summary": "选择 pattern 与目标工具，复制或脚手架 starter，配置 STATE.md、LOOP.md、skills、verifier、loop-budget.md、loop-run-log.md；估算 cadence 成本，审计 readiness，并明确 L1→L2→L3 升级边界、human gates、pause/kill 规则。"
+    },
+    {
+      "id": "uc-run-loop",
+      "code": "UC02",
+      "label": "执行 Loop",
+      "primary_actor": "loop-operator",
+      "entry_surfaces": [
+        "patterns/README.md",
+        "patterns/registry.yaml",
+        "examples/grok/README.md（`/loop`）",
+        "examples/claude-code/daily-triage.md（`/loop`）",
+        "examples/codex/daily-triage.md（Codex Automations）",
+        "examples/github-actions/README.md（schedule / workflow_run / push）"
+      ],
+      "priority": "P0",
+      "summary": "定义完成后，按选定 cadence 或事件触发运行 loop。运行模式包含 Daily Triage、PR Babysitter、CI Sweeper、Dependency Sweeper、Changelog Drafter、Post-Merge Cleanup、Issue Triage；它们可接到 Grok `/loop`、Claude Code `/loop`、Codex Automations，或 GitHub Actions + `repository_dispatch` / Codex CLI / 自定义 harness。"
+    },
+    {
+      "id": "uc-review-upgrade-loop",
+      "code": "UC03",
+      "label": "复盘与升级",
+      "primary_actor": "loop-designer",
+      "entry_surfaces": [
+        "docs/operating-loops.md",
+        "tools/loop-audit/",
+        "loop-budget.md",
+        "loop-run-log.md"
+      ],
+      "priority": "P1",
+      "summary": "依据预算、run log、activity、false positive、pause/kill 标准持续复盘 loop，决定是否降频、暂停、从 L1 升到 L2/L3，或回退到更保守的运行方式。"
+    },
+    {
+      "id": "uc-govern-pattern-library",
+      "code": "UC04",
+      "label": "治理模式库",
+      "primary_actor": "repo-maintainer",
+      "entry_surfaces": [
+        "CONTRIBUTING.md",
+        "patterns/registry.yaml",
+        "scripts/validate-registry.mjs",
+        "patterns/README.md"
+      ],
+      "priority": "P2",
+      "summary": "维护 pattern、starter、skills 与 registry 的一致性，确保 7 个模式的 goal、cadence、risk、tools、state、starter 与成本元数据能被文档、CLI 和后续 tooling 共同消费。"
+    },
+    {
+      "id": "uc-release-loop-tooling",
+      "code": "UC05",
+      "label": "发布工具链",
+      "primary_actor": "repo-maintainer",
+      "entry_surfaces": [
+        "docs/RELEASE.md",
+        "tools/loop-init/README.md",
+        "tools/loop-audit/README.md",
+        "tools/loop-cost/README.md",
+        "examples/github-actions/README.md"
+      ],
+      "priority": "P2",
+      "summary": "发布 `loop-init`、`loop-audit`、`loop-cost`，并维护 starter 与 GitHub Actions 示例，使采用者可以持续复用“定义 Loop”和“执行 Loop”的脚手架、审计与接线能力。"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-readme-flow",
+      "path": "README.md",
+      "reason": "README 的 Quick Links 与 Getting Started 用“Pattern Picker → loop-init → loop-cost → loop-audit → start report-only”组织采用路径，支持把主能力收敛为“定义 Loop”后再“执行 Loop”。"
+    },
+    {
+      "id": "ev-pattern-picker",
+      "path": "docs/pattern-picker.md",
+      "reason": "Pattern Picker 从症状选择 pattern，并把成本估算、脚手架与 readiness 约束放在前置决策里，直接支持“定义 Loop”。"
+    },
+    {
+      "id": "ev-design-checklist",
+      "path": "docs/loop-design-checklist.md",
+      "reason": "Checklist 把 purpose、cadence、skills、maker/checker、state、handoff、connectors、cost、observability、safety 视为一个整体设计面，而不是多个独立最终用例。"
+    },
+    {
+      "id": "ev-starters",
+      "path": "starters/README.md",
+      "reason": "Starters 公开不同 tool surface 的 clone-and-run 脚手架，并要求复制后立刻运行 loop-audit，说明 starter 是定义能力的一部分。"
+    },
+    {
+      "id": "ev-loop-init",
+      "path": "tools/loop-init/README.md",
+      "reason": "loop-init README 明确其职责是按 pattern/tool 脚手架 state、budget、run-log 与 loop-budget skill，支持“定义 Loop”。"
+    },
+    {
+      "id": "ev-loop-init-cli",
+      "path": "tools/loop-init/src/cli.ts",
+      "reason": "CLI 源码把 pattern、tool、state file、LOOP.md、AGENTS.md、loop-budget、loop-run-log、verifier 与 first-loop command 串成一条配置流，是“定义 Loop”的直接实现。"
+    },
+    {
+      "id": "ev-loop-audit",
+      "path": "tools/loop-audit/README.md",
+      "reason": "loop-audit README 定义了 Loop Readiness Score、L0-L3 与 activity proof，说明 readiness 审计是定义与升级控制面。"
+    },
+    {
+      "id": "ev-loop-auditor",
+      "path": "tools/loop-audit/src/auditor.ts",
+      "reason": "auditor.ts 具体检查 state、skills、verifier、workflows、registry、budget、run log、activity 与 L3 门槛，支撑“复盘与升级”。"
+    },
+    {
+      "id": "ev-loop-cost",
+      "path": "tools/loop-cost/README.md",
+      "reason": "loop-cost README 把 cadence、level 与 daily token spend 联系起来，证明成本估算属于 Loop 定义前置步骤。"
+    },
+    {
+      "id": "ev-patterns",
+      "path": "patterns/README.md",
+      "reason": "Patterns README 把 7 个 pattern 作为可复用运行模式列出，并明确使用顺序为 pick pattern → scaffold → set up scheduling → run week one → audit，支撑“执行 Loop”是一个按模式展开的主能力。"
+    },
+    {
+      "id": "ev-registry",
+      "path": "patterns/registry.yaml",
+      "reason": "registry.yaml 把 7 个 pattern 统一编码为 goal、cadence、tools、skills、state、phases、starter、week_one_mode 与 cost，表明它们更像同一主能力下的运行配置，而不是 7 个割裂产品。"
+    },
+    {
+      "id": "ev-primitives",
+      "path": "docs/primitives.md",
+      "reason": "Primitives 文档把 `/loop`、scheduled tasks、GitHub Actions、Codex Automation、repository dispatch 等归为同一类 scheduling realization，直接解释“执行 Loop 在哪里运行”。"
+    },
+    {
+      "id": "ev-grok-surface",
+      "path": "examples/grok/README.md",
+      "reason": "Grok 示例把 `/loop` 作为原生运行面，说明执行 case 可在对话式 agent runtime 中以命令形式落地。"
+    },
+    {
+      "id": "ev-claude-surface",
+      "path": "starters/minimal-loop-claude/README.md",
+      "reason": "Claude starter 直接给出 `/loop 1d ...` 的启动命令，证明 Claude Code 是执行 Loop 的具体入口面。"
+    },
+    {
+      "id": "ev-codex-surface",
+      "path": "starters/minimal-loop-codex/README.md",
+      "reason": "Codex starter 要求在 Automations tab 里配置 cadence、environment 与 prompt，证明 Codex Automation 是执行 Loop 的具体入口面。"
+    },
+    {
+      "id": "ev-codex-example",
+      "path": "examples/codex/daily-triage.md",
+      "reason": "Codex example 进一步说明 Daily Triage 以 Automations 周期运行，并把结果写回 Triage inbox 与 STATE.md。"
+    },
+    {
+      "id": "ev-gha",
+      "path": "examples/github-actions/README.md",
+      "reason": "GitHub Actions README 把 schedule、workflow_run、push 触发器与 repository_dispatch、Codex CLI/API、自定义脚本接线写清楚，证明执行 case 也可在 CI/automation surface 上落地。"
+    },
+    {
+      "id": "ev-operating",
+      "path": "docs/operating-loops.md",
+      "reason": "Operating Loops 文档定义 budget、run log、pause/kill 与 L1→L2→L3 升级路径，为“复盘与升级”提供直接证据。"
+    },
+    {
+      "id": "ev-contributing",
+      "path": "CONTRIBUTING.md",
+      "reason": "Contributing 将新增 pattern、tool mapping、starter 与故事视为正式贡献单元，说明模式库治理是维护者的辅助能力。"
+    },
+    {
+      "id": "ev-validate-registry",
+      "path": "scripts/validate-registry.mjs",
+      "reason": "validate-registry 会校验 registry schema、pattern 文件与 starter 对齐，证明 registry/模式库治理是明确存在的维护流程。"
+    },
+    {
+      "id": "ev-release",
+      "path": "docs/RELEASE.md",
+      "reason": "Release playbook 描述 `loop-init`、`loop-audit`、`loop-cost` 的标签发布与验证流程，支撑“发布工具链”作为辅助用例。"
+    }
+  ],
+  "uncertainties": [
+    "仓库没有提供一个统一托管的多模式 runtime controller；“执行 Loop”更多体现为把 pattern 接到各自的 agent runtime 或 CI harness。",
+    "Issue Triage 在 registry 中是一等 pattern，但 starter 仍复用 minimal-loop，因此其配置体验略弱于拥有专属 starter 的模式。",
+    "GitHub Actions 示例保留了“Invoke agent”占位接线，因此 Actions 证明的是运行面与触发方式，而不是内置的完整 agent 实现。"
+  ],
+  "omissions": [
+    "没有把 7 个 pattern 各自拆成顶级 P0 行；它们被保留为“执行 Loop”的运行模式与入口面说明。",
+    "没有把 minimal-fix、loop-verifier、loop-budget 等技能拆成独立用例；它们是定义或执行过程中的支撑构件。",
+    "没有把 Grok、Claude Code、Codex、GitHub Actions 分别建成不同主用例；它们是同一执行能力的不同运行面。"
+  ],
+  "review_notes": [
+    "两个主 case 分别回答“先把 loop 设计好”和“再让 loop 跑起来”这两个用户最关心的问题。",
+    "辅助 case 只保留对主能力有长期支撑作用的治理、发布与升级事项，避免喧宾夺主。",
+    "JSON 仅保留 use-case catalog 建模内容，不包含任何渲染结果或 draw.io 特定布局指令。"
+  ]
+}
