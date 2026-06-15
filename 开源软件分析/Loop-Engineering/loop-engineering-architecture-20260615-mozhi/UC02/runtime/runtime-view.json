@@ -1,0 +1,719 @@
+{
+  "view": "runtime",
+  "title": "UC02 执行 Loop 运行视图",
+  "summary": "UC02 聚焦“已定义好的 loop 如何在不同运行面上被持续触发、执行、校验并回写状态”。仓库没有统一托管的 runtime controller，真正的运行时故事来自 `/loop`、Codex Automations、GitHub Actions 与 starter/LOOP 约定之间的协作。",
+  "description": "本模型不把仓库画成目录图，而是把 UC02 收敛为 4 条主运行路径：Grok `/loop`、Claude Code `/loop`、Codex Automations、GitHub Actions。它们共享同一套 loop 合约（pattern、starter、LOOP.md、skills、state/budget/run-log 约定），再由各自的运行面或 harness 驱动 triage、可选的 worktree+verifier 分支，以及最终的人工复核/升级闭环。",
+  "scope": {
+    "focus": "仅解释 UC02「执行 Loop」的运行协作，不覆盖 UC01 定义流程，也不拆渲染层。",
+    "included_surfaces": [
+      "Grok `/loop`",
+      "Claude Code `/loop`",
+      "Codex Automations",
+      "GitHub Actions（schedule / workflow_run / push / workflow_dispatch）",
+      "repository_dispatch / Codex CLI / custom harness"
+    ],
+    "reading_strategy": "先读取 use-case 结果锁定入口面，再从 docs、examples、starters、loop-init、loop-audit 中提取能证明生命周期 owner、状态边界与验证闭环的证据。"
+  },
+  "omissions": [
+    "不展开 7 个 pattern 各自的专有步骤；它们在 runtime 中被折叠为共享的 loop 合约与执行器，只保留 trigger/cadence/gates 差异。",
+    "不展开 Grok、Claude、Codex、GitHub Actions 的厂商内部 runtime 细节；仓库只提供 prompt、starter、workflow wiring 与操作约定。",
+    "不展开 MCP connector、PR/Ticket API、具体测试命令的逐一后端；这些被折叠进执行器或反馈面。",
+    "不绘制静态目录、npm 包或 docs 结构；本视图只保留能解释执行顺序的参与者。"
+  ],
+  "uncertainties": [
+    "GitHub Actions 的“Run triage agent”仍是占位 wiring；workflow 到 Codex CLI、repository_dispatch 或自定义 harness 的具体实现不在仓库内，因此这段连线只能建模为受文档约束的推断。",
+    "Grok 与 Claude Code 的 `/loop` 调度器本身属于外部产品能力，仓库通过 README、starter 与示例描述其入口，不包含可执行源码实现。",
+    "反馈面被收敛为一个抽象参与者，实际承载物会因运行面不同而变化为 STATE.md 审阅、Codex Triage inbox、Actions artifact、PR/issue 评论等。"
+  ],
+  "layout_suggestion": {
+    "strategy": "runtime-lanes",
+    "orientation": "left-to-right",
+    "lane_style": "participant-sequence",
+    "primary_paths": [
+      "path-grok-loop",
+      "path-claude-loop",
+      "path-codex-automation",
+      "path-github-actions"
+    ]
+  },
+  "style_profile": "ref-default",
+  "groups": [
+    {
+      "id": "lane-trigger",
+      "label": "触发",
+      "layout_hint": {
+        "order": 1
+      }
+    },
+    {
+      "id": "lane-harness",
+      "label": "运行面 / Harness",
+      "layout_hint": {
+        "order": 2
+      }
+    },
+    {
+      "id": "lane-contract",
+      "label": "Loop 合约",
+      "layout_hint": {
+        "order": 3
+      }
+    },
+    {
+      "id": "lane-execution",
+      "label": "代理执行",
+      "layout_hint": {
+        "order": 4
+      }
+    },
+    {
+      "id": "lane-governance",
+      "label": "校验 / 状态 / 预算",
+      "layout_hint": {
+        "order": 5
+      }
+    },
+    {
+      "id": "lane-outcome",
+      "label": "结果 / 反馈",
+      "layout_hint": {
+        "order": 6
+      }
+    }
+  ],
+  "elements": [
+    {
+      "id": "loop-operator",
+      "label": "Loop 操作者",
+      "type": "external",
+      "group": "lane-trigger",
+      "evidence_ids": [
+        "ev-starter-grok",
+        "ev-starter-claude",
+        "ev-starter-codex"
+      ]
+    },
+    {
+      "id": "repo-event",
+      "label": "仓库事件 / 定时器",
+      "type": "external",
+      "group": "lane-trigger",
+      "evidence_ids": [
+        "ev-primitives",
+        "ev-gha-workflow",
+        "ev-root-loopmd"
+      ]
+    },
+    {
+      "id": "grok-loop-surface",
+      "label": "Grok `/loop`",
+      "type": "interface",
+      "group": "lane-harness",
+      "evidence_ids": [
+        "ev-primitives",
+        "ev-grok-readme",
+        "ev-grok-example"
+      ]
+    },
+    {
+      "id": "claude-loop-surface",
+      "label": "Claude `/loop`",
+      "type": "interface",
+      "group": "lane-harness",
+      "evidence_ids": [
+        "ev-primitives",
+        "ev-starter-claude",
+        "ev-claude-example"
+      ]
+    },
+    {
+      "id": "codex-automation",
+      "label": "Codex Automations",
+      "type": "scheduler",
+      "group": "lane-harness",
+      "evidence_ids": [
+        "ev-primitives",
+        "ev-starter-codex",
+        "ev-codex-example"
+      ]
+    },
+    {
+      "id": "github-actions-runner",
+      "label": "GitHub Actions",
+      "type": "scheduler",
+      "group": "lane-harness",
+      "evidence_ids": [
+        "ev-primitives",
+        "ev-gha-readme",
+        "ev-gha-workflow"
+      ]
+    },
+    {
+      "id": "external-runner",
+      "label": "外部 runner / dispatch 接收端",
+      "type": "orchestrator",
+      "group": "lane-harness",
+      "evidence_ids": [
+        "ev-primitives",
+        "ev-gha-readme"
+      ]
+    },
+    {
+      "id": "loop-contract",
+      "label": "Loop 合约（pattern / starter / skills）",
+      "short_label": "Loop 合约",
+      "type": "component",
+      "group": "lane-contract",
+      "evidence_ids": [
+        "ev-pattern-registry",
+        "ev-loop-init-cli",
+        "ev-root-loopmd"
+      ]
+    },
+    {
+      "id": "loop-executor",
+      "label": "pattern 执行器",
+      "short_label": "执行器",
+      "type": "worker",
+      "group": "lane-execution",
+      "evidence_ids": [
+        "ev-grok-example",
+        "ev-claude-example",
+        "ev-codex-example",
+        "ev-root-loopmd"
+      ]
+    },
+    {
+      "id": "verifier-worktree",
+      "label": "Verifier / Worktree 分支",
+      "short_label": "Verifier",
+      "type": "worker",
+      "group": "lane-governance",
+      "evidence_ids": [
+        "ev-grok-example",
+        "ev-claude-example",
+        "ev-codex-example",
+        "ev-audit-runtime"
+      ]
+    },
+    {
+      "id": "state-ledger",
+      "label": "STATE / budget / run-log",
+      "short_label": "状态账本",
+      "type": "database",
+      "group": "lane-governance",
+      "evidence_ids": [
+        "ev-operating-loops",
+        "ev-root-loopmd",
+        "ev-gha-workflow",
+        "ev-audit-runtime"
+      ]
+    },
+    {
+      "id": "feedback-surface",
+      "label": "反馈面（Inbox / Artifact / PR）",
+      "short_label": "反馈面",
+      "type": "interface",
+      "group": "lane-outcome",
+      "evidence_ids": [
+        "ev-codex-example",
+        "ev-gha-workflow",
+        "ev-root-loopmd"
+      ]
+    },
+    {
+      "id": "human-review",
+      "label": "人工复核 / 升级",
+      "short_label": "人工复核",
+      "type": "external",
+      "group": "lane-outcome",
+      "evidence_ids": [
+        "ev-operating-loops",
+        "ev-root-loopmd",
+        "ev-codex-example"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-trigger-grok",
+      "source": "loop-operator",
+      "target": "grok-loop-surface",
+      "label": "下达 `/loop`",
+      "summary_label": "下达/loop",
+      "kind": "event",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-starter-grok",
+        "ev-grok-readme",
+        "ev-grok-example"
+      ]
+    },
+    {
+      "id": "rel-trigger-claude",
+      "source": "loop-operator",
+      "target": "claude-loop-surface",
+      "label": "下达 `/loop`",
+      "summary_label": "下达/loop",
+      "kind": "event",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-starter-claude",
+        "ev-claude-example"
+      ]
+    },
+    {
+      "id": "rel-trigger-codex",
+      "source": "loop-operator",
+      "target": "codex-automation",
+      "label": "启用 cadence",
+      "summary_label": "启用 cadence",
+      "kind": "sync",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-starter-codex",
+        "ev-codex-example"
+      ]
+    },
+    {
+      "id": "rel-trigger-gha",
+      "source": "repo-event",
+      "target": "github-actions-runner",
+      "label": "触发 workflow",
+      "summary_label": "触发 workflow",
+      "kind": "event",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-gha-readme",
+        "ev-gha-workflow",
+        "ev-root-loopmd"
+      ]
+    },
+    {
+      "id": "rel-grok-contract",
+      "source": "grok-loop-surface",
+      "target": "loop-contract",
+      "label": "装载 LOOP / 技能",
+      "summary_label": "装载合约",
+      "kind": "sync",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-starter-grok",
+        "ev-loop-init-cli"
+      ]
+    },
+    {
+      "id": "rel-claude-contract",
+      "source": "claude-loop-surface",
+      "target": "loop-contract",
+      "label": "装载 LOOP / 技能",
+      "summary_label": "装载合约",
+      "kind": "sync",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-starter-claude",
+        "ev-loop-init-cli"
+      ]
+    },
+    {
+      "id": "rel-codex-contract",
+      "source": "codex-automation",
+      "target": "loop-contract",
+      "label": "注入 Prompt / 技能",
+      "summary_label": "装载合约",
+      "kind": "sync",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-starter-codex",
+        "ev-codex-example",
+        "ev-loop-init-cli"
+      ]
+    },
+    {
+      "id": "rel-gha-contract",
+      "source": "github-actions-runner",
+      "target": "loop-contract",
+      "label": "本机 CLI / 脚本调用",
+      "summary_label": "本机调用",
+      "kind": "async",
+      "inferred": true,
+      "evidence_ids": [
+        "ev-gha-readme",
+        "ev-gha-workflow"
+      ]
+    },
+    {
+      "id": "rel-gha-external",
+      "source": "github-actions-runner",
+      "target": "external-runner",
+      "label": "发 repository_dispatch",
+      "summary_label": "发 dispatch",
+      "kind": "event",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-primitives",
+        "ev-gha-readme",
+        "ev-gha-workflow"
+      ]
+    },
+    {
+      "id": "rel-external-contract",
+      "source": "external-runner",
+      "target": "loop-contract",
+      "label": "读取 LOOP / 状态约定",
+      "summary_label": "读取合约",
+      "kind": "sync",
+      "inferred": true,
+      "evidence_ids": [
+        "ev-gha-readme",
+        "ev-root-loopmd"
+      ]
+    },
+    {
+      "id": "rel-contract-executor",
+      "source": "loop-contract",
+      "target": "loop-executor",
+      "label": "驱动 pattern 执行",
+      "summary_label": "驱动执行",
+      "kind": "sync",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-pattern-registry",
+        "ev-loop-init-cli",
+        "ev-root-loopmd"
+      ]
+    },
+    {
+      "id": "rel-executor-verifier",
+      "source": "loop-executor",
+      "target": "verifier-worktree",
+      "label": "派生修复校验",
+      "summary_label": "派生校验",
+      "kind": "async",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-grok-example",
+        "ev-claude-example",
+        "ev-codex-example",
+        "ev-root-loopmd"
+      ]
+    },
+    {
+      "id": "rel-executor-state",
+      "source": "loop-executor",
+      "target": "state-ledger",
+      "label": "回写 STATE",
+      "summary_label": "回写状态",
+      "kind": "state",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-grok-example",
+        "ev-claude-example",
+        "ev-codex-example",
+        "ev-gha-workflow",
+        "ev-operating-loops"
+      ]
+    },
+    {
+      "id": "rel-verifier-state",
+      "source": "verifier-worktree",
+      "target": "state-ledger",
+      "label": "记录 verdict / 成本",
+      "summary_label": "记录 verdict",
+      "kind": "state",
+      "inferred": true,
+      "evidence_ids": [
+        "ev-operating-loops",
+        "ev-root-loopmd",
+        "ev-audit-runtime"
+      ]
+    },
+    {
+      "id": "rel-state-feedback",
+      "source": "state-ledger",
+      "target": "feedback-surface",
+      "label": "暴露结果",
+      "summary_label": "暴露结果",
+      "kind": "stream",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-codex-example",
+        "ev-gha-workflow",
+        "ev-root-loopmd"
+      ]
+    },
+    {
+      "id": "rel-feedback-human",
+      "source": "feedback-surface",
+      "target": "human-review",
+      "label": "等待复核 / 升级",
+      "summary_label": "人工复核",
+      "kind": "sync",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-operating-loops",
+        "ev-root-loopmd",
+        "ev-codex-example"
+      ]
+    }
+  ],
+  "primary_paths": [
+    {
+      "id": "path-grok-loop",
+      "label": "Grok `/loop` 周期运行",
+      "summary": "操作者在 Grok 中下达 `/loop`，运行面装载 loop 合约并执行 triage；默认回写 STATE，进入可修复分支时再派生 verifier/worktree。",
+      "entrypoint": "examples/grok/daily-triage.md:7-9",
+      "participant_order": [
+        "loop-operator",
+        "grok-loop-surface",
+        "loop-contract",
+        "loop-executor",
+        "verifier-worktree",
+        "state-ledger",
+        "feedback-surface",
+        "human-review"
+      ],
+      "main_step_ids": [
+        "rel-trigger-grok",
+        "rel-grok-contract",
+        "rel-contract-executor",
+        "rel-executor-state",
+        "rel-state-feedback",
+        "rel-feedback-human"
+      ],
+      "branches": [
+        {
+          "label": "小修复 + verifier 分支",
+          "when": "triage 发现可安全处理的小问题且 loop 已启用 L2+ 动作模式",
+          "step_ids": [
+            "rel-executor-verifier",
+            "rel-verifier-state"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "path-claude-loop",
+      "label": "Claude `/loop` 周期运行",
+      "summary": "Claude Code 的 `/loop` 入口与 Grok 共享同一 runtime 结构，但把技能与 verifier 挂到 `.claude/`，并强调 implementer 在 worktree 中运行。",
+      "entrypoint": "examples/claude-code/daily-triage.md:7-15",
+      "participant_order": [
+        "loop-operator",
+        "claude-loop-surface",
+        "loop-contract",
+        "loop-executor",
+        "verifier-worktree",
+        "state-ledger",
+        "feedback-surface",
+        "human-review"
+      ],
+      "main_step_ids": [
+        "rel-trigger-claude",
+        "rel-claude-contract",
+        "rel-contract-executor",
+        "rel-executor-state",
+        "rel-state-feedback",
+        "rel-feedback-human"
+      ],
+      "branches": [
+        {
+          "label": "implementer / verifier 分支",
+          "when": "高优先级单文件修复进入动作阶段时，Claude 以 worktree 隔离 implementer，再交 verifier 审核",
+          "step_ids": [
+            "rel-executor-verifier",
+            "rel-verifier-state"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "path-codex-automation",
+      "label": "Codex Automations 周期运行",
+      "summary": "操作者先配置 Automations cadence；每次运行把 prompt 与 skill 注入执行器，结果一边回写 STATE，一边通过 Triage inbox 等反馈面暴露给人。",
+      "entrypoint": "examples/codex/daily-triage.md:16-27",
+      "participant_order": [
+        "loop-operator",
+        "codex-automation",
+        "loop-contract",
+        "loop-executor",
+        "verifier-worktree",
+        "state-ledger",
+        "feedback-surface",
+        "human-review"
+      ],
+      "main_step_ids": [
+        "rel-trigger-codex",
+        "rel-codex-contract",
+        "rel-contract-executor",
+        "rel-executor-state",
+        "rel-state-feedback",
+        "rel-feedback-human"
+      ],
+      "branches": [
+        {
+          "label": "isolated worktree + verifier",
+          "when": "Automations run 发现单文件小修复时，Codex 在隔离 worktree 中生成修复，并要求 verifier 先批准",
+          "step_ids": [
+            "rel-executor-verifier",
+            "rel-verifier-state"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "path-github-actions",
+      "label": "GitHub Actions 事件 / 定时运行",
+      "summary": "仓库事件或定时器触发 workflow；workflow 先收集上下文并保证 STATE 存在，再通过本机 CLI/脚本或 repository_dispatch 把 loop 委托给 headless harness，最后回写状态并把结果暴露给人工复核。",
+      "entrypoint": "examples/github-actions/daily-triage.yml:7-53",
+      "participant_order": [
+        "repo-event",
+        "github-actions-runner",
+        "external-runner",
+        "loop-contract",
+        "loop-executor",
+        "verifier-worktree",
+        "state-ledger",
+        "feedback-surface",
+        "human-review"
+      ],
+      "main_step_ids": [
+        "rel-trigger-gha",
+        "rel-gha-contract",
+        "rel-contract-executor",
+        "rel-executor-state",
+        "rel-state-feedback",
+        "rel-feedback-human"
+      ],
+      "branches": [
+        {
+          "label": "repository_dispatch 外派分支",
+          "when": "workflow 不在 runner 内直接运行代理，而是把 triage 委托给外部 Grok/Claude/Codex runner",
+          "step_ids": [
+            "rel-gha-external",
+            "rel-external-contract",
+            "rel-contract-executor",
+            "rel-executor-state"
+          ]
+        },
+        {
+          "label": "修复校验分支",
+          "when": "headless harness 进入 L2+ 修复路径，需要 verifier 与状态回写闭环",
+          "step_ids": [
+            "rel-executor-verifier",
+            "rel-verifier-state"
+          ]
+        }
+      ]
+    }
+  ],
+  "render_hints": {
+    "runtime": {
+      "lane_order": [
+        "lane-trigger",
+        "lane-harness",
+        "lane-contract",
+        "lane-execution",
+        "lane-governance",
+        "lane-outcome"
+      ],
+      "preferred_scene": "sequence",
+      "collapse_to_primary_paths": true,
+      "show_branch_labels": true
+    }
+  },
+  "evidence": [
+    {
+      "id": "ev-primitives",
+      "path": "docs/primitives.md",
+      "lines": "5-11",
+      "reason": "直接列出 `/loop`、Claude scheduled tasks、GitHub Actions + repository_dispatch、custom harness 等常见调度实现，是四条运行路径的总入口证据。"
+    },
+    {
+      "id": "ev-grok-readme",
+      "path": "examples/grok/README.md",
+      "lines": "1-13",
+      "reason": "README 把 Grok 的原生 primitives 定位为 `/loop`、scheduler、skills、MCP、sub-agents，并给出 `/loop 1d` 的常见命令形态。"
+    },
+    {
+      "id": "ev-grok-example",
+      "path": "examples/grok/daily-triage.md",
+      "lines": "7-23,45-57",
+      "reason": "Daily Triage 示例把 triage、STATE 回写、worktree、reviewer sub-agent、connectors、人审升级写成一条完整执行链。"
+    },
+    {
+      "id": "ev-starter-grok",
+      "path": "starters/minimal-loop/README.md",
+      "lines": "15-23",
+      "reason": "Grok starter 给出 `/loop` 启动命令，并说明先做 report-only，再追加 `minimal-fix` 与 `loop-verifier`。"
+    },
+    {
+      "id": "ev-starter-claude",
+      "path": "starters/minimal-loop-claude/README.md",
+      "lines": "18-26",
+      "reason": "Claude starter 证明 `/loop` 是入口面，`.claude/skills` 与 `.claude/agents/loop-verifier.md` 是执行与 checker 的宿主位置。"
+    },
+    {
+      "id": "ev-claude-example",
+      "path": "examples/claude-code/daily-triage.md",
+      "lines": "7-25",
+      "reason": "Claude 示例直接写明 report-only 路径与“小修复 -> implementer(worktree) -> verifier -> 更新 STATE -> 升级模糊项”的动作路径。"
+    },
+    {
+      "id": "ev-starter-codex",
+      "path": "starters/minimal-loop-codex/README.md",
+      "lines": "18-33",
+      "reason": "Codex starter 说明 Automations tab 是入口，prompt 承载 loop 合约，`.codex/agents/verifier.toml` 承载 checker。"
+    },
+    {
+      "id": "ev-codex-example",
+      "path": "examples/codex/daily-triage.md",
+      "lines": "16-27,35-46",
+      "reason": "Codex 示例给出 prompt 内容、STATE 更新方式、isolated worktree + verifier 分支，以及 Triage inbox 这一结果反馈面。"
+    },
+    {
+      "id": "ev-gha-readme",
+      "path": "examples/github-actions/README.md",
+      "lines": "3-14,16-22",
+      "reason": "GitHub Actions README 明说 workflow 先 gather context、update state，再把执行委托给 Codex CLI、repository_dispatch 或 custom harness。"
+    },
+    {
+      "id": "ev-gha-workflow",
+      "path": "examples/github-actions/daily-triage.yml",
+      "lines": "7-53",
+      "reason": "工作流源码给出 schedule/workflow_dispatch 触发、context gather、STATE.md 创建、占位的 Run triage agent 步骤与 state artifact 上传。"
+    },
+    {
+      "id": "ev-pattern-registry",
+      "path": "patterns/registry.yaml",
+      "lines": "26-45,47-149",
+      "reason": "registry 把 pattern 统一建模为 tools、skills、state、phases、human_gates、starter、week_one_mode 与 token_cost，是运行时“Loop 合约”的直接来源。"
+    },
+    {
+      "id": "ev-loop-init-cli",
+      "path": "tools/loop-init/src/cli.ts",
+      "reason": "loop-init 会复制 skill、verifier、STATE 文件、LOOP.md、loop-budget.md、loop-run-log.md，并生成各运行面的 first loop command，证明 runtime 依赖 starter 合约而不是统一 controller。"
+    },
+    {
+      "id": "ev-operating-loops",
+      "path": "docs/operating-loops.md",
+      "lines": "7-15,35-50,88-123",
+      "reason": "Operating Loops 说明预算、run log、kill switch、L1->L2->L3 升级与暂停条件，是校验/状态/预算 lane 的直接证据。"
+    },
+    {
+      "id": "ev-root-loopmd",
+      "path": "LOOP.md",
+      "lines": "9-19,21-37,43-65",
+      "reason": "根 LOOP.md 把 active loops、human gates、worktrees、connectors、budget、run history 与 live state 绑定到运行生命周期。"
+    },
+    {
+      "id": "ev-audit-runtime",
+      "path": "tools/loop-audit/src/auditor.ts",
+      "reason": "auditor 把 state file、LOOP.md、skills、verifier、workflow、loop-budget、loop-run-log 与真实 activity 作为 readiness 运行信号，支撑“校验/状态/预算”参与者。"
+    }
+  ],
+  "review_notes": [
+    "本视图故意把 runtime story 画成 sequence/lane 风格，而不是把 docs、examples、tools、starters 并排成目录树。",
+    "GitHub Actions 路径同时保留“本机 CLI/脚本”和“repository_dispatch 外派”两种分支，因为 README 明确把它们列为 wiring 选项，且是否跨仓库边界会影响运行责任划分。",
+    "由于仓库没有统一托管的 runtime controller，`Loop 合约` 是一个收敛后的架构参与者，承接 pattern、starter、LOOP.md、skills、state/budget/run-log 约定。"
+  ]
+}

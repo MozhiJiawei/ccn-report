@@ -1,0 +1,648 @@
+{
+  "view": "development",
+  "title": "UC02 PR Babysitter 开发视图",
+  "summary": "围绕 Codex Automations 的 PR Babysitter 场景，展示让 loop 跑起来的开发侧 prompt、配置、state、skill、template 与脚手架单元。",
+  "scope": "只覆盖 UC02 里与 Codex PR Babysitter loop 直接相关的 developer-facing code/doc/prompt/config 单元；不展开 GitHub 运行时时序、实际 PR 数据面或渲染产物。",
+  "description": "核心链路是：模式注册与模式说明定义 loop 规则，Codex 示例 prompt 和 starter LOOP.md 将 watched PR、attempts<3、human gates、never merge / propose only 等约束具体化，pr-review-triage 负责分诊输出，minimal-fix 负责最小修复约束，verifier 负责 maker/checker 判定，loop-init CLI 负责把 starter 资产和缺失模板复制到目标仓库。",
+  "style_profile": "ref-default",
+  "build_roots": [
+    "examples/codex",
+    "patterns",
+    "starters/pr-babysitter",
+    "templates",
+    "tools/loop-init"
+  ],
+  "ownership_notes": [
+    "examples/codex/* 承载 Codex 自动化提示词写法，是让维护者看清“到底怎么 prompt”的第一入口。",
+    "patterns/* 承载跨工具的 PR Babysitter 规则来源；starters/pr-babysitter/* 把这些规则落成 repo 内可复制的 starter 资产。",
+    "templates/* 提供共享 skill/agent 契约；当 starter 下缺少 Codex 专用 minimal-fix 技能时，loop-init CLI 会从模板补齐。"
+  ],
+  "module_dependencies": [
+    {
+      "source": "registry",
+      "target": "pattern-guide",
+      "reason": "注册表把 pr-babysitter 模式绑定到模式说明文档。"
+    },
+    {
+      "source": "codex-prompt",
+      "target": "triage-skill",
+      "reason": "Codex prompt 第一步就是调用 $pr-review-triage。"
+    },
+    {
+      "source": "codex-prompt",
+      "target": "minimal-fix-contract",
+      "reason": "CI 红灯或 actionable review comment 时，prompt 显式切到 minimal-fix。"
+    },
+    {
+      "source": "minimal-fix-contract",
+      "target": "verifier-contract",
+      "reason": "implementer 不能自证完成，修复提案必须交给 verifier 做 APPROVE/REJECT/ESCALATE_HUMAN。"
+    },
+    {
+      "source": "loop-init-cli",
+      "target": "minimal-fix-contract",
+      "reason": "pr-babysitter 被标记为 needing fix，脚手架会复制 minimal-fix 模板。"
+    },
+    {
+      "source": "loop-init-cli",
+      "target": "verifier-contract",
+      "reason": "Codex verifier 缺失时，脚手架可从共享 verifier 模板合成 verifier.toml。"
+    }
+  ],
+  "groups": [
+    {
+      "id": "catalog",
+      "label": "模式目录",
+      "layout_hint": {
+        "order": 1
+      }
+    },
+    {
+      "id": "automation",
+      "label": "Codex 自动化",
+      "layout_hint": {
+        "order": 2
+      }
+    },
+    {
+      "id": "starter",
+      "label": "Starter 资产",
+      "layout_hint": {
+        "order": 3
+      }
+    },
+    {
+      "id": "skills",
+      "label": "Skill 与校验契约",
+      "layout_hint": {
+        "order": 4
+      }
+    },
+    {
+      "id": "tooling",
+      "label": "脚手架补齐",
+      "layout_hint": {
+        "order": 5
+      }
+    }
+  ],
+  "elements": [
+    {
+      "id": "registry",
+      "label": "Pattern Registry",
+      "type": "subsystem",
+      "group": "catalog",
+      "code_kind": "schema",
+      "paths": [
+        "patterns/registry.yaml"
+      ],
+      "responsibility": "提供 PR Babysitter 的机器可读入口，声明 cadence、skills、state 文件名、human gates、starter 目录与 early-exit/cost 约束。",
+      "exposes": [
+        "patterns.pr-babysitter 元数据条目",
+        "skills=[pr-review-triage,minimal-fix,rebase-and-clean]",
+        "state=pr-babysitter-state.md",
+        "human_gates=[security,payments,auth,max-fix-attempts]"
+      ],
+      "evidence_ids": [
+        "ev-registry-entry"
+      ]
+    },
+    {
+      "id": "pattern-guide",
+      "label": "Pattern Guide",
+      "type": "subsystem",
+      "group": "catalog",
+      "code_kind": "module",
+      "paths": [
+        "patterns/pr-babysitter.md"
+      ],
+      "responsibility": "解释 PR Babysitter 的典型循环、verification strategy、human handoff 点和“loop only proposes”的治理边界。",
+      "exposes": [
+        "How the Loop Runs (Typical Cycle)",
+        "Verification Strategy",
+        "Human Handoff Points",
+        "Fix attempt (L2) = Worktree + minimal-fix + verifier"
+      ],
+      "evidence_ids": [
+        "ev-pattern-cycle",
+        "ev-pattern-verify"
+      ]
+    },
+    {
+      "id": "codex-prompt",
+      "label": "Codex Prompt",
+      "type": "interface",
+      "group": "automation",
+      "code_kind": "prompt",
+      "paths": [
+        "examples/codex/pr-babysitter.md"
+      ],
+      "responsibility": "给 Codex Automations 提供具体 PR Babysitter 提示词，把 watched PR、attempts<3、worktree、minimal-fix、verifier must APPROVE、comment only / never merge 等动作串成单轮 loop。",
+      "exposes": [
+        "Cadence: Every 5-15 minutes (working hours)",
+        "Open PR selector: team-authored or label loop-watch",
+        "Prompt Template steps 1-4",
+        "Fix gate: CI red or actionable review comment AND attempts < 3"
+      ],
+      "evidence_ids": [
+        "ev-codex-cadence",
+        "ev-codex-prompt"
+      ]
+    },
+    {
+      "id": "starter-readme",
+      "label": "Starter README",
+      "type": "component",
+      "group": "starter",
+      "code_kind": "module",
+      "paths": [
+        "starters/pr-babysitter/README.md"
+      ],
+      "responsibility": "定义 starter 的复制入口和启动命令，告诉维护者如何把 PR Babysitter 落入仓库，并把 allowlisted PR、worktree + minimal-fix + loop-verifier、never merge、3 次后升级等规则写进启动文案。",
+      "exposes": [
+        "Quick Start: loop-init or manual copy",
+        "Customize skills with review norms and required checks",
+        "Starter /loop 5m command",
+        "Safety defaults: no auto-merge, denylist auth/payments/secrets"
+      ],
+      "evidence_ids": [
+        "ev-starter-readme",
+        "ev-starter-safety"
+      ]
+    },
+    {
+      "id": "loop-config",
+      "label": "LOOP.md",
+      "type": "component",
+      "group": "starter",
+      "code_kind": "config",
+      "paths": [
+        "starters/pr-babysitter/LOOP.md"
+      ],
+      "responsibility": "把团队级 loop 配置固化为可维护文档：cadence、max attempts、watched PR 规则、auto-merge disabled 与 human gates。",
+      "exposes": [
+        "Cadence: 5m (work hours)",
+        "Max fix attempts per PR: 3",
+        "Watched: team-authored or label loop-watch",
+        "Human gates: security/auth/payments/infrastructure and >10 files"
+      ],
+      "evidence_ids": [
+        "ev-loop-config"
+      ]
+    },
+    {
+      "id": "state-schema",
+      "label": "State Schema",
+      "type": "component",
+      "group": "automation",
+      "code_kind": "schema",
+      "paths": [
+        "starters/pr-babysitter/pr-babysitter-state.md.example"
+      ],
+      "responsibility": "定义每个 watched PR 的状态记录骨架，承载 status、attempts、last action、human decision、escalated/resolved 与 run log，让 loop 有可持续更新的外部状态。",
+      "exposes": [
+        "Watched PR entry template",
+        "Status field",
+        "Attempts: 0/3",
+        "Last action / Human decision / Run log"
+      ],
+      "evidence_ids": [
+        "ev-state-schema"
+      ]
+    },
+    {
+      "id": "triage-skill",
+      "label": "PR Triage",
+      "type": "component",
+      "group": "skills",
+      "code_kind": "skill",
+      "paths": [
+        "starters/pr-babysitter/.codex/skills/pr-review-triage/SKILL.md"
+      ],
+      "responsibility": "对 watched PR 输出标准化 triage 结果，判断 ready to merge、blocking comments 和 suggested loop action，并在高风险或久置时升级到人工。",
+      "exposes": [
+        "Per-PR Output markdown schema",
+        "Suggested loop action: none|minimal-fix|rebase|escalate-human",
+        "Ready to merge requires required checks + approvals",
+        "High-risk labels escalate-human always"
+      ],
+      "evidence_ids": [
+        "ev-triage-output",
+        "ev-triage-rules"
+      ]
+    },
+    {
+      "id": "minimal-fix-contract",
+      "label": "Minimal Fix",
+      "type": "component",
+      "group": "skills",
+      "code_kind": "template",
+      "paths": [
+        "templates/SKILL.md.minimal-fix"
+      ],
+      "responsibility": "定义 implementer 侧的最小修复契约：只修一个明确问题、沿 denylist 避开高风险路径、只改必要文件并运行相关测试；超出最小变更边界就升级。",
+      "exposes": [
+        "Inputs: exact failure/comment + implicated files + denylist",
+        "Process: smallest diff, no drive-by refactor, run tests/lint",
+        "Escalate if >5 files or design change",
+        "Do not mark yourself done; verifier decides"
+      ],
+      "evidence_ids": [
+        "ev-minfix-template",
+        "ev-minfix-missing"
+      ]
+    },
+    {
+      "id": "verifier-contract",
+      "label": "Verifier",
+      "type": "component",
+      "group": "skills",
+      "code_kind": "agent",
+      "paths": [
+        "starters/pr-babysitter/.codex/agents/verifier.toml",
+        "templates/SKILL.md.verifier"
+      ],
+      "responsibility": "定义 maker/checker 里的 checker 侧约束：默认 REJECT，必须亲自跑测试、做 scope check、检查 no cheating，并只输出 APPROVE / REJECT / ESCALATE_HUMAN。",
+      "exposes": [
+        "Verdict: APPROVE | REJECT | ESCALATE_HUMAN",
+        "Default stance: REJECT until proven otherwise",
+        "Checklist: scope, intent, tests, no cheating, risk",
+        "Cannot run tests -> ESCALATE_HUMAN"
+      ],
+      "evidence_ids": [
+        "ev-verifier-starter",
+        "ev-verifier-template"
+      ]
+    },
+    {
+      "id": "loop-init-cli",
+      "label": "loop-init CLI",
+      "type": "service",
+      "group": "tooling",
+      "code_kind": "script-suite",
+      "paths": [
+        "tools/loop-init/src/cli.ts"
+      ],
+      "responsibility": "把 PR Babysitter starter 脚手架复制到目标仓库，并在 Codex 场景下补齐 state 文件、starter 资产以及缺失的 minimal-fix / verifier 契约。",
+      "exposes": [
+        "PATTERN_STARTERS['pr-babysitter']='pr-babysitter'",
+        "PATTERNS_NEEDING_FIX includes pr-babysitter",
+        "copyTemplateSkill('SKILL.md.minimal-fix')",
+        "copyTemplateVerifier() for codex when missing"
+      ],
+      "evidence_ids": [
+        "ev-cli-pattern",
+        "ev-cli-templates",
+        "ev-cli-codex-command"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-registry-pattern",
+      "source": "registry",
+      "target": "pattern-guide",
+      "label": "注册表把 pr-babysitter 模式绑定到模式说明文档和跨工具规则来源。",
+      "summary_label": "注册指向",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-registry-entry",
+        "ev-pattern-cycle"
+      ]
+    },
+    {
+      "id": "rel-registry-starter",
+      "source": "registry",
+      "target": "starter-readme",
+      "label": "注册表声明 starter=starters/pr-babysitter，使开发者能从 starter 资产定位落地入口。",
+      "summary_label": "定位脚手架",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-registry-entry",
+        "ev-starter-readme"
+      ]
+    },
+    {
+      "id": "rel-registry-state",
+      "source": "registry",
+      "target": "state-schema",
+      "label": "注册表把 pr-babysitter-state.md 定义为该模式的标准状态文件名。",
+      "summary_label": "声明状态",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-registry-entry",
+        "ev-state-schema"
+      ]
+    },
+    {
+      "id": "rel-pattern-triage",
+      "source": "pattern-guide",
+      "target": "triage-skill",
+      "label": "模式说明把 triage 作为每个 PR 的首步，并要求它理解 required checks、review norms 与 ready-to-merge 条件。",
+      "summary_label": "定义分诊",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-pattern-cycle",
+        "ev-triage-rules"
+      ]
+    },
+    {
+      "id": "rel-pattern-minfix",
+      "source": "pattern-guide",
+      "target": "minimal-fix-contract",
+      "label": "模式说明把 minimal-fix 设为处理 CI 红灯或 actionable review comments 的最小修复器。",
+      "summary_label": "定义修复",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-pattern-cycle",
+        "ev-minfix-template"
+      ]
+    },
+    {
+      "id": "rel-pattern-verifier",
+      "source": "pattern-guide",
+      "target": "verifier-contract",
+      "label": "模式说明要求 maker/checker 分离，implementer 不能自证完成，必须由独立 verifier 审核并决定是否升级人工。",
+      "summary_label": "定义校验",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-pattern-verify",
+        "ev-verifier-template"
+      ]
+    },
+    {
+      "id": "rel-prompt-triage",
+      "source": "codex-prompt",
+      "target": "triage-skill",
+      "label": "Codex 示例 prompt 第一步就是运行 $pr-review-triage，说明 triage skill 是 loop 的入口单元。",
+      "summary_label": "调用分诊",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-codex-prompt",
+        "ev-triage-output"
+      ],
+      "core": true
+    },
+    {
+      "id": "rel-prompt-state",
+      "source": "codex-prompt",
+      "target": "state-schema",
+      "label": "Codex 示例 prompt 把 update pr-babysitter-state.md 设为每轮固定动作，因此 state schema 是 loop 的持久状态面。",
+      "summary_label": "更新状态",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-codex-prompt",
+        "ev-state-schema"
+      ],
+      "core": true
+    },
+    {
+      "id": "rel-prompt-minfix",
+      "source": "codex-prompt",
+      "target": "minimal-fix-contract",
+      "label": "Codex 示例 prompt 在 CI red 或 actionable review comment 且 attempts < 3 时切入 worktree + $minimal-fix。",
+      "summary_label": "触发修复",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-codex-prompt",
+        "ev-minfix-template"
+      ],
+      "core": true
+    },
+    {
+      "id": "rel-prompt-verifier",
+      "source": "codex-prompt",
+      "target": "verifier-contract",
+      "label": "Codex 示例 prompt 把 verifier subagent: must APPROVE 和 comment on PR with proposal — do not merge 写成显式 gate。",
+      "summary_label": "要求批准",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-codex-prompt",
+        "ev-verifier-starter"
+      ],
+      "core": true
+    },
+    {
+      "id": "rel-starter-loop",
+      "source": "starter-readme",
+      "target": "loop-config",
+      "label": "Starter README 把 LOOP.md 列为 team loop config，并通过启动命令把 cadence、allowlisted PR、never merge 和 3 次升级规则落到 starter 配置面。",
+      "summary_label": "落地参数",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-starter-readme",
+        "ev-loop-config"
+      ]
+    },
+    {
+      "id": "rel-loop-prompt",
+      "source": "loop-config",
+      "target": "codex-prompt",
+      "label": "LOOP.md 固化 cadence、watched PR、max attempts=3、auto-merge disabled 与 human gates，给 Codex prompt 提供需要保留的参数边界。",
+      "summary_label": "约束Prompt",
+      "kind": "dependency",
+      "inferred": true,
+      "evidence_ids": [
+        "ev-loop-config",
+        "ev-codex-prompt"
+      ]
+    },
+    {
+      "id": "rel-triage-state",
+      "source": "triage-skill",
+      "target": "state-schema",
+      "label": "triage skill 的 per-PR 输出和 suggested loop action 需要写回 state 中的 status、last action 与 human handoff 轨迹。",
+      "summary_label": "写回状态",
+      "kind": "dependency",
+      "inferred": true,
+      "evidence_ids": [
+        "ev-triage-output",
+        "ev-state-schema"
+      ]
+    },
+    {
+      "id": "rel-triage-minfix",
+      "source": "triage-skill",
+      "target": "minimal-fix-contract",
+      "label": "triage skill 通过 suggested loop action: minimal-fix | rebase | escalate-human 决定是否进入最小修复路径。",
+      "summary_label": "建议修复",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-triage-output",
+        "ev-minfix-template"
+      ],
+      "core": true
+    },
+    {
+      "id": "rel-minfix-verifier",
+      "source": "minimal-fix-contract",
+      "target": "verifier-contract",
+      "label": "minimal-fix 明确 implementer 不能宣布 done，必须把变更交给独立 verifier 做 scope/test/no-cheating 审核并输出 verdict。",
+      "summary_label": "交给校验",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-minfix-template",
+        "ev-verifier-template"
+      ],
+      "core": true
+    },
+    {
+      "id": "rel-cli-triage",
+      "source": "loop-init-cli",
+      "target": "triage-skill",
+      "label": "loop-init 会复制 starter 下的 .codex/skills 目录，因此 pr-review-triage 是脚手架带入目标仓库的现成技能之一。",
+      "summary_label": "复制分诊",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-cli-pattern",
+        "ev-triage-output"
+      ]
+    },
+    {
+      "id": "rel-cli-minfix",
+      "source": "loop-init-cli",
+      "target": "minimal-fix-contract",
+      "label": "pr-babysitter 被标记进 PATTERNS_NEEDING_FIX 后，loop-init 会 copyTemplateSkill('SKILL.md.minimal-fix') 补齐 minimal-fix。",
+      "summary_label": "补齐修复",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-cli-templates",
+        "ev-minfix-missing"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-registry-entry",
+      "path": "patterns/registry.yaml",
+      "lines": "5-24",
+      "reason": "pr-babysitter 条目声明 cadence、skills、state、phases、human_gates、starter 与 early_exit_required。"
+    },
+    {
+      "id": "ev-pattern-cycle",
+      "path": "patterns/pr-babysitter.md",
+      "lines": "15-17,36-45,92-92",
+      "reason": "模式说明列出 required skills、典型循环步骤，以及 L2 fix attempt 由 Worktree + minimal-fix + verifier 组成。"
+    },
+    {
+      "id": "ev-pattern-verify",
+      "path": "patterns/pr-babysitter.md",
+      "lines": "47-54,56-61,81-83",
+      "reason": "verification strategy 要求 maker/checker 分离、human merge gate，以及高风险/长期无进展时升级人工。"
+    },
+    {
+      "id": "ev-codex-cadence",
+      "path": "examples/codex/pr-babysitter.md",
+      "lines": "7-8",
+      "reason": "Codex 示例明确写出 cadence 与 Prompt 组合方式。"
+    },
+    {
+      "id": "ev-codex-prompt",
+      "path": "examples/codex/pr-babysitter.md",
+      "lines": "13-21",
+      "reason": "Prompt Template 明确 watched PR 选择、triage、update state、attempts<3、worktree、minimal-fix、verifier must APPROVE 与 do not merge。"
+    },
+    {
+      "id": "ev-starter-readme",
+      "path": "starters/pr-babysitter/README.md",
+      "lines": "9-20,29-31",
+      "reason": "README 提供 loop-init / manual copy 入口、starter /loop 命令，以及 starter 资产清单。"
+    },
+    {
+      "id": "ev-starter-safety",
+      "path": "starters/pr-babysitter/README.md",
+      "lines": "35-36",
+      "reason": "README 给出 no auto-merge 和 auth/payments/secrets denylist 作为安全默认值。"
+    },
+    {
+      "id": "ev-loop-config",
+      "path": "starters/pr-babysitter/LOOP.md",
+      "lines": "5-16",
+      "reason": "LOOP.md 固化 cadence、max attempts=3、watched 规则、auto-merge disabled 与 human gates。"
+    },
+    {
+      "id": "ev-state-schema",
+      "path": "starters/pr-babysitter/pr-babysitter-state.md.example",
+      "lines": "1-19",
+      "reason": "状态样板定义 Watched PR 记录、Attempts、Last action、Human decision、Escalated/Resolved 与 Run log。"
+    },
+    {
+      "id": "ev-triage-output",
+      "path": "starters/pr-babysitter/.codex/skills/pr-review-triage/SKILL.md",
+      "lines": "8-21",
+      "reason": "triage skill 定义 per-PR 输出结构与 Suggested loop action 枚举。"
+    },
+    {
+      "id": "ev-triage-rules",
+      "path": "starters/pr-babysitter/.codex/skills/pr-review-triage/SKILL.md",
+      "lines": "24-29",
+      "reason": "triage rules 约束 ready-to-merge、非 actionable nits、idle>4d handoff 和高风险 label 升级。"
+    },
+    {
+      "id": "ev-minfix-template",
+      "path": "templates/SKILL.md.minimal-fix",
+      "lines": "12-45",
+      "reason": "minimal-fix 模板要求 smallest diff、denylist、只改必要处、跑测试，并在 >5 文件或设计变更时升级。"
+    },
+    {
+      "id": "ev-minfix-missing",
+      "path": "starters/pr-babysitter/.codex/skills/minimal-fix/SKILL.md",
+      "reason": "目标 starter 下不存在该文件，因此 Codex 场景的 minimal-fix 需要依赖共享模板或脚手架补齐。"
+    },
+    {
+      "id": "ev-verifier-starter",
+      "path": "starters/pr-babysitter/.codex/agents/verifier.toml",
+      "lines": "1-13",
+      "reason": "starter verifier.toml 内联 checker 指令：默认 REJECT、必须跑测试、检查 no cheating，并输出 APPROVE|REJECT|ESCALATE_HUMAN。"
+    },
+    {
+      "id": "ev-verifier-template",
+      "path": "templates/SKILL.md.verifier",
+      "lines": "12-47",
+      "reason": "共享 verifier 模板给出 checker checklist、verdict 枚举，以及无法跑测试时升级人工。"
+    },
+    {
+      "id": "ev-cli-pattern",
+      "path": "tools/loop-init/src/cli.ts",
+      "lines": "24-27,40-49,359-408",
+      "reason": "loop-init 把 pr-babysitter 映射到对应 starter，复制 starter skills/agents，并生成 state 文件与 LOOP.md。"
+    },
+    {
+      "id": "ev-cli-templates",
+      "path": "tools/loop-init/src/cli.ts",
+      "lines": "116-179",
+      "reason": "loop-init 通过 copyTemplateSkill / copyTemplateVerifier 为 needing-fix 模式补齐 minimal-fix 和 Codex verifier。"
+    },
+    {
+      "id": "ev-cli-codex-command",
+      "path": "tools/loop-init/src/cli.ts",
+      "lines": "267-270",
+      "reason": "firstLoopCommand 为 pr-babysitter 给出 Codex 启动提示：Automation 10m、update state、No auto-merge。"
+    }
+  ],
+  "omissions": [
+    "未建模 GitHub MCP connector、PR 评论线程和 CI 运行时时序，因为本任务只做 development view。",
+    "未单独拉入 rebase-and-clean：它在模式文档与 registry 中存在，但不在本轮用户点名的证据文件清单内，且不是“让 loop 跑起来”的最短核心链路。",
+    "未展开 .grok / .claude 同构资产，只保留与 Codex PR Babysitter 直接相关的 .codex 单元与共享模板。"
+  ],
+  "uncertainties": [
+    "allowlisted PRs 只在 starter README 启动命令中出现，没有单独 allowlist 配置文件；本视图将其视为 prompt/运营约束，而不是独立模块。",
+    "starter 下不存在 starters/pr-babysitter/.codex/skills/minimal-fix/SKILL.md，因此 minimal-fix 在 Codex 开发视图中用共享模板表示，并通过 loop-init 的补齐逻辑连接到 starter。",
+    "starter verifier.toml 采用内联指令，而 loop-init 的 Codex fallback 会从 templates/SKILL.md.verifier 合成 verifier.toml；两者意图一致，但来源路径不同。"
+  ]
+}

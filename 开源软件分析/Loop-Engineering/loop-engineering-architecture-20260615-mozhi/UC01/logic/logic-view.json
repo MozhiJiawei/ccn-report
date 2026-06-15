@@ -1,0 +1,477 @@
+{
+  "view": "logic",
+  "title": "UC01 定义 Loop 逻辑视图",
+  "summary": "围绕“定义 Loop”这一用例，说明入口引导、方案设计、starter 装配、状态与技能骨架、成本估算、readiness 审计与升级门控如何协作。",
+  "description": "范围限定在 pattern 与工具选择、starter 复制或脚手架、STATE/LOOP/skills/verifier/loop-budget/loop-run-log 配置、cadence 成本估算、readiness 审计，以及 L1/L2/L3、人类门控、pause/kill 规则。",
+  "scope": "只覆盖 UC01 定义 Loop，不展开其他运行中 loop 的执行路径、具体 pattern 内部业务流程或 GitHub Pages 展示站。",
+  "layout_suggestion": {
+    "strategy": "stacked-groups"
+  },
+  "style_profile": "ref-default",
+  "omissions": [
+    "未把各个具体 pattern 文档、每个 per-tool 示例 prompt、以及每个 starter 目录分别建模；它们被折叠进“模式选择”与“Starter 装配”。",
+    "未纳入 dist/、web-captures/、assets/、docs/index.html 等展示或发布物，因为它们不直接解释 UC01 的责任协作。",
+    "未展开 worktree、MCP、GitHub Actions 的运行时细节；这里只保留它们对升级门控与 readiness 的稳定责任影响。"
+  ],
+  "uncertainties": [
+    "“Starter 装配”将手工复制 starter 与 loop-init CLI 脚手架折叠为同一逻辑责任；仓库同时支持两条实现路径。",
+    "“升级门控”主要来自 checklist、starter LOOP、root LOOP、safety 与 operating-loops 文档的组合约束，而不是一个统一的强制执行引擎。",
+    "loop-audit 输出的是 readiness 评分与等级上限；是否真正进入 unattended 仍依赖人类按 LOOP.md 与安全规则启停。"
+  ],
+  "review_notes": [
+    "关系只保留能解释责任边界的依赖；若某个文档同时直达多个工具入口，优先通过中间责任转述，避免跨层长箭头。",
+    "同层与相邻层关系优先渲染；像“入口直接暴露 loop-audit/loop-init/loop-cost”的事实，被收敛进“定义入口”自身证据，不再全部画成扇出。"
+  ],
+  "groups": [
+    {
+      "id": "entry",
+      "label": "定义入口",
+      "color_role": "entry-surface",
+      "layout_hint": {
+        "order": 1
+      }
+    },
+    {
+      "id": "design",
+      "label": "方案设计",
+      "color_role": "capability-runtime",
+      "layout_hint": {
+        "order": 2
+      }
+    },
+    {
+      "id": "assembly",
+      "label": "装配与配置",
+      "color_role": "agent-core",
+      "layout_hint": {
+        "order": 3
+      }
+    },
+    {
+      "id": "governance",
+      "label": "评估与门控",
+      "layout_hint": {
+        "order": 4
+      }
+    }
+  ],
+  "elements": [
+    {
+      "id": "entry_hub",
+      "label": "定义入口",
+      "type": "interface",
+      "group": "entry",
+      "color_role": "entry-surface",
+      "notes": "聚合 README Quick Links 与 Getting Started，把 pattern picker、checklist、starters、loop-init、loop-cost、loop-audit 暴露给定义者。",
+      "evidence_ids": [
+        "ev-readme-entry"
+      ]
+    },
+    {
+      "id": "pattern_selector",
+      "label": "模式选择",
+      "type": "subsystem",
+      "group": "design",
+      "color_role": "capability-runtime",
+      "notes": "根据痛点、风险、cadence、week-one mode 与 overlap rule 选择 primary pattern 和工具目标。",
+      "evidence_ids": [
+        "ev-pattern-picker",
+        "ev-registry"
+      ]
+    },
+    {
+      "id": "design_checklist",
+      "label": "设计清单",
+      "type": "subsystem",
+      "group": "design",
+      "color_role": "capability-runtime",
+      "notes": "定义 phased rollout、state、maker/checker、human handoff、cost、observability、safety 与 readiness level 的必备项。",
+      "evidence_ids": [
+        "ev-checklist",
+        "ev-safety",
+        "ev-operating"
+      ]
+    },
+    {
+      "id": "cost_estimator",
+      "label": "成本估算",
+      "type": "service",
+      "group": "design",
+      "color_role": "capability-runtime",
+      "notes": "把 pattern、cadence、L1/L2/L3 转成 runs/day、scenario token estimate、daily cap 与 early-exit 警告。",
+      "evidence_ids": [
+        "ev-cost-readme",
+        "ev-cost-estimator"
+      ]
+    },
+    {
+      "id": "starter_scaffold",
+      "label": "Starter 装配",
+      "type": "service",
+      "group": "assembly",
+      "color_role": "agent-core",
+      "notes": "复用 starters 与 templates，按 pattern/tool 复制 starter，并补齐状态、budget、run-log 与必要技能。",
+      "evidence_ids": [
+        "ev-starters-overview",
+        "ev-init-readme",
+        "ev-init-cli"
+      ]
+    },
+    {
+      "id": "loop_contract",
+      "label": "Loop 骨架",
+      "type": "subsystem",
+      "group": "assembly",
+      "color_role": "agent-core",
+      "notes": "承载 STATE.md、LOOP.md、loop-budget.md、loop-run-log.md 等 durable state 与控制约束。",
+      "evidence_ids": [
+        "ev-starter-codex-readme",
+        "ev-root-loop",
+        "ev-budget-doc",
+        "ev-run-log",
+        "ev-state-file"
+      ]
+    },
+    {
+      "id": "skill_guardrails",
+      "label": "技能守护",
+      "type": "subsystem",
+      "group": "assembly",
+      "color_role": "agent-core",
+      "notes": "承载 triage、minimal-fix、verifier、loop-budget 等执行与检查角色约束，以及 L2+ 所需的 maker/checker 分离。",
+      "evidence_ids": [
+        "ev-starter-codex-readme",
+        "ev-starter-codex-loop",
+        "ev-init-readme",
+        "ev-init-cli",
+        "ev-verifier-template"
+      ]
+    },
+    {
+      "id": "readiness_audit",
+      "label": "就绪审计",
+      "type": "service",
+      "group": "governance",
+      "notes": "读取 state、skills、verifier、LOOP、budget、run-log、loopActivity 等信号，输出 score、level 与建议。",
+      "evidence_ids": [
+        "ev-audit-readme",
+        "ev-audit-code"
+      ]
+    },
+    {
+      "id": "upgrade_gates",
+      "label": "升级门控",
+      "type": "orchestrator",
+      "group": "governance",
+      "notes": "明确 L1->L2->L3 升级边界、human gates、denylist、pause/kill、worktree 与 connector scope 规则。",
+      "evidence_ids": [
+        "ev-checklist",
+        "ev-root-loop",
+        "ev-operating",
+        "ev-safety"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-entry-pattern",
+      "source": "entry_hub",
+      "target": "pattern_selector",
+      "label": "指向模式选择",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-readme-entry",
+        "ev-pattern-picker"
+      ]
+    },
+    {
+      "id": "rel-entry-checklist",
+      "source": "entry_hub",
+      "target": "design_checklist",
+      "label": "指向设计审查",
+      "kind": "dependency",
+      "render": false,
+      "inferred": false,
+      "evidence_ids": [
+        "ev-readme-entry",
+        "ev-checklist"
+      ]
+    },
+    {
+      "id": "rel-pattern-cost",
+      "source": "pattern_selector",
+      "target": "cost_estimator",
+      "label": "提供估算上下文",
+      "kind": "dependency",
+      "render": false,
+      "inferred": false,
+      "evidence_ids": [
+        "ev-pattern-picker",
+        "ev-cost-readme",
+        "ev-cost-estimator"
+      ]
+    },
+    {
+      "id": "rel-pattern-starter",
+      "source": "pattern_selector",
+      "target": "starter_scaffold",
+      "label": "确定 starter",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-pattern-picker",
+        "ev-starters-overview",
+        "ev-init-readme",
+        "ev-init-cli"
+      ]
+    },
+    {
+      "id": "rel-checklist-starter",
+      "source": "design_checklist",
+      "target": "starter_scaffold",
+      "label": "约束装配项",
+      "kind": "dependency",
+      "inferred": true,
+      "evidence_ids": [
+        "ev-checklist",
+        "ev-init-readme",
+        "ev-init-cli"
+      ]
+    },
+    {
+      "id": "rel-checklist-guards",
+      "source": "design_checklist",
+      "target": "skill_guardrails",
+      "label": "约束守护角色",
+      "kind": "dependency",
+      "render": false,
+      "inferred": true,
+      "evidence_ids": [
+        "ev-checklist",
+        "ev-starter-codex-loop",
+        "ev-verifier-template"
+      ]
+    },
+    {
+      "id": "rel-starter-contract",
+      "source": "starter_scaffold",
+      "target": "loop_contract",
+      "label": "生成骨架文件",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-starter-codex-readme",
+        "ev-init-readme",
+        "ev-init-cli"
+      ]
+    },
+    {
+      "id": "rel-starter-guards",
+      "source": "starter_scaffold",
+      "target": "skill_guardrails",
+      "label": "装配技能与校验",
+      "kind": "dependency",
+      "render": false,
+      "inferred": false,
+      "evidence_ids": [
+        "ev-init-readme",
+        "ev-init-cli",
+        "ev-verifier-template"
+      ]
+    },
+    {
+      "id": "rel-contract-audit",
+      "source": "loop_contract",
+      "target": "readiness_audit",
+      "label": "提供状态预算信号",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-audit-readme",
+        "ev-audit-code",
+        "ev-root-loop",
+        "ev-budget-doc",
+        "ev-run-log",
+        "ev-state-file"
+      ]
+    },
+    {
+      "id": "rel-guards-audit",
+      "source": "skill_guardrails",
+      "target": "readiness_audit",
+      "label": "提供技能校验信号",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-audit-readme",
+        "ev-audit-code",
+        "ev-verifier-template"
+      ]
+    },
+    {
+      "id": "rel-cost-gates",
+      "source": "cost_estimator",
+      "target": "upgrade_gates",
+      "label": "约束 cadence 与 cap",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-cost-readme",
+        "ev-cost-estimator",
+        "ev-operating"
+      ]
+    },
+    {
+      "id": "rel-audit-gates",
+      "source": "readiness_audit",
+      "target": "upgrade_gates",
+      "label": "判定升级上限",
+      "kind": "dependency",
+      "inferred": false,
+      "evidence_ids": [
+        "ev-audit-readme",
+        "ev-audit-code",
+        "ev-checklist"
+      ]
+    },
+    {
+      "id": "rel-contract-gates",
+      "source": "loop_contract",
+      "target": "upgrade_gates",
+      "label": "承载暂停与门控",
+      "kind": "dependency",
+      "render": false,
+      "inferred": false,
+      "evidence_ids": [
+        "ev-root-loop",
+        "ev-budget-doc",
+        "ev-run-log",
+        "ev-operating",
+        "ev-safety"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-readme-entry",
+      "path": "README.md",
+      "lines": "59-71,138-148",
+      "reason": "Quick Links 与 Getting Started 把 Pattern Picker、Checklist、Starters、loop-init、loop-cost、loop-audit 作为定义 Loop 的主入口。"
+    },
+    {
+      "id": "ev-pattern-picker",
+      "path": "docs/pattern-picker.md",
+      "lines": "26-40,63-68",
+      "reason": "Pattern Picker 先按症状选择 loop，再要求先做 cost-aware 选择，并声明 L3 受 budget/run-log/LOOP.md budget 约束。"
+    },
+    {
+      "id": "ev-checklist",
+      "path": "docs/loop-design-checklist.md",
+      "lines": "10,42-63,79-90",
+      "reason": "设计清单把 phased rollout、maker/checker、state、human handoff、cost、pause/kill 与 readiness level 固定为定义阶段必须明确的责任。"
+    },
+    {
+      "id": "ev-starters-overview",
+      "path": "starters/README.md",
+      "lines": "3-18",
+      "reason": "Starters 目录被定义为 clone-and-run scaffolds，并按 L1 日报与 L2 assisted pattern 分层暴露 starter 族。"
+    },
+    {
+      "id": "ev-init-readme",
+      "path": "tools/loop-init/README.md",
+      "lines": "17,30-36",
+      "reason": "loop-init 在 scaffold 后要求先跑 audit 并执行首个 report-only loop，同时声明会补齐 loop-budget.md、loop-run-log.md 与 loop-budget skill。"
+    },
+    {
+      "id": "ev-init-cli",
+      "path": "tools/loop-init/src/cli.ts",
+      "lines": "47-67,116-179,189-245,392-409",
+      "reason": "loop-init 代码按 pattern 选择 state file、starter 与 tool 变体，复制 skills/verifier，并生成 budget/run-log 等 observability 文件。"
+    },
+    {
+      "id": "ev-cost-readme",
+      "path": "tools/loop-cost/README.md",
+      "lines": "3,10-11,28-33",
+      "reason": "loop-cost 公开 pattern、cadence、level 三个主要输入，并围绕不同场景给出 token spend estimate。"
+    },
+    {
+      "id": "ev-cost-estimator",
+      "path": "tools/loop-cost/src/estimator.ts",
+      "lines": "71-159,181",
+      "reason": "estimator 把 cadence 转 runs/day，按 L1/L2/L3 混合 no-op/report/action 场景，并在超 cap 或高 cadence 时产生警告。"
+    },
+    {
+      "id": "ev-audit-readme",
+      "path": "tools/loop-audit/README.md",
+      "lines": "3,54-76",
+      "reason": "loop-audit 被定义为 readiness score CLI，并明确 Signals Checked、L3 requires 与 Levels 的判定口径。"
+    },
+    {
+      "id": "ev-audit-code",
+      "path": "tools/loop-audit/src/auditor.ts",
+      "lines": "81-118,186-222,309-344,415-443",
+      "reason": "auditor 代码会探测 skills、budget/run-log/loopMdBudget、loopActivity 等信号，再计算 L0-L3 并给出缺失项建议。"
+    },
+    {
+      "id": "ev-starter-codex-readme",
+      "path": "starters/minimal-loop-codex/README.md",
+      "lines": "5-13,18-33,39-42,49",
+      "reason": "Codex starter 明确复制 STATE.md、LOOP.md、verifier，先以 Automation 跑 Week 1 report-only，再在质量稳定后开启 small auto-wins。"
+    },
+    {
+      "id": "ev-starter-codex-loop",
+      "path": "starters/minimal-loop-codex/LOOP.md",
+      "lines": "7-24",
+      "reason": "Starter LOOP 文档固定了 L1 report-only、Human Gates、worktree、MCP scope 与 budget 约束，是 loop 配置与守护规则的直接样板。"
+    },
+    {
+      "id": "ev-root-loop",
+      "path": "LOOP.md",
+      "lines": "9-21,41,56-65",
+      "reason": "根 LOOP.md 展示了参考仓库如何声明 L1/L2 活动 loop、multi-loop priority、token caps、run history、kill switch 与 denylist。"
+    },
+    {
+      "id": "ev-budget-doc",
+      "path": "loop-budget.md",
+      "lines": "1-19",
+      "reason": "loop-budget.md 把 daily limits、budget exceed 处理与 kill switch 固化为 loop 的持久控制文档。"
+    },
+    {
+      "id": "ev-run-log",
+      "path": "loop-run-log.md",
+      "lines": "1-20",
+      "reason": "loop-run-log.md 定义 append-only run history 结构，并给出真实运行记录样例，用于 activity 与 observability。"
+    },
+    {
+      "id": "ev-state-file",
+      "path": "STATE.md",
+      "lines": "1-15",
+      "reason": "STATE.md 承载 Last run、High Priority、Watch List 等 durable state，是定义与后续运行共享的记忆脊柱。"
+    },
+    {
+      "id": "ev-operating",
+      "path": "docs/operating-loops.md",
+      "lines": "35,88-125",
+      "reason": "Operating Loops 定义 early-exit 最佳实践、slow down/pause/kill 条件、kill checklist 与 L1->L2->L3 升级路径。"
+    },
+    {
+      "id": "ev-safety",
+      "path": "docs/safety.md",
+      "lines": "5,28,54-63,94",
+      "reason": "Safety 文档明确 denylist、auto-merge policy、必须人审的高风险变更，以及 L3 前必须写清 kill switch。"
+    },
+    {
+      "id": "ev-verifier-template",
+      "path": "templates/SKILL.md.verifier",
+      "lines": "1-34",
+      "reason": "Verifier 模板把 maker/checker split、独立跑测试、默认拒绝与人类升级条件写成显式守护角色。"
+    },
+    {
+      "id": "ev-registry",
+      "path": "patterns/registry.yaml",
+      "lines": "1-108",
+      "reason": "Registry 为每个 pattern 声明 cadence、week_one_mode、skills、state、human_gates 与 token cost，是模式选择与估算共享的事实底座。"
+    }
+  ]
+}
