@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Source Understanding - Anthropic Multi-Agent Research System</title>
+  <style>
+    :root {
+      --bg: #f7f8f6;
+      --paper: #ffffff;
+      --ink: #1d2428;
+      --muted: #5c666b;
+      --line: #d8ded9;
+      --accent: #2d6cdf;
+      --accent-2: #147a6c;
+      --risk: #b84a3a;
+      --soft-blue: #eaf1ff;
+      --soft-green: #e9f6f1;
+      --soft-red: #fff0ec;
+      --soft-gray: #eef1ee;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, "Microsoft YaHei", "PingFang SC", sans-serif;
+      line-height: 1.45;
+    }
+
+    .deck {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .slide {
+      min-height: 100vh;
+      padding: 38px 48px 34px;
+      display: none;
+      background:
+        linear-gradient(90deg, rgba(216, 222, 217, .55) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(216, 222, 217, .45) 1px, transparent 1px),
+        var(--paper);
+      background-size: 56px 56px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .slide.active { display: flex; flex-direction: column; }
+
+    .slide-header {
+      display: grid;
+      grid-template-columns: 132px 1fr auto;
+      gap: 20px;
+      align-items: start;
+      padding-bottom: 18px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .kicker {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.18;
+      letter-spacing: 0;
+      max-width: 900px;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 960px;
+    }
+
+    .page-no {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      padding-top: 4px;
+    }
+
+    .content {
+      flex: 1;
+      padding-top: 26px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .two-col { grid-template-columns: 1fr 1fr; }
+    .three-col { grid-template-columns: repeat(3, 1fr); }
+    .wide-left { grid-template-columns: 1.25fr .75fr; }
+    .wide-right { grid-template-columns: .8fr 1.2fr; }
+
+    .panel {
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .panel h3 {
+      margin: 14px 0 8px;
+      font-size: 15px;
+      color: var(--ink);
+    }
+
+    .lead {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .claim-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .claim-list li {
+      border-left: 4px solid var(--accent);
+      padding: 10px 12px;
+      background: var(--soft-blue);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .claim-list strong { display: block; margin-bottom: 4px; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .metric .num {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .metric .label {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .step {
+      position: relative;
+      min-height: 112px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .step:not(:last-child)::after {
+      content: ">";
+      position: absolute;
+      right: -10px;
+      top: 42%;
+      font-weight: 800;
+      color: var(--accent);
+      z-index: 2;
+    }
+
+    .step .tag {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: var(--soft-gray);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .step p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 13px;
+    }
+
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      background: var(--soft-gray);
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .matrix td:first-child {
+      font-weight: 700;
+      width: 20%;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--soft-green);
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge.risk {
+      background: var(--soft-red);
+      color: var(--risk);
+    }
+
+    .note {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent-2);
+      border-radius: 0 8px 8px 0;
+      background: var(--soft-green);
+      color: #21453e;
+      font-size: 14px;
+    }
+
+    .risk-note {
+      border-left-color: var(--risk);
+      background: var(--soft-red);
+      color: #5f2b22;
+    }
+
+    .footnotes {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .footnotes a { color: var(--accent); }
+
+    .nav {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .nav button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(30, 38, 42, .08);
+    }
+
+    .source-map {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .source-map .item {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .source-map .item strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .source-map .item span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .slide { padding: 24px 18px 70px; }
+      .slide-header { grid-template-columns: 1fr; gap: 8px; }
+      h1 { font-size: 24px; }
+      .two-col, .three-col, .wide-left, .wide-right, .source-map { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .step:not(:last-child)::after { display: none; }
+      .nav { left: 18px; right: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-label="Source Understanding HTML deck">
+    <section class="slide active" data-slide="1">
+      <header class="slide-header">
+        <div class="kicker">Source Understanding</div>
+        <div>
+          <h1>Anthropic 的多智能体研究系统，用并行 token 预算换取开放式研究质量</h1>
+          <p class="subtitle">对象：Anthropic Engineering 文章《How we built our multi-agent research system》，2025-06-13。本文只基于该网页，不扩展额外来源。</p>
+        </div>
+        <div class="page-no">01 / 08</div>
+      </header>
+      <div class="content wide-left">
+        <div class="panel">
+          <p class="lead">核心判断：多智能体不是“更多角色扮演”，而是把搜索、压缩、工具调用和上下文窗口分摊到多个并行执行单元。</p>
+          <ul class="claim-list" style="margin-top:18px">
+            <li><strong>价值来自并行广度</strong>适合需要同时追多条线索、资料超过单一上下文、且任务价值足以覆盖成本的研究问题。</li>
+            <li><strong>架构核心是编排</strong>LeadResearcher 负责策略、分解和综合，Subagent 独立搜索并压缩发现，CitationAgent 做归因。</li>
+            <li><strong>上线难点在行为可靠性</strong>prompt、工具描述、eval、追踪、checkpoint 和部署节奏共同决定系统是否可生产化。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h2>证据强度速览</h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="num">90.2%</div>
+              <div class="label">内部 research eval 中，多智能体相对单智能体 Claude Opus 4 的提升。</div>
+            </div>
+            <div class="metric">
+              <div class="num">95%</div>
+              <div class="label">BrowseComp 表现方差中，由 token 用量、工具调用数、模型选择三项解释的比例。</div>
+            </div>
+            <div class="metric">
+              <div class="num">15x</div>
+              <div class="label">多智能体系统相对普通 chat 的典型 token 消耗量级。</div>
+            </div>
+          </div>
+          <div class="note" style="margin-top:14px">可形成强判断的证据主要是 Anthropic 自述的内部评测、系统架构和工程复盘；边界是缺少公开复现实验细节。</div>
+        </div>
+      </div>
+      <footer class="footnotes">Source: Anthropic Engineering, <a href="https://www.anthropic.com/engineering/multi-agent-research-system">How we built our multi-agent research system</a>, published 2025-06-13.</footer>
+    </section>
+
+    <section class="slide" data-slide="2">
+      <header class="slide-header">
+        <div class="kicker">Fit</div>
+        <div>
+          <h1>多智能体适合“广度优先”研究，不适合强共享上下文任务</h1>
+          <p class="subtitle">文章把适用性定义在任务结构上：线索可拆、方向可并行、信息量大、工具多；反面是依赖密集、实时协调要求高。</p>
+        </div>
+        <div class="page-no">02 / 08</div>
+      </header>
+      <div class="content two-col">
+        <div class="panel">
+          <h2>适配条件</h2>
+          <table class="matrix">
+            <tr><th>条件</th><th>系统收益</th></tr>
+            <tr><td>开放式问题</td><td>步骤难提前固定，agent 可以根据中间发现调整路线。</td></tr>
+            <tr><td>并行方向</td><td>不同 subagent 同时探索独立线索，减少单一路径依赖。</td></tr>
+            <tr><td>海量资料</td><td>每个 subagent 拥有独立上下文，先局部压缩再交给 lead 综合。</td></tr>
+            <tr><td>复杂工具</td><td>不同工具和来源可以分配给不同任务边界，降低混用成本。</td></tr>
+          </table>
+        </div>
+        <div class="panel">
+          <h2>不适配边界</h2>
+          <ul class="claim-list">
+            <li style="border-left-color:var(--risk);background:var(--soft-red)"><strong>上下文必须共享</strong>如果所有 agent 都必须实时掌握同一完整状态，独立上下文会变成协作负担。</li>
+            <li style="border-left-color:var(--risk);background:var(--soft-red)"><strong>任务依赖密集</strong>编码任务常常并行面较少，实时委派和协调能力不足会抵消收益。</li>
+            <li style="border-left-color:var(--risk);background:var(--soft-red)"><strong>价值低于成本</strong>文章强调系统 token 消耗高，只有高价值任务才具备经济性。</li>
+          </ul>
+          <div class="note risk-note" style="margin-top:14px">PPT 可用判断：它是一种“高成本换广度”的架构选择，不是所有 agent 产品的默认答案。</div>
+        </div>
+      </div>
+      <footer class="footnotes">Evidence: article sections “Benefits of a multi-agent system” and examples of breadth-first research vs coding tasks.</footer>
+    </section>
+
+    <section class="slide" data-slide="3">
+      <header class="slide-header">
+        <div class="kicker">Architecture</div>
+        <div>
+          <h1>系统把研究拆成计划、并行搜索、综合和引用四段</h1>
+          <p class="subtitle">LeadResearcher 是控制面，Subagent 是并行工作面，CitationAgent 是归因面；Memory 用来抵御长上下文截断。</p>
+        </div>
+        <div class="page-no">03 / 08</div>
+      </header>
+      <div class="content">
+        <div class="flow">
+          <div class="step">
+            <span class="tag">1. User query</span>
+            <strong>用户提出研究问题</strong>
+            <p>问题通常开放且难以预先固定路径。</p>
+          </div>
+          <div class="step">
+            <span class="tag">2. Lead</span>
+            <strong>制定策略并保存计划</strong>
+            <p>LeadResearcher 先思考路线，并把计划写入 Memory。</p>
+          </div>
+          <div class="step">
+            <span class="tag">3. Subagents</span>
+            <strong>并行搜索不同切面</strong>
+            <p>每个 subagent 带着明确任务、工具边界和输出格式独立调查。</p>
+          </div>
+          <div class="step">
+            <span class="tag">4. Synthesis</span>
+            <strong>综合后决定是否加搜</strong>
+            <p>Lead 汇总发现，判断是否继续生成 subagent 或收敛答案。</p>
+          </div>
+          <div class="step">
+            <span class="tag">5. Citations</span>
+            <strong>引用 agent 定位出处</strong>
+            <p>CitationAgent 把报告 claim 对齐到具体文档位置。</p>
+          </div>
+        </div>
+        <div class="source-map">
+          <div class="item"><strong>相对 RAG 的差异</strong><span>传统 RAG 偏静态相似度检索；该系统强调多步动态搜索、基于发现改写路线。</span></div>
+          <div class="item"><strong>上下文策略</strong><span>计划和阶段性信息外置到 Memory，避免超过 200k token 后丢失关键研究意图。</span></div>
+          <div class="item"><strong>压缩机制</strong><span>Subagent 先把局部语料压成高价值发现，lead 只消费压缩后的结果。</span></div>
+          <div class="item"><strong>归因机制</strong><span>最终答案前新增 CitationAgent，说明生产系统把“生成答案”和“核对出处”拆开。</span></div>
+        </div>
+      </div>
+      <footer class="footnotes">Evidence: article “Architecture overview for Research” and workflow diagram description.</footer>
+    </section>
+
+    <section class="slide" data-slide="4">
+      <header class="slide-header">
+        <div class="kicker">Performance</div>
+        <div>
+          <h1>性能提升主要靠“花够 token”，但成本也同步放大</h1>
+          <p class="subtitle">Anthropic 的解释不是单个 agent 更聪明，而是多上下文并行让系统能投入更多搜索、推理和工具调用。</p>
+        </div>
+        <div class="page-no">04 / 08</div>
+      </header>
+      <div class="content wide-right">
+        <div class="panel">
+          <h2>数字证据</h2>
+          <div class="metric-grid" style="grid-template-columns:1fr">
+            <div class="metric"><div class="num">80%</div><div class="label">单独 token 用量解释 BrowseComp 表现方差的比例。</div></div>
+            <div class="metric"><div class="num">4x</div><div class="label">agent 相对 chat 的典型 token 消耗。</div></div>
+            <div class="metric"><div class="num">90%</div><div class="label">并行化后复杂查询研究时间最高降幅。</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>机制解释</h2>
+          <table>
+            <tr><th>机制</th><th>为什么影响结果</th><th>代价</th></tr>
+            <tr><td><span class="badge">独立上下文</span></td><td>每个 subagent 可追一条线索，不必挤在同一窗口里。</td><td>综合和去重成本上升。</td></tr>
+            <tr><td><span class="badge">并行工具</span></td><td>lead 可同时生成 3-5 个 subagent；subagent 也可并行调用多个工具。</td><td>错误路径也会被快速放大。</td></tr>
+            <tr><td><span class="badge">模型升级</span></td><td>文章称 Claude Sonnet 4 对 token 使用效率的提升超过简单翻倍预算。</td><td>结论依赖 Anthropic 内部模型和评测。</td></tr>
+            <tr><td><span class="badge risk">经济门槛</span></td><td>15x chat token 消耗要求任务价值足够高。</td><td>低价值查询会过度投资。</td></tr>
+          </table>
+          <div class="note" style="margin-top:14px">页面判断可写成：多智能体的第一性收益是“并行投入更多有效搜索预算”，不是神秘的涌现协作。</div>
+        </div>
+      </div>
+      <footer class="footnotes">Evidence: internal research eval, BrowseComp variance analysis, token consumption and parallelization claims in the article.</footer>
+    </section>
+
+    <section class="slide" data-slide="5">
+      <header class="slide-header">
+        <div class="kicker">Prompt + Tooling</div>
+        <div>
+          <h1>Prompt 工程的重点，是给编排器清晰的委派协议</h1>
+          <p class="subtitle">早期失败包括过度生成 subagent、无效搜索和互相干扰；Anthropic 通过任务边界、努力预算、工具启发式和可观察模拟来修正。</p>
+        </div>
+        <div class="page-no">05 / 08</div>
+      </header>
+      <div class="content three-col">
+        <div class="panel">
+          <h2>委派要完整</h2>
+          <ul class="claim-list">
+            <li><strong>目标</strong>每个 subagent 必须知道自己回答哪个子问题。</li>
+            <li><strong>边界</strong>说明该查哪些来源、用哪些工具、不要查什么。</li>
+            <li><strong>格式</strong>返回结构需要能被 lead 直接综合。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h2>努力要分档</h2>
+          <table>
+            <tr><th>查询类型</th><th>推荐投入</th></tr>
+            <tr><td>简单事实</td><td>1 个 agent，约 3-10 次工具调用。</td></tr>
+            <tr><td>直接比较</td><td>2-4 个 subagent，每个约 10-15 次调用。</td></tr>
+            <tr><td>复杂研究</td><td>10+ subagent，并且职责拆分清楚。</td></tr>
+          </table>
+        </div>
+        <div class="panel">
+          <h2>工具要可选对</h2>
+          <ul class="claim-list">
+            <li><strong>先看工具</strong>让 agent 先理解可用工具，再决定路线。</li>
+            <li><strong>专用优先</strong>能用专业工具时，不默认泛化搜索。</li>
+            <li><strong>描述可测</strong>Anthropic 用 tool-testing agent 改写工具描述，使后续完成时间下降 40%。</li>
+          </ul>
+        </div>
+      </div>
+      <footer class="footnotes">Evidence: article “Prompt engineering and evaluations for research agents,” including delegation, scaling rules, tool descriptions and self-improvement loop.</footer>
+    </section>
+
+    <section class="slide" data-slide="6">
+      <header class="slide-header">
+        <div class="kicker">Evaluation</div>
+        <div>
+          <h1>评估不能检查固定路径，只能检查结果质量与合理过程</h1>
+          <p class="subtitle">多智能体同题可能走出不同有效路线，因此 eval 需要从路径一致性转向结果、引用、完整性、来源质量和工具效率。</p>
+        </div>
+        <div class="page-no">06 / 08</div>
+      </header>
+      <div class="content wide-left">
+        <div class="panel">
+          <h2>评估框架</h2>
+          <table>
+            <tr><th>维度</th><th>判定问题</th><th>来源证据</th></tr>
+            <tr><td>事实准确</td><td>回答里的 claim 是否匹配来源。</td><td>LLM judge rubric。</td></tr>
+            <tr><td>引用准确</td><td>引用来源是否支撑对应 claim。</td><td>CitationAgent 与 judge 标准。</td></tr>
+            <tr><td>覆盖完整</td><td>用户要求的各方面是否都被回答。</td><td>research output rubric。</td></tr>
+            <tr><td>来源质量</td><td>是否优先权威/一手来源。</td><td>人工测试发现 SEO 内容偏差后增加启发式。</td></tr>
+            <tr><td>工具效率</td><td>是否用了合适工具和合理调用次数。</td><td>rubric 中的 process 判断。</td></tr>
+          </table>
+        </div>
+        <div class="panel">
+          <h2>操作经验</h2>
+          <ul class="claim-list">
+            <li><strong>小样本先跑</strong>早期改动效应大，约 20 个真实查询就能发现显著差异。</li>
+            <li><strong>单 judge 更稳</strong>文章称一个 LLM 调用输出 0-1 分数和 pass/fail，比多 judge 组合更一致。</li>
+            <li><strong>人工补盲区</strong>人类测试能发现自动 eval 忽略的幻觉、系统失败和来源选择偏差。</li>
+          </ul>
+          <div class="note" style="margin-top:14px">适合放进 PPT 的判断：agent eval 的对象不是“有没有按剧本走”，而是“是否到达可验证的好结果”。</div>
+        </div>
+      </div>
+      <footer class="footnotes">Evidence: article “Effective evaluation of agents” and appendix note on end-state evaluation.</footer>
+    </section>
+
+    <section class="slide" data-slide="7">
+      <header class="slide-header">
+        <div class="kicker">Reliability</div>
+        <div>
+          <h1>生产化难点来自状态长、错误会复合、部署不能打断运行中 agent</h1>
+          <p class="subtitle">文章把“last mile”描述为主要工程工作：durable execution、错误恢复、全链路追踪、隐私友好观测和 rainbow deployments。</p>
+        </div>
+        <div class="page-no">07 / 08</div>
+      </header>
+      <div class="content two-col">
+        <div class="panel">
+          <h2>可靠性问题链</h2>
+          <div class="flow" style="grid-template-columns:1fr;gap:8px">
+            <div class="step"><span class="tag">State</span><strong>长时间运行保留状态</strong><p>多个工具调用之间的局部失败会影响后续路线。</p></div>
+            <div class="step"><span class="tag">Failure</span><strong>小错误会放大</strong><p>一次工具失败或错误来源可能把 agent 带到完全不同轨迹。</p></div>
+            <div class="step"><span class="tag">Recovery</span><strong>不能简单从头重启</strong><p>重启成本高且影响用户体验，需要 checkpoint 和 resume。</p></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>工程应对</h2>
+          <table>
+            <tr><th>做法</th><th>作用</th></tr>
+            <tr><td>告知工具失败</td><td>利用模型适应性，让 agent 改换路线或降级处理。</td></tr>
+            <tr><td>重试与 checkpoint</td><td>用确定性保护兜住可预期故障。</td></tr>
+            <tr><td>生产 tracing</td><td>定位“为什么没找到明显信息”：查询差、来源差还是工具故障。</td></tr>
+            <tr><td>高层行为观测</td><td>不读取对话内容，也能看决策模式和交互结构。</td></tr>
+            <tr><td>Rainbow deployments</td><td>新旧版本同时运行，避免更新破坏正在执行的 agent。</td></tr>
+          </table>
+          <div class="note risk-note" style="margin-top:14px">架构未完全解决同步瓶颈：lead 仍等待一批 subagent 完成，异步化会增加状态一致性和错误传播难度。</div>
+        </div>
+      </div>
+      <footer class="footnotes">Evidence: article “Production reliability and engineering challenges.”</footer>
+    </section>
+
+    <section class="slide" data-slide="8">
+      <header class="slide-header">
+        <div class="kicker">Brief Takeaways</div>
+        <div>
+          <h1>后续 PPT 应把它讲成“并行研究系统的生产工程案例”</h1>
+          <p class="subtitle">可见表达应围绕适用条件、架构拆分、token/速度收益、prompt/tool/eval 方法和可靠性边界展开。</p>
+        </div>
+        <div class="page-no">08 / 08</div>
+      </header>
+      <div class="content wide-left">
+        <div class="panel">
+          <h2>建议的金字塔</h2>
+          <table>
+            <tr><th>层级</th><th>页面判断候选</th></tr>
+            <tr><td>Summary</td><td>多智能体研究系统用并行上下文和工具调用扩大搜索预算，但生产化依赖严格编排与可靠性工程。</td></tr>
+            <tr><td>章节 1</td><td>适用场景不是泛 agent，而是高价值、可并行、信息量大的开放式研究。</td></tr>
+            <tr><td>章节 2</td><td>架构以 lead/subagent/citation 分工，把搜索、压缩、综合、归因拆开。</td></tr>
+            <tr><td>章节 3</td><td>Prompt、工具描述和 eval 是控制行为成本的主要旋钮。</td></tr>
+            <tr><td>章节 4</td><td>生产可靠性需要 checkpoint、tracing、版本并行和异步演进取舍。</td></tr>
+          </table>
+        </div>
+        <div class="panel">
+          <h2>证据边界</h2>
+          <ul class="claim-list">
+            <li><strong>可直接引用</strong>90.2% 内部 eval、95% 方差解释、80% token 解释、15x token 消耗、最高 90% 时间下降、40% 工具描述优化收益。</li>
+            <li><strong>需弱表达</strong>内部评测未公开完整样本、指标定义和复现脚本，不能外推为所有多智能体系统必然收益。</li>
+            <li><strong>不应扩写</strong>本文没有证明编码、多轮事务、强一致业务流程同样适合多智能体。</li>
+          </ul>
+          <div class="note" style="margin-top:14px">本 HTML 已跳过“寻找更多来源”，因此所有判断只服务于理解单篇原文，不构成竞品横评或独立技术验证。</div>
+        </div>
+      </div>
+      <footer class="footnotes">Prepared for PPT Deep Search source-understanding stage. Original URL: <a href="https://www.anthropic.com/engineering/multi-agent-research-system">https://www.anthropic.com/engineering/multi-agent-research-system</a></footer>
+    </section>
+  </main>
+
+  <nav class="nav" aria-label="Slide navigation">
+    <button type="button" id="prev" aria-label="Previous slide">‹</button>
+    <button type="button" id="next" aria-label="Next slide">›</button>
+  </nav>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+
+    function slideFromHash() {
+      const raw = window.location.hash.replace("#/", "").replace("#", "");
+      const n = Number.parseInt(raw, 10);
+      return Number.isFinite(n) && n >= 1 && n <= slides.length ? n : 1;
+    }
+
+    function showSlide(n) {
+      slides.forEach((slide, index) => {
+        slide.classList.toggle("active", index === n - 1);
+      });
+      if (window.location.hash !== `#/${n}`) {
+        history.replaceState(null, "", `#/${n}`);
+      }
+    }
+
+    document.getElementById("prev").addEventListener("click", () => {
+      const current = slideFromHash();
+      showSlide(current === 1 ? slides.length : current - 1);
+    });
+
+    document.getElementById("next").addEventListener("click", () => {
+      const current = slideFromHash();
+      showSlide(current === slides.length ? 1 : current + 1);
+    });
+
+    window.addEventListener("hashchange", () => showSlide(slideFromHash()));
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" || event.key === "PageDown") document.getElementById("next").click();
+      if (event.key === "ArrowLeft" || event.key === "PageUp") document.getElementById("prev").click();
+    });
+
+    showSlide(slideFromHash());
+  </script>
+</body>
+</html>

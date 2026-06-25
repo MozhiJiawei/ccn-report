@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenAI Codex Subagents Source Understanding</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #657083;
+      --line: #d9dee8;
+      --paper: #f7f8fb;
+      --panel: #ffffff;
+      --blue: #2663eb;
+      --green: #1a7f64;
+      --amber: #9a6700;
+      --red: #b42318;
+      --slate: #344054;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, "Segoe UI", Arial, "Microsoft YaHei", sans-serif;
+      line-height: 1.45;
+    }
+
+    main {
+      width: min(1180px, calc(100vw - 48px));
+      margin: 0 auto;
+      padding: 34px 0 48px;
+    }
+
+    .deck-header {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 24px;
+      align-items: end;
+      padding: 28px 0 20px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      max-width: 780px;
+      font-size: 42px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 14px;
+      max-width: 780px;
+      color: var(--slate);
+      font-size: 17px;
+    }
+
+    .source-box {
+      justify-self: end;
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .source-box a { color: var(--blue); text-decoration: none; }
+
+    .slide {
+      margin-top: 22px;
+      padding: 24px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 22px rgba(23, 32, 51, 0.06);
+    }
+
+    .slide-kicker {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      font-size: 28px;
+      line-height: 1.16;
+      letter-spacing: 0;
+      margin-bottom: 8px;
+    }
+
+    .claim {
+      color: var(--slate);
+      font-size: 16px;
+      max-width: 940px;
+      margin-bottom: 20px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fbfcff;
+      min-height: 132px;
+    }
+
+    .tile h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .tile p, .tile li {
+      color: var(--slate);
+      font-size: 14px;
+    }
+
+    ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    .logic-chain {
+      display: grid;
+      grid-template-columns: 1fr 40px 1fr 40px 1fr;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .node {
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--blue);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfcff;
+    }
+
+    .node h3 {
+      font-size: 15px;
+      margin-bottom: 7px;
+    }
+
+    .node p {
+      color: var(--slate);
+      font-size: 14px;
+    }
+
+    .arrow {
+      display: grid;
+      place-items: center;
+      color: var(--blue);
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef3ff;
+      color: #12336d;
+      font-weight: 700;
+    }
+
+    td { color: var(--slate); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #eef3ff;
+      color: #12336d;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 6px;
+      white-space: nowrap;
+    }
+
+    .evidence {
+      margin-top: 16px;
+      border-left: 4px solid var(--green);
+      padding: 10px 14px;
+      background: #f0faf6;
+      color: #245246;
+      font-size: 13px;
+    }
+
+    .warning {
+      border-left-color: var(--amber);
+      background: #fff8e8;
+      color: #684b00;
+    }
+
+    .risk {
+      border-left-color: var(--red);
+      background: #fff3f1;
+      color: #7a271a;
+    }
+
+    .source-map {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+
+    .source-map div {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .source-map div:nth-child(odd) {
+      background: #f3f6fb;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .source-map div:nth-last-child(-n+2) { border-bottom: 0; }
+
+    .footer-note {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    @media (max-width: 860px) {
+      main { width: min(100vw - 28px, 1180px); }
+      .deck-header, .grid-2, .grid-3, .logic-chain {
+        grid-template-columns: 1fr;
+      }
+      .source-box { justify-self: stretch; }
+      .arrow { transform: rotate(90deg); }
+      h1 { font-size: 32px; }
+      h2 { font-size: 23px; }
+      .source-map { grid-template-columns: 1fr; }
+      .source-map div:nth-child(odd) { border-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="deck-header">
+      <div>
+        <h1>Codex Subagents：把噪声工作移出主线程</h1>
+        <p class="subtitle">Source Understanding 交付件，基于 OpenAI Codex Docs「Subagents」单一网页。结论：subagent 不是自动扩容机制，而是显式触发的并行分工，用来控制上下文质量、缩短独立任务路径，并在模型成本与推理强度之间分层。</p>
+      </div>
+      <aside class="source-box">
+        <strong>Source</strong><br />
+        OpenAI Developers: <a href="https://developers.openai.com/codex/concepts/subagents">Codex concepts / Subagents</a><br />
+        抓取日期：2026-06-24<br />
+        范围：仅当前网页；按用户要求跳过额外信息源调研。
+      </aside>
+    </header>
+
+    <section class="slide">
+      <div class="slide-kicker"><span>01 / Core Reading</span><span>页面级判断</span></div>
+      <h2>Subagent 的核心价值是降低主会话污染，而不是让 Codex 自动多开</h2>
+      <p class="claim">文档把问题定义为主线程被探索笔记、测试日志、堆栈和命令输出淹没后可靠性下降；subagent 的解法是让这些噪声工作在并行线程中完成，只把 distilled summary 带回主会话。</p>
+      <div class="logic-chain" aria-label="subagent mechanism chain">
+        <div class="node">
+          <h3>问题入口：上下文噪声</h3>
+          <p>长上下文仍有边界；中间输出越多，需求、约束和决策越容易被埋掉。</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <h3>机制：并行委派</h3>
+          <p>Codex 启动专门 agent 分别探索、测试、分析日志或拆解大材料。</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <h3>回流：摘要而非原始噪声</h3>
+          <p>主线程保留需求、决策和最终输出，接收子任务总结而非完整过程。</p>
+        </div>
+      </div>
+      <div class="evidence">证据锚点：原文指出 context pollution / context rot，并列出 “keep the main agent focused”“run specialized subagents in parallel”“return summaries”。</div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-kicker"><span>02 / Operating Boundary</span><span>适用边界</span></div>
+      <h2>优先并行读任务；写任务并行会把收益换成协调成本</h2>
+      <p class="claim">文档给出的默认策略很明确：探索、测试、triage、summarization 这类 read-heavy 工作适合并行；多个 agent 同时改代码会制造冲突，增加协调开销。</p>
+      <div class="grid-3">
+        <div class="tile">
+          <h3><span class="badge">适合</span>探索与阅读</h3>
+          <p>多文件扫描、文档拆解、大日志初筛，可以独立完成并返回归纳结果。</p>
+        </div>
+        <div class="tile">
+          <h3><span class="badge">适合</span>验证与 triage</h3>
+          <p>测试失败定位、安全风险扫描、缺口整理，天然能分给不同视角。</p>
+        </div>
+        <div class="tile">
+          <h3><span class="badge">谨慎</span>并行写入</h3>
+          <p>同时编辑代码会带来文件冲突、行为覆盖和结论合并成本，需要更强协调。</p>
+        </div>
+      </div>
+      <div class="evidence warning">证据锚点：原文建议从 read-heavy tasks 入手，并提醒 write-heavy workflows 会 create conflicts 和 increase coordination overhead。</div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-kicker"><span>03 / Trigger Contract</span><span>触发与提示词</span></div>
+      <h2>Subagent 需要显式指令，prompt 要写清拆分方式、等待策略和回收格式</h2>
+      <p class="claim">Codex 不会自动 spawn subagents；只有用户明确要求 subagents 或 parallel agent work 时才应使用。好的指令不仅说“并行”，还要定义每个 agent 的任务边界、是否等待全部完成，以及最终如何汇总。</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Prompt 要素</th>
+            <th>应该说明什么</th>
+            <th>为什么重要</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>拆分方式</td>
+            <td>按风险、文件、资料段落、测试类型或审查角色划分。</td>
+            <td>避免多个 agent 重复劳动，保证结果互补。</td>
+          </tr>
+          <tr>
+            <td>等待策略</td>
+            <td>是否等所有 agent 完成后再继续，或先处理关键路径结果。</td>
+            <td>决定主线程何时合并，防止半截结论进入决策。</td>
+          </tr>
+          <tr>
+            <td>回收格式</td>
+            <td>要求按类别、文件引用、严重度或行动项返回摘要。</td>
+            <td>把并行输出压成可执行判断，避免重新污染主线程。</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="evidence">证据锚点：文档示例要求为 security risks、test gaps、maintainability 各 spawn 一个 subagent，并等待三者后按类别和文件引用总结。</div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-kicker"><span>04 / Model Routing</span><span>模型与推理强度</span></div>
+      <h2>模型选择按任务深度分层，reasoning effort 按边界复杂度加码</h2>
+      <p class="claim">如果不指定模型或 reasoning effort，Codex 可以自行平衡智能、速度和价格；需要精控时，用户可在 prompt 或 agent file 中指定 model 与 model_reasoning_effort。</p>
+      <table>
+        <thead>
+          <tr>
+            <th>配置项</th>
+            <th>文档建议</th>
+            <th>适合的 subagent 工作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>gpt-5.5</strong></td>
+            <td>多数 Codex 任务从这里开始；适合 demanding agents。</td>
+            <td>模糊、多步、需要规划、工具使用、验证和较长上下文跟进。</td>
+          </tr>
+          <tr>
+            <td><strong>gpt-5.4</strong></td>
+            <td>当 workflow pin 到 GPT-5.4 时使用。</td>
+            <td>强编码、推理、工具使用和较广工作流。</td>
+          </tr>
+          <tr>
+            <td><strong>gpt-5.4-mini</strong></td>
+            <td>速度和效率优先，适合 lighter subagent work。</td>
+            <td>探索、read-heavy 扫描、大文件审阅、支撑材料处理。</td>
+          </tr>
+          <tr>
+            <td><strong>gpt-5.3-codex-spark</strong></td>
+            <td>ChatGPT Pro 下用于近实时文本迭代，研究预览。</td>
+            <td>延迟比广泛能力更重要的 text-only 任务。</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="grid-3" style="margin-top:14px;">
+        <div class="tile">
+          <h3>high</h3>
+          <p>复杂逻辑追踪、假设检查、边界案例、安全或审查型 agent。</p>
+        </div>
+        <div class="tile">
+          <h3>medium</h3>
+          <p>多数任务的平衡默认值。</p>
+        </div>
+        <div class="tile">
+          <h3>low</h3>
+          <p>任务直接、速度优先时使用。</p>
+        </div>
+      </div>
+      <div class="evidence">证据锚点：原文分别列出模型选择和 reasoning effort，并说明更高 reasoning effort 会增加响应时间和 token 使用，但可改善复杂任务质量。</div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-kicker"><span>05 / Evidence Audit</span><span>证据边界</span></div>
+      <h2>这页文档是概念说明，不是完整操作手册</h2>
+      <p class="claim">当前来源解释了概念、权衡、触发条件和模型选择，但把 setup、agent configuration、examples 指向另一个 Subagents 配置页面。因此本 HTML 只把它作为“使用心智模型”来源，不推导配置语法细节。</p>
+      <div class="source-map">
+        <div>可直接支持的判断</div>
+        <div>subagent 适合把噪声工作移出主线程；应显式触发；read-heavy 优先；模型与 reasoning effort 可按任务分层。</div>
+        <div>需要弱表达的判断</div>
+        <div>效率收益取决于任务能否独立并行；写任务收益受冲突与协调成本制约。</div>
+        <div>不从本页推出的内容</div>
+        <div>具体 agent 文件格式、CLI 配置步骤、完整样例库和企业策略。</div>
+        <div>缺口处理</div>
+        <div>按用户要求不扩展来源；若后续制作 PPT Content Brief，应另行确认是否纳入配置页作为补充证据。</div>
+      </div>
+      <div class="evidence risk">证据边界：来源本身说明“for setup, agent configuration, and examples, see Subagents”，因此不能把当前页包装成完整配置指南。</div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-kicker"><span>06 / Brief-Ready Pyramid</span><span>可下游转 brief 的结构</span></div>
+      <h2>一页总结：Subagent 是显式并行分工，用摘要保护主线程</h2>
+      <p class="claim">如果后续进入 PPT Content Brief，这个来源最适合组织成“问题：上下文变脏；机制：并行委派；边界：读任务优先；配置：模型和推理强度分层”的四页结构。</p>
+      <div class="grid-2">
+        <div class="tile">
+          <h3>页面标题候选：Subagent 把噪声工作移出主线程</h3>
+          <p><strong>标题说明：</strong>探索、日志、测试和大材料拆解由并行 agent 处理，主线程只接收摘要。</p>
+          <ul>
+            <li><strong>上下文保洁：</strong>减少中间输出淹没需求和决策。</li>
+            <li><strong>并行拆解：</strong>独立任务可同时推进并返回 distilled takeaways。</li>
+          </ul>
+        </div>
+        <div class="tile">
+          <h3>页面标题候选：Subagent 要显式触发，读任务优先</h3>
+          <p><strong>标题说明：</strong>Codex 不自动 spawn；prompt 要写明拆分、等待和汇总格式。</p>
+          <ul>
+            <li><strong>触发清楚：</strong>用 spawn、delegate、one agent per point 等直接指令。</li>
+            <li><strong>写入谨慎：</strong>并行改代码会增加冲突和协调成本。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-note">Prepared as source_understanding.html for tmp/sub-agent-anlysis/openai-codex-subagents.</div>
+    </section>
+  </main>
+</body>
+</html>
