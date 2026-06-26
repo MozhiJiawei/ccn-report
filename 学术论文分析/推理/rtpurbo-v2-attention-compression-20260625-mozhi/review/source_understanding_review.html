@@ -1,0 +1,693 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN" data-theme="engineering-whiteprint">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RTPurboV2 注意力压缩技术 Source Understanding</title>
+  <link rel="stylesheet" href="../html-ppt-assets/fonts.css">
+  <link rel="stylesheet" href="../html-ppt-assets/base.css">
+  <link rel="stylesheet" id="theme-link" href="../html-ppt-assets/themes/engineering-whiteprint.css">
+  <link rel="stylesheet" href="../html-ppt-assets/animations/animations.css">
+  <style>
+    :root {
+      --su-line: color-mix(in srgb, var(--border) 82%, var(--accent));
+      --su-soft: color-mix(in srgb, var(--surface-2) 88%, var(--accent));
+    }
+    .slide {
+      padding: 62px 76px 54px;
+    }
+    .su-topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+      color: var(--text-2);
+      font-size: 18px;
+    }
+    .su-kicker {
+      margin: 0;
+      color: var(--accent);
+      font: 700 18px/1.2 var(--font-sans);
+      letter-spacing: 0;
+    }
+    .su-source {
+      max-width: 680px;
+      text-align: right;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--text-3);
+    }
+    .su-title {
+      margin: 0;
+      color: var(--text-1);
+      font-size: 54px;
+      line-height: 1.08;
+      letter-spacing: 0;
+      max-width: 1280px;
+    }
+    .su-lede {
+      margin: 18px 0 0;
+      max-width: 1120px;
+      color: var(--text-2);
+      font-size: 24px;
+      line-height: 1.45;
+    }
+    .su-grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 30px;
+      align-items: start;
+    }
+    .su-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+      align-items: stretch;
+    }
+    .su-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      align-items: stretch;
+    }
+    .su-card {
+      border: 1px solid var(--su-line);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--surface) 92%, white);
+      padding: 20px 22px;
+      min-height: 100%;
+    }
+    .su-card h3 {
+      margin: 0 0 10px;
+      color: var(--text-1);
+      font-size: 24px;
+      line-height: 1.22;
+    }
+    .su-card p,
+    .su-card li {
+      color: var(--text-2);
+      font-size: 18px;
+      line-height: 1.48;
+    }
+    .su-card p {
+      margin: 0;
+    }
+    .su-card ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+    .su-stat {
+      border-top: 4px solid var(--accent);
+      background: var(--surface);
+    }
+    .su-stat strong {
+      display: block;
+      color: var(--text-1);
+      font: 800 40px/1 var(--font-display);
+      margin-bottom: 8px;
+      letter-spacing: 0;
+    }
+    .su-badge {
+      display: inline-block;
+      border: 1px solid var(--su-line);
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: var(--accent);
+      background: var(--su-soft);
+      font-size: 14px;
+      font-weight: 700;
+      margin-right: 8px;
+    }
+    .su-flow {
+      display: grid;
+      grid-template-columns: 1fr 54px 1fr 54px 1fr;
+      align-items: center;
+      gap: 10px;
+      margin-top: 28px;
+    }
+    .su-flow .node {
+      border: 1px solid var(--su-line);
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 20px;
+      min-height: 150px;
+    }
+    .su-flow .arrow {
+      text-align: center;
+      color: var(--accent);
+      font-size: 34px;
+      font-weight: 800;
+    }
+    .su-flow h3 {
+      margin: 0 0 8px;
+      font-size: 25px;
+    }
+    .su-flow p {
+      margin: 0;
+      color: var(--text-2);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+    .su-evidence {
+      margin-top: 24px;
+      border: 1px solid var(--su-line);
+      border-radius: 6px;
+      background: white;
+      padding: 14px;
+    }
+    .su-evidence img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #fff;
+    }
+    .su-caption {
+      margin: 10px 2px 0;
+      color: var(--text-3);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .su-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 24px;
+      font-size: 17px;
+    }
+    .su-table th,
+    .su-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .su-table th {
+      color: var(--text-3);
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .su-table td {
+      color: var(--text-2);
+      line-height: 1.42;
+    }
+    .su-table .hot {
+      color: var(--accent);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .su-callout {
+      border-left: 5px solid var(--accent);
+      background: var(--su-soft);
+      padding: 18px 22px;
+      color: var(--text-2);
+      font-size: 21px;
+      line-height: 1.45;
+      margin-top: 24px;
+    }
+    .su-small {
+      color: var(--text-3);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .su-footer {
+      position: absolute;
+      left: 76px;
+      right: 76px;
+      bottom: 26px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-3);
+      font-size: 13px;
+    }
+    .su-image-tight {
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .su-image-wide {
+      max-width: 1180px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .su-two-images {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+      margin-top: 22px;
+      align-items: start;
+    }
+    .su-two-images .su-evidence {
+      margin-top: 0;
+    }
+    .su-result-layout {
+      display: grid;
+      grid-template-columns: minmax(860px, 1.05fr) minmax(420px, .55fr);
+      gap: 26px;
+      align-items: start;
+      margin-top: 22px;
+    }
+    .su-result-layout .su-evidence {
+      margin-top: 0;
+    }
+    .su-readbox {
+      border: 1px solid var(--su-line);
+      border-radius: 6px;
+      background: var(--surface);
+      padding: 18px 20px;
+      margin-bottom: 14px;
+    }
+    .su-readbox h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+    .su-readbox p,
+    .su-readbox li {
+      margin: 0;
+      color: var(--text-2);
+      font-size: 17px;
+      line-height: 1.42;
+    }
+    .su-readbox ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .su-keyword-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: color-mix(in srgb, var(--surface-2) 80%, white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+  </style>
+</head>
+<body data-themes="engineering-whiteprint,academic-paper,swiss-grid,minimal-white,catppuccin-latte" data-theme-base="../html-ppt-assets/themes/">
+<div class="deck">
+
+  <section class="slide" data-title="核心结论">
+    <div class="su-topline">
+      <p class="su-kicker">Source Understanding · RTPurboV2</p>
+      <p class="su-source">主源：arXiv:2605.16928 v2，2026-06-08；解析产物：GROBID + Docling XML package</p>
+    </div>
+    <h1 class="su-title">RTPurboV2 的核心不是换掉 Full Attention，而是把它“显式稀疏化”</h1>
+    <p class="su-lede">论文主张：Full-attention LLM 内部已经存在可利用的稀疏结构，只需几百步后训练，就能把长上下文推理从全量注意力迁移到 head-wise sparse attention，并保持接近无损精度。</p>
+    <div class="su-grid-4" style="margin-top:34px">
+      <div class="su-card su-stat"><strong>15%</strong><p>少量 retrieval heads 需要长程处理；其余 heads 更偏局部。</p></div>
+      <div class="su-card su-stat"><strong>16-D</strong><p>长程召回可由低维 token indexer 近似定位。</p></div>
+      <div class="su-card su-stat"><strong>9.36×</strong><p>论文报告 1M context 下最高 prefill speedup。</p></div>
+      <div class="su-card su-stat"><strong>2.01×</strong><p>论文报告 decode 阶段约 2.01× speedup。</p></div>
+    </div>
+    <div class="su-evidence su-image-wide">
+      <img src="assets/fig1-teaser.png" alt="RTPurbo efficiency and accuracy teaser">
+      <p class="su-caption">Figure 1 给出 RTPurbo 的效率与精度概览；后续页将拆开核验证据口径。</p>
+    </div>
+    <div class="notes">这一页只建立结论：RTPurboV2/RTPurbo 不是训练一个全新稀疏模型，而是从 Full Attention 模型中释放内生稀疏性。重点数字来自论文摘要与 Figure 1。</div>
+    <div class="su-footer"><span>RTPurboV2 source understanding</span><span class="slide-number" data-current="1" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="问题定义">
+    <div class="su-topline">
+      <p class="su-kicker">01 · 问题定义</p>
+      <p class="su-source">问题对象：long-context inference 的 full attention 二次复杂度</p>
+    </div>
+    <h2 class="su-title">长上下文瓶颈来自全头、全 token、全维度都在参与匹配</h2>
+    <p class="su-lede">论文把低效拆成三个可压缩对象：哪些 head 需要长程，哪些维度承载召回，哪些 token 真正值得算。</p>
+    <div class="su-flow">
+      <div class="node">
+        <h3>Head 维度</h3>
+        <p><span class="su-badge">分工</span>把 attention heads 分成 retrieval heads 与 local/streaming heads。</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node">
+        <h3>Feature 维度</h3>
+        <p><span class="su-badge">低秩</span>用 16 维 indexer 做长程相关性检索，降低 QK 匹配成本。</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node">
+        <h3>Token 维度</h3>
+        <p><span class="su-badge">动态</span>用 query-dependent top-p 选择有效 token，而不是固定 top-k。</p>
+      </div>
+    </div>
+    <table class="su-table">
+      <thead><tr><th>压缩对象</th><th>论文中的处理方式</th><th>要回答的问题</th></tr></thead>
+      <tbody>
+        <tr><td class="hot">Head</td><td>离线校准识别 retrieval heads；非 retrieval heads 不保留完整长程路径。</td><td>长程信息是否只由少量头负责？</td></tr>
+        <tr><td class="hot">Feature</td><td>训练低维 projection，保留 RoPE 低频语义信号。</td><td>检索是否可以用低维索引近似？</td></tr>
+        <tr><td class="hot">Token</td><td>解码阶段用动态 top-p sparse attention。</td><td>每个 query 需要的 token 数是否高度变化？</td></tr>
+      </tbody>
+    </table>
+    <div class="notes">这一页把注意力压缩对象讲清楚，避免泛泛说“压缩 attention”。RTPurbo 的对象不是 KV cache 全局剪裁，而是 head-wise、feature-wise、token-wise 的组合。</div>
+    <div class="su-footer"><span>Compression object map</span><span class="slide-number" data-current="2" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="观察一：Head 分工">
+    <div class="su-topline">
+      <p class="su-kicker">02 · Head-wise prior</p>
+      <p class="su-source">Evidence: Figure 2, Figure 8, Section 3.1</p>
+    </div>
+    <h2 class="su-title">少量 retrieval heads 决定长程召回，其余头天然更适合局部化</h2>
+    <div class="su-grid-2" style="margin-top:24px">
+      <div>
+        <div class="su-card">
+          <h3>为什么能从 Full Attention 迁移？</h3>
+          <ul>
+            <li>论文观察到 heads 已经出现功能分化：retrieval heads 关注远距离语义相关 token。</li>
+            <li>离线校准给每个 query head 打 retrieval score，高分头保留长程检索路径。</li>
+            <li>这让压缩从“全局稀疏化”变成“只保护少数关键头”。</li>
+          </ul>
+        </div>
+        <div class="su-evidence" style="margin-top:20px">
+          <img src="assets/fig2-retrieval-heads.png" alt="Retrieval heads attend to semantically related distant regions">
+          <p class="su-caption">Figure 2：retrieval head 会跨距离关注与 query 语义相关的区域。</p>
+        </div>
+      </div>
+      <div class="su-evidence">
+        <img src="assets/fig8-head-scores.png" alt="Head-wise retrieval scores in Qwen3-Coder-30B-A3B">
+        <p class="su-caption">Figure 8：Qwen3-Coder-30B-A3B 的 head-wise retrieval score，支持“少数头承担长程召回”的校准策略。</p>
+      </div>
+    </div>
+    <div class="notes">这页的关键不是说 15% 是普适常数，而是说明论文如何把 head 分工变成可操作的离线校准。不同模型 retrieval head 比例会变化，后面边界页会说明。</div>
+    <div class="su-footer"><span>Head specialization</span><span class="slide-number" data-current="3" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="观察二：低维召回">
+    <div class="su-topline">
+      <p class="su-kicker">03 · Low-dimensional retrieval geometry</p>
+      <p class="su-source">Evidence: Section 3.2, Table 2, Appendix ablations</p>
+    </div>
+    <h2 class="su-title">长程检索主要依赖低频语义分量，16 维索引器承担候选召回</h2>
+    <div class="su-grid-2" style="margin-top:26px">
+      <div class="su-card">
+        <h3>论文的机制链</h3>
+        <ul>
+          <li>RoPE 使 QK score 可分解为不同频率分量；高频分量对远距离位置更敏感。</li>
+          <li>长程 retrieval 更需要稳定语义匹配，因此可压到低频主导的低维子空间。</li>
+          <li>低维 projection 不是直接替代 attention 输出，而是作为 token indexer 先召回候选。</li>
+        </ul>
+      </div>
+      <div class="su-card">
+        <h3>配置含义</h3>
+        <p>论文配置里 token indexer 使用 <code>hidden size = 16</code>；结合 retrieval-head ratio、top-p 和 GQA group size，形成完整 sparse decode 配置。</p>
+        <div class="su-evidence" style="margin-top:18px">
+          <img src="assets/table2-config.png" alt="RTPurbo configuration table">
+          <p class="su-caption">Table 2：RTPurbo config。低维大小是理解 feature compression 的关键。</p>
+        </div>
+      </div>
+    </div>
+    <div class="su-callout">要点：低秩投影压缩的是“检索索引空间”，不是把最终 Value 聚合也粗糙低维化；这降低候选选择成本，同时保留后续 attention 计算的精度路径。</div>
+    <div class="notes">这里要把低维投影讲成人话：先用低维空间快速找候选，不等于低维生成最终答案。这个区分能避免把它误解成普通降维压缩。</div>
+    <div class="su-footer"><span>Low-rank token indexer</span><span class="slide-number" data-current="4" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="观察三：动态 top-p">
+    <div class="su-topline">
+      <p class="su-kicker">04 · Query-dependent sparsity</p>
+      <p class="su-source">Evidence: Table 1, Section 3.3</p>
+    </div>
+    <h2 class="su-title">固定 top-k 会错配不同 query 的 token 预算，动态 top-p 更贴近注意力质量</h2>
+    <div class="su-grid-2" style="margin-top:22px">
+      <div class="su-card">
+        <h3>为什么不是固定 top-k？</h3>
+        <ul>
+          <li>同一序列里，不同 query 的注意力质量集中程度差异很大。</li>
+          <li>固定 top-k 为困难 query 留不够 token，又会给简单 query 多算无效 token。</li>
+          <li>top-p 用累计 attention mass 控制召回质量，更像“保留足够证据”。</li>
+        </ul>
+      </div>
+      <div class="su-evidence">
+        <img src="assets/table1-topk-topp.png" alt="Fixed top-k trades recall for sparsity">
+        <p class="su-caption">Table 1：固定 top-k 与 top-p 的对比；论文指出 top-16k 多算约 8k token，却只多恢复 3.8% attention mass。</p>
+      </div>
+    </div>
+    <table class="su-table">
+      <thead><tr><th>策略</th><th>优势</th><th>风险</th><th>RTPurbo 选择</th></tr></thead>
+      <tbody>
+        <tr><td class="hot">top-k</td><td>实现简单，token 数固定</td><td>对 query/head/长度变化不敏感</td><td>作为对照基线</td></tr>
+        <tr><td class="hot">top-p</td><td>按注意力质量动态保留 token</td><td>需要高效 kernel 处理变长候选</td><td>作为 sparse decode 主路径</td></tr>
+      </tbody>
+    </table>
+    <div class="notes">这页是 token 维度压缩的核心。动态 top-p 的价值不只是更省，而是在同样或更低计算下更好保护召回质量。</div>
+    <div class="su-footer"><span>Dynamic top-p selection</span><span class="slide-number" data-current="5" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="方法总览">
+    <div class="su-topline">
+      <p class="su-kicker">05 · Method architecture</p>
+      <p class="su-source">Evidence: Figure 4, Section 4</p>
+    </div>
+    <h2 class="su-title">RTPurbo 的推理路径是“离线校准 + prefill 索引 + decode 稀疏选择”</h2>
+    <div class="su-evidence su-image-tight">
+      <img src="assets/fig4-architecture.png" alt="Overall architecture of RTPurbo">
+      <p class="su-caption">Figure 4：RTPurbo 总体架构。图中把 head 校准、KV/索引保存、稀疏 decode 串成完整路径。</p>
+    </div>
+    <div class="su-grid-3" style="margin-top:20px">
+      <div class="su-card"><h3>离线校准</h3><p>识别 retrieval heads，并确定哪些头需要保留 full KV cache。</p></div>
+      <div class="su-card"><h3>Prefill 建索引</h3><p>对 retrieval heads 生成低维 token indexer，为长程匹配降本。</p></div>
+      <div class="su-card"><h3>Decode 稀疏化</h3><p>用动态 top-p 选 token，再通过硬件友好 kernel 执行 sparse attention。</p></div>
+    </div>
+    <div class="notes">这页让执行者知道系统路径。RTPurboV2 新闻里提到低秩投影、聚类、动态 top-p；论文当前 XML 主要支撑 RTPurbo 的低维 indexer 与动态 top-p 主线。</div>
+    <div class="su-footer"><span>RTPurbo architecture</span><span class="slide-number" data-current="6" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="训练成本">
+    <div class="su-topline">
+      <p class="su-kicker">06 · Training adaptation</p>
+      <p class="su-source">Evidence: Abstract, Appendix C, Figure 9</p>
+    </div>
+    <h2 class="su-title">后训练成本低，是它区别于原生稀疏训练路线的关键卖点</h2>
+    <div class="su-grid-2" style="margin-top:24px">
+      <div class="su-card">
+        <h3>两阶段适配</h3>
+        <ul>
+          <li>Stage 1：训练低维 projection，让 token indexer 学会复现长程召回。</li>
+          <li>Stage 2：端到端适配 sparse attention 路径，减少训推结构差异。</li>
+          <li>论文强调只需要 few hundred training steps，而不是重新做 native sparse pretraining。</li>
+        </ul>
+      </div>
+      <div class="su-evidence">
+        <img src="assets/table5-reasoning.png" alt="Accuracy comparison on reasoning benchmarks">
+        <p class="su-caption">Table 5：reasoning benchmarks 精度对比。该表用于观察低成本适配后是否保留推理能力。</p>
+      </div>
+    </div>
+    <div class="su-callout">证据边界：论文摘要给出“few hundred training steps”；新闻解读进一步写作约 600 步、约 1M label tokens。Content Brief 阶段应区分论文数字与媒体解读数字。</div>
+    <div class="notes">这页先不把“600 步”作为论文强证据写死，因为当前论文摘要是 few hundred training steps，600 步来自外部解读。后续 brief 需要证据分级。</div>
+    <div class="su-footer"><span>Low-cost adaptation</span><span class="slide-number" data-current="7" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="RULER 长上下文精度">
+    <div class="su-topline">
+      <p class="su-kicker">07 · Experiment: RULER accuracy</p>
+      <p class="su-source">Evidence: Table 4, Qwen3-Coder-30B-A3B, 32K / 64K long-context tasks</p>
+    </div>
+    <h2 class="su-title">RULER 表说明：RTPurbo 在检索型长上下文任务上接近 Full Attention</h2>
+    <div class="su-result-layout">
+      <div class="su-evidence">
+        <img src="assets/table4-ruler.png" alt="Accuracy comparison on RULER">
+        <p class="su-caption">Table 4：RULER accuracy comparison。表中 Full Attention 作为 dense baseline，不参与 sparse 方法排名；粗体表示 sparse 方法最优。</p>
+      </div>
+      <div>
+        <div class="su-readbox">
+          <h3>图里关键词</h3>
+          <div class="su-keyword-list">
+            <span class="su-badge">CWE/FWE/VT</span>
+            <span class="su-badge">HotPot</span>
+            <span class="su-badge">multi-Q/V/K</span>
+            <span class="su-badge">niah-S</span>
+            <span class="su-badge">Avg.</span>
+          </div>
+        </div>
+        <div class="su-readbox">
+          <h3>实验条件</h3>
+          <ul>
+            <li>模型：长上下文类实验使用 Qwen3-Coder-30B-A3B。</li>
+            <li>长度：表格分 32K 与 64K 两组。</li>
+            <li>对照：RazorAttn、MInference、FlexPrefill、Quest、SnapKV，以及 RTPurbo 的 top-k/top-p 变体。</li>
+          </ul>
+        </div>
+        <div class="su-readbox">
+          <h3>怎么看</h3>
+          <p>重点看 Avg. 和 multi-Q/multi-V/multi-K。64K 下 RTPurbo w/top-p 平均 85.49，明显高于 w/top-k 的 70.53，说明动态 token 预算比固定 4096 top-k 更稳。</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">这页只讲 RULER 表。解释 acronym 时不要展开过度，但要说明这些列代表不同长上下文任务族。关键比较是 RTPurbo top-p vs top-k，以及 vs 其他 sparse baselines。</div>
+    <div class="su-footer"><span>RULER accuracy table</span><span class="slide-number" data-current="8" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="Ultra-long 多跳精度">
+    <div class="su-topline">
+      <p class="su-kicker">08 · Experiment: 128K-512K multi-hop</p>
+      <p class="su-source">Evidence: Figure 6, Multi-K / Multi-Q / Multi-V, 128K to 512K</p>
+    </div>
+    <h2 class="su-title">Ultra-long 图说明：越到极长上下文，动态 top-p 的优势越明显</h2>
+    <div class="su-result-layout">
+      <div class="su-evidence">
+        <img src="assets/fig6-ultralong.png" alt="Accuracy and sparsity on ultra-long multi-hop tasks">
+        <p class="su-caption">Figure 6：128K-512K ultra-long multi-hop tasks。柱子是 accuracy score，黑线是 RTPurbo sparsity。</p>
+      </div>
+      <div>
+        <div class="su-readbox">
+          <h3>图里关键词</h3>
+          <div class="su-keyword-list">
+            <span class="su-badge">Multi-K</span>
+            <span class="su-badge">Multi-Q</span>
+            <span class="su-badge">Multi-V</span>
+            <span class="su-badge">Sparsity</span>
+            <span class="su-badge">128K-512K</span>
+          </div>
+        </div>
+        <div class="su-readbox">
+          <h3>实验条件</h3>
+          <ul>
+            <li>任务：multi-hop 检索，证据分布在超长上下文不同位置。</li>
+            <li>长度：128K、192K、256K、360K、512K。</li>
+            <li>对照：MInference、FlexPrefill、RTPurbo。</li>
+          </ul>
+        </div>
+        <div class="su-readbox">
+          <h3>怎么看</h3>
+          <p>绿色 RTPurbo 柱子在三类任务上都保持高分；黑线显示 sparsity 约 94%-97% 量级，说明它不是靠多算换精度，而是在高稀疏下仍保留检索质量。</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">这里要解释三个子图：Multi-K/ Q/ V 是不同多跳任务类型，不是三个模型。读图顺序：先看长度增长，再看基线掉分，最后看 RTPurbo sparsity 黑线。</div>
+    <div class="su-footer"><span>Ultra-long multi-hop</span><span class="slide-number" data-current="9" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="Reasoning 精度">
+    <div class="su-topline">
+      <p class="su-kicker">09 · Experiment: reasoning tasks</p>
+      <p class="su-source">Evidence: Table 5, Qwen3-30B-A3B-Think, AIME + MMLU-PRO</p>
+    </div>
+    <h2 class="su-title">Reasoning 表说明：短输入长生成场景里，稀疏化没有明显破坏推理能力</h2>
+    <div class="su-result-layout">
+      <div class="su-evidence">
+        <img src="assets/table5-reasoning.png" alt="Accuracy comparison on reasoning benchmarks">
+        <p class="su-caption">Table 5：reasoning benchmark accuracy。论文说明 AIME 输入短但生成 reasoning traces 长，瓶颈转向 decode 阶段。</p>
+      </div>
+      <div>
+        <div class="su-readbox">
+          <h3>图里关键词</h3>
+          <div class="su-keyword-list">
+            <span class="su-badge">AIME24/25</span>
+            <span class="su-badge">MMLU-PRO</span>
+            <span class="su-badge">w/top-p</span>
+            <span class="su-badge">Full Attn</span>
+          </div>
+        </div>
+        <div class="su-readbox">
+          <h3>实验条件</h3>
+          <ul>
+            <li>模型：Qwen3-30B-A3B-Think，偏 reasoning 专用。</li>
+            <li>任务：AIME 2024/2025 与 MMLU-PRO 子类。</li>
+            <li>场景：输入通常小于 300 tokens，但推理输出可到 32K。</li>
+          </ul>
+        </div>
+        <div class="su-readbox">
+          <h3>怎么看</h3>
+          <p>RTPurbo w/top-p 在 AIME24/25 都达到 86.67，和 Full Attn 对齐；MMLU-PRO 多个子类也接近 dense baseline，说明 long decode 不只是提速，还要守住推理质量。</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">这页强调实验条件：reasoning 的难点不是 prompt 很长，而是生成很长。RTPurbo 的 decode 稀疏化如果破坏推理链，会在这里掉分。</div>
+    <div class="su-footer"><span>Reasoning accuracy table</span><span class="slide-number" data-current="10" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="Decode 延迟收益">
+    <div class="su-topline">
+      <p class="su-kicker">10 · Experiment: sparse decoding speed</p>
+      <p class="su-source">Evidence: Figure 7, H=32, KV=128K / 256K / 512K</p>
+    </div>
+    <h2 class="su-title">Decode 图说明：RTPurbo 的加速来自低维打分、稀疏规约和自定义 GEMV kernel</h2>
+    <div class="su-result-layout">
+      <div class="su-evidence">
+        <img src="assets/fig7-speedup.png" alt="Sparse decoding speedup of RTPurbo">
+        <p class="su-caption">Figure 7：Sparse decoding speedup。横轴为 latency，三组 KV 长度分别是 128K、256K、512K；H=32。</p>
+      </div>
+      <div>
+        <div class="su-readbox">
+          <h3>图里关键词</h3>
+          <div class="su-keyword-list">
+            <span class="su-badge">D16 Score + Top-p</span>
+            <span class="su-badge">Sparse D128 + Reduce</span>
+            <span class="su-badge">FA2</span>
+            <span class="su-badge">PyTorch Naive</span>
+          </div>
+        </div>
+        <div class="su-readbox">
+          <h3>实验条件</h3>
+          <ul>
+            <li>头数：H=32；KV 长度：128K、256K、512K。</li>
+            <li>对照：Full Attention 使用 FlashAttention-2；另给 PyTorch naive 4-stage 分解。</li>
+            <li>图中单位：microseconds；红字约 1.96-1.99× 是相对 Full Attention 的 decode speedup。</li>
+          </ul>
+        </div>
+        <div class="su-readbox">
+          <h3>怎么看</h3>
+          <p>蓝色条把 RTPurbo decode 分解为低维打分/top-p 与 sparse attention reduce；随着 KV 从 128K 到 512K，RTPurbo 仍约为 Full Attention 一半延迟。</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">这页要避免把 Figure 7 说成 9.36x。Figure 7 讲 decode，约 2x；9.36x 是摘要里 prefill speedup at 1M context。两个收益口径要分开。</div>
+    <div class="su-footer"><span>Decode speedup figure</span><span class="slide-number" data-current="11" data-total="12"></span></div>
+  </section>
+
+  <section class="slide" data-title="边界与后续核证">
+    <div class="su-topline">
+      <p class="su-kicker">11 · Evidence boundary</p>
+      <p class="su-source">Sources used: arXiv PDF XML package; external RTPurboV2 news to be rechecked after approval</p>
+    </div>
+    <h2 class="su-title">作为 PPT 证据基线，下一步要把“论文 RTPurbo”和“开源 RTPurboV2 解读”分层合并</h2>
+    <div class="su-grid-3" style="margin-top:26px">
+      <div class="su-card">
+        <h3>已被论文强支撑</h3>
+        <ul>
+          <li>Full Attention 模型存在 head-wise 稀疏结构。</li>
+          <li>16 维 token indexer 与动态 top-p 是核心机制。</li>
+          <li>报告 9.36× prefill、2.01× decode 速度收益。</li>
+        </ul>
+      </div>
+      <div class="su-card">
+        <h3>需外部来源补强</h3>
+        <ul>
+          <li>RTPurboV2 的 16-32× Full Attention 计算压缩。</li>
+          <li>聚类索引在 V2 中的工程细节和开源实现位置。</li>
+          <li>约 600 步、约 1M label tokens 的发布口径。</li>
+        </ul>
+      </div>
+      <div class="su-card">
+        <h3>适配范围要谨慎</h3>
+        <ul>
+          <li>论文实验集中在 long-context LLM。</li>
+          <li>代表模型包括 Qwen3-Coder-30B-A3B 等。</li>
+          <li>对其他 SWA + Full Attention 混合架构只能写作推断。</li>
+        </ul>
+      </div>
+    </div>
+    <table class="su-table">
+      <thead><tr><th>后续 Brief 中的写法</th><th>建议证据强度</th><th>备注</th></tr></thead>
+      <tbody>
+        <tr><td>RTPurbo 通过 head-wise sparse attention 释放 Full Attention 内生稀疏性</td><td class="hot">强</td><td>论文摘要、方法和图表均支持。</td></tr>
+        <tr><td>RTPurboV2 在剩余 Full Attention 上实现 16-32× 压缩</td><td class="hot">中</td><td>需结合发布解读与仓库实现复核。</td></tr>
+        <tr><td>无需换架构即可获得接近 SOTA 新稀疏方案效率</td><td class="hot">弱到中</td><td>需限定模型、长度和硬件口径。</td></tr>
+      </tbody>
+    </table>
+    <div class="notes">这是审批前最重要的边界页。用户批准后，才能进入 ppt-brief-hitl；到那时需要再抓取新闻/GitHub/NSA 对照来源，完善证据审计。</div>
+    <div class="su-footer"><span>Approval gate input</span><span class="slide-number" data-current="12" data-total="12"></span></div>
+  </section>
+
+</div>
+<script src="../html-ppt-assets/runtime.js"></script>
+</body>
+</html>
+
+

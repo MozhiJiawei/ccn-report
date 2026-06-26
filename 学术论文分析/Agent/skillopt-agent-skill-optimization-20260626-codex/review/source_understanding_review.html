@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="engineering-whiteprint">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SkillOpt 来源理解审阅</title>
+  <link rel="stylesheet" href="../../../../skills/ppt-deep-search/html-ppt-skill/assets/fonts.css">
+  <link rel="stylesheet" href="../../../../skills/ppt-deep-search/html-ppt-skill/assets/base.css">
+  <link rel="stylesheet" id="theme-link" href="../../../../skills/ppt-deep-search/html-ppt-skill/assets/themes/engineering-whiteprint.css">
+  <link rel="stylesheet" href="../../../../skills/ppt-deep-search/html-ppt-skill/assets/animations/animations.css">
+  <style>
+    :root {
+      --dense-line: color-mix(in srgb, var(--border) 78%, var(--text-2));
+    }
+    .slide {
+      padding: 56px 72px 52px;
+    }
+    .deck-footer {
+      left: 72px;
+      right: 72px;
+    }
+    .su-title {
+      max-width: 1380px;
+    }
+    .su-subtitle {
+      max-width: 1080px;
+      color: var(--text-2);
+      font-size: 30px;
+      line-height: 1.45;
+      margin-top: 22px;
+    }
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 38px;
+    }
+    .metric {
+      border: 1px solid var(--dense-line);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      min-height: 142px;
+    }
+    .metric .num {
+      font-family: var(--font-display);
+      font-size: 54px;
+      line-height: 1;
+      font-weight: 850;
+      color: var(--accent);
+    }
+    .metric .label {
+      color: var(--text-1);
+      font-size: 18px;
+      margin-top: 8px;
+      font-weight: 700;
+    }
+    .metric .small {
+      color: var(--text-3);
+      font-size: 14px;
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+    .evidence {
+      border-left: 4px solid var(--accent);
+      padding: 12px 18px;
+      background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+      color: var(--text-2);
+      font-size: 17px;
+      line-height: 1.48;
+      margin-top: 22px;
+    }
+    .source-line {
+      font-size: 13px;
+      color: var(--text-3);
+      margin-top: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .concept-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-top: 28px;
+    }
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+    .rule-card {
+      border: 1px solid var(--dense-line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      background: var(--surface);
+    }
+    .rule-card h3 {
+      font-size: 21px;
+      margin: 0 0 8px;
+    }
+    .rule-card p {
+      margin: 0;
+      color: var(--text-2);
+      font-size: 16px;
+      line-height: 1.45;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 26px;
+    }
+    .flow-step {
+      position: relative;
+      min-height: 156px;
+      border: 1px solid var(--dense-line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 18px 16px;
+    }
+    .flow-step:after {
+      content: "→";
+      position: absolute;
+      right: -16px;
+      top: 56px;
+      color: var(--accent);
+      font-size: 26px;
+      font-weight: 800;
+      z-index: 2;
+    }
+    .flow-step:last-child:after { content: ""; }
+    .flow-step b {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    .flow-step span {
+      color: var(--text-2);
+      font-size: 15px;
+      line-height: 1.38;
+    }
+    .img-frame {
+      border: 1px solid var(--dense-line);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 12px;
+    }
+    .img-frame img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .figure-large img {
+      width: 930px;
+    }
+    .pipeline-layout {
+      display: grid;
+      grid-template-columns: 620px 1fr;
+      gap: 24px;
+      align-items: start;
+      margin-top: 24px;
+    }
+    .pipeline-figure img {
+      width: 921px;
+      max-width: none;
+    }
+    .pipeline-crop {
+      overflow: auto;
+      border: 1px solid var(--dense-line);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 10px;
+      max-height: 570px;
+    }
+    .mini-flow {
+      display: grid;
+      gap: 10px;
+    }
+    .mini-step {
+      border: 1px solid var(--dense-line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 13px 14px;
+    }
+    .mini-step b {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .mini-step span {
+      display: block;
+      color: var(--text-2);
+      font-size: 14px;
+      line-height: 1.38;
+    }
+    .table-rebuild {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 26px;
+      font-size: 17px;
+      background: var(--surface);
+      border: 1px solid var(--dense-line);
+    }
+    .table-rebuild th,
+    .table-rebuild td {
+      border-bottom: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: right;
+      vertical-align: top;
+    }
+    .table-rebuild th:first-child,
+    .table-rebuild td:first-child {
+      text-align: left;
+      font-weight: 700;
+    }
+    .table-rebuild th {
+      color: var(--text-1);
+      background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+      font-size: 15px;
+      text-transform: none;
+    }
+    .table-rebuild .hi {
+      color: var(--accent);
+      font-weight: 850;
+    }
+    .two-pane {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 26px;
+    }
+    .compare-card {
+      border: 1px solid var(--dense-line);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      background: var(--surface);
+      min-height: 250px;
+    }
+    .compare-card h3 {
+      margin: 0 0 12px;
+      font-size: 23px;
+    }
+    .compare-card ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text-2);
+      font-size: 17px;
+      line-height: 1.55;
+    }
+    .qa-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 30px;
+    }
+    .qa-card {
+      border: 1px solid var(--dense-line);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      background: var(--surface);
+      min-height: 210px;
+    }
+    .qa-card h3 {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 20px;
+    }
+    .qa-card p {
+      margin: 0;
+      color: var(--text-2);
+      line-height: 1.48;
+      font-size: 16px;
+    }
+    .caption {
+      color: var(--text-3);
+      font-size: 13px;
+      line-height: 1.35;
+      margin-top: 8px;
+    }
+    .artifact-visual {
+      display: grid;
+      grid-template-columns: 1fr 660px;
+      gap: 24px;
+      align-items: start;
+      margin-top: 24px;
+    }
+    .artifact-visual img {
+      width: 660px;
+      max-width: none;
+    }
+    .code-card {
+      border: 1px solid var(--dense-line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 18px 20px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--text-2);
+      min-height: 248px;
+    }
+    .code-card strong {
+      color: var(--accent);
+    }
+    .narrow-title {
+      max-width: 1220px;
+    }
+  </style>
+</head>
+<body data-themes="engineering-whiteprint,academic-paper,swiss-grid,minimal-white,corporate-clean" data-theme-base="../../../../skills/ppt-deep-search/html-ppt-skill/assets/themes/">
+<div class="deck">
+
+  <section class="slide" data-title="结论">
+    <p class="kicker">Source Understanding · Microsoft SkillOpt</p>
+    <h1 class="h1 su-title anim-fade-up">SkillOpt 把 Agent 技能文档变成可训练参数</h1>
+    <p class="su-subtitle">它不改模型权重，也不只做一次性 prompt 改写；核心是让一个 Markdown skill 在 rollout、反思、受控编辑和验证门控中迭代，最后导出可部署的 <code>best_skill.md</code>。</p>
+    <div class="metric-row">
+      <div class="metric"><div class="num">52/52</div><div class="label">评测格 best 或 tied-best</div><div class="small">六 benchmarks、七 target models、三种 execution harness 的已评估组合。</div></div>
+      <div class="metric"><div class="num">+23.5</div><div class="label">GPT-5.5 direct chat 平均增益</div><div class="small">相对 no-skill accuracy 的平均百分点提升。</div></div>
+      <div class="metric"><div class="num">0</div><div class="label">部署期额外模型调用</div><div class="small">训练完成后只消费最终 skill 文档。</div></div>
+      <div class="metric"><div class="num">1 file</div><div class="label">可审计交付物</div><div class="small">紧凑 Markdown skill，可跨模型、harness、近邻任务迁移。</div></div>
+    </div>
+    <div class="evidence">证据锚点：项目页声明 52/52 主结果；arXiv 摘要说明优化对象、baseline 范围和 GPT-5.5 三种 harness 增益；GitHub README 说明开源代码、MIT 许可与 <code>best_skill.md</code> 部署形态。</div>
+    <div class="deck-footer"><span>来源：SkillOpt project page / arXiv:2605.23904 / GitHub README</span><span class="slide-number" data-current="1" data-total="8"></span></div>
+    <div class="notes">这一页是 source understanding 的结论页。后续 brief 如果获批，应把“训练的是流程文档，不是模型权重”作为全 deck 主线。</div>
+  </section>
+
+  <section class="slide" data-title="为什么需要">
+    <p class="kicker">01 · Problem Framing</p>
+    <h2 class="h2 narrow-title">Agent 适配的瓶颈正在从“会不会”转向“流程是否稳定”</h2>
+    <div class="concept-grid">
+      <div class="stack">
+        <div class="rule-card">
+          <h3>传统 prompt 太薄</h3>
+          <p>单轮提示或一次性生成的 skill 缺少执行反馈闭环，不能系统吸收失败轨迹里的可复用规则。</p>
+        </div>
+        <div class="rule-card">
+          <h3>模型权重又太重</h3>
+          <p>闭源 frontier model 难以微调；开源模型微调也昂贵，且未必解决工具使用、证据收集和格式约束。</p>
+        </div>
+        <div class="rule-card">
+          <h3>Skill 文档正好居中</h3>
+          <p>它是外部文本状态，能承载程序性知识：搜索顺序、验证动作、工具策略、输出规范和失败模式。</p>
+        </div>
+      </div>
+      <div class="img-frame figure-large">
+        <img src="../../../pdf_xml/microsoft-skillopt-agent-skill-optimization/final/images/picture_002.png" alt="SkillOpt text-space optimization analogy">
+        <div class="caption">论文图示把 skill space 类比为可优化空间：受控小步编辑沿验证误差下降，而大跨度 ad hoc 更新容易落入次优 skill。</div>
+      </div>
+    </div>
+    <div class="source-line">Paper XML: abstract + introduction; Project page: Core Idea.</div>
+    <div class="deck-footer"><span>判断：SkillOpt 的对象不是知识注入，而是程序性适配</span><span class="slide-number" data-current="2" data-total="8"></span></div>
+    <div class="notes">强调这不是“把论文知识塞进 prompt”，而是让执行流程本身有训练闭环。图 1 的右上角类比关系是这一页的视觉锚点。</div>
+  </section>
+
+  <section class="slide" data-title="训练循环">
+    <p class="kicker">02 · Mechanism</p>
+    <h2 class="h2">SkillOpt 用五步循环训练自然语言 skill</h2>
+    <p class="lede">目标模型负责执行任务并产生轨迹；优化器模型只在训练期读取成功/失败证据，提出对 skill 文档的受控 add / delete / replace 更新。</p>
+    <div class="pipeline-layout">
+      <div class="mini-flow">
+        <div class="mini-step"><b>1. Split</b><span>train 产生 rollout evidence；validation gate 决定是否接受；test split 锁到最终报告。</span></div>
+        <div class="mini-step"><b>2. Rollout → minibatch</b><span>同一批轨迹被切成多个 minibatch，分别送给 optimizer model 反思。</span></div>
+        <div class="mini-step"><b>3. Atomic edits</b><span>每个 minibatch 生成 add / delete / replace 原子编辑，再做 batch-level merge。</span></div>
+        <div class="mini-step"><b>4. Rank / clip</b><span>候选编辑按当前 edit budget 排序截断，学习率调度控制每步移动幅度。</span></div>
+        <div class="mini-step"><b>5. Gate / memory</b><span>验证门控决定 accept/reject；rejected buffer 和 slow/meta update 反馈给未来优化。</span></div>
+      </div>
+      <div class="pipeline-crop pipeline-figure">
+        <img src="../../../pdf_xml/microsoft-skillopt-agent-skill-optimization/final/images/picture_003.png" alt="SkillOpt full training pipeline">
+        <div class="caption">论文 pipeline 图：从数据切分、rollout batch、minibatch reflection、原子编辑合并，到 validation gate、rejected buffer、slow/meta update。</div>
+      </div>
+    </div>
+    <div class="source-line">Project docs: What is SkillOpt, DL ↔ SkillOpt analogy, Validation gate, Meta skill.</div>
+    <div class="deck-footer"><span>判断：它把“会写提示”改造成“有门控的文本空间优化”</span><span class="slide-number" data-current="3" data-total="8"></span></div>
+    <div class="notes">本页回答方法到底是什么。这里不需要展示全论文大流程图，因为上一页已经使用机制图；本页用流程卡片降低认知负荷。</div>
+  </section>
+
+  <section class="slide" data-title="52 项评测">
+    <p class="kicker">03 · Evaluation Scope</p>
+    <h2 class="h2">52 项不是全排列，而是已实际评估的 model × benchmark × harness 单元</h2>
+    <div class="metric-row">
+      <div class="metric"><div class="num">6</div><div class="label">Benchmarks</div><div class="small">SearchQA、SpreadsheetBench、OfficeQA、DocVQA、LiveMath、ALFWorld。</div></div>
+      <div class="metric"><div class="num">7</div><div class="label">Target models</div><div class="small">覆盖 GPT-5.5 到 Qwen3.5 / Qwen3.6 系列。</div></div>
+      <div class="metric"><div class="num">3</div><div class="label">Harness families</div><div class="small">direct chat、Codex CLI、Claude Code CLI；后两者主要报告 GPT-5.5 子集。</div></div>
+      <div class="metric"><div class="num">6</div><div class="label">Baseline classes</div><div class="small">human、one-shot LLM、Trace2Skill、TextGrad、GEPA、EvoSkill。</div></div>
+    </div>
+    <table class="table-rebuild">
+      <thead><tr><th>评测块</th><th>组合口径</th><th>已评估 cells</th><th>论文主张</th></tr></thead>
+      <tbody>
+        <tr><td>Direct chat</td><td>7 个模型 × 6 个 benchmarks</td><td>42</td><td><span class="hi">42/42 best 或 tied-best</span></td></tr>
+        <tr><td>Codex harness</td><td>GPT-5.5 × 5 个非 ALFWorld benchmark 单元</td><td>5</td><td><span class="hi">5/5 best 或 tied-best</span></td></tr>
+        <tr><td>Claude Code harness</td><td>GPT-5.5 × 5 个非 ALFWorld benchmark 单元</td><td>5</td><td><span class="hi">5/5 best 或 tied-best</span></td></tr>
+      </tbody>
+    </table>
+    <div class="evidence">这解释了“六 benchmark、七模型、三 harness”为什么不是 126 项全排列：agentic harness 实验只覆盖 GPT-5.5 且不含 ALFWorld，因此总数为 42 + 5 + 5 = 52。</div>
+    <div class="deck-footer"><span>证据边界：52 是论文实际报告单元，不是所有可能配置</span><span class="slide-number" data-current="4" data-total="8"></span></div>
+    <div class="notes">这页专门解决用户要求核验的“52项评测构成”。主结果表太高，所以重建成评测块摘要。</div>
+  </section>
+
+  <section class="slide" data-title="主结果">
+    <p class="kicker">04 · Main Results</p>
+    <h2 class="h2">GPT-5.5 上的最大信号来自企业型工作流 benchmark</h2>
+    <table class="table-rebuild">
+      <thead><tr><th>Harness</th><th>SearchQA</th><th>Spreadsheet</th><th>OfficeQA</th><th>DocVQA</th><th>LiveMath</th><th>ALFWorld</th><th>Avg gain</th></tr></thead>
+      <tbody>
+        <tr><td>Direct chat</td><td>+9.6</td><td><span class="hi">+38.9</span></td><td><span class="hi">+39.0</span></td><td>+12.4</td><td>+29.3</td><td>+11.9</td><td><span class="hi">+23.5</span></td></tr>
+        <tr><td>Codex</td><td>+5.5</td><td><span class="hi">+57.5</span></td><td>+12.8</td><td>+5.0</td><td>+43.2</td><td>N/A</td><td><span class="hi">+24.8*</span></td></tr>
+        <tr><td>Claude Code</td><td>+4.0</td><td><span class="hi">+58.3</span></td><td>+13.9</td><td>+3.5</td><td>+15.7</td><td>N/A</td><td><span class="hi">+19.1*</span></td></tr>
+      </tbody>
+    </table>
+    <div class="qa-grid">
+      <div class="qa-card"><h3>SpreadsheetBench</h3><p>直接执行和两类代码 harness 都出现大幅提升，说明 skill 对表格检查、代码生成、格式约束这类流程纪律特别有效。</p></div>
+      <div class="qa-card"><h3>OfficeQA</h3><p>企业文档型 grounded reasoning 从流程化证据收集和输出约束获益，direct chat 下 GPT-5.5 提升 +39.0 点。</p></div>
+      <div class="qa-card"><h3>Agentic harness</h3><p>Codex / Claude Code 中仍有增益，说明优化对象不是某个聊天 prompt，而是可迁移到工具循环里的程序性 skill。</p></div>
+    </div>
+    <div class="source-line">* arXiv 摘要报告 Codex +24.8、Claude Code +19.1；项目页主结果表展示每 benchmark gain。</div>
+    <div class="deck-footer"><span>判断：落地价值集中在“多步骤、可评分、可验证”的企业任务</span><span class="slide-number" data-current="5" data-total="8"></span></div>
+    <div class="notes">这里要提醒：Codex 表格逐项平均按项目页展示可能与摘要口径略有差异，因此 footer 用摘要口径作为主引用。</div>
+  </section>
+
+  <section class="slide" data-title="对照关系">
+    <p class="kicker">05 · Relationship To Prompt Optimization</p>
+    <h2 class="h2">SkillOpt 和自动提示优化相邻，但优化对象更像“可部署程序文档”</h2>
+    <div class="two-pane">
+      <div class="compare-card">
+        <h3>自动提示优化</h3>
+        <ul>
+          <li>GEPA：利用 trajectory feedback 做 reflective prompt evolution。</li>
+          <li>TextGrad：把自然语言反馈当作文本梯度，推动文本变量改进。</li>
+          <li>常见目标是 prompt、system design 或 agent configuration。</li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h3>SkillOpt 的差异</h3>
+        <ul>
+          <li>优化单一持久 skill document，而不是一次性 prompt。</li>
+          <li>更新被限制为 bounded edit，并通过 held-out gate 接受。</li>
+          <li>训练期记忆不进入部署期，最终 artifact 可审计、可版本化。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="artifact-visual">
+      <div class="code-card">
+        <strong>best_skill.md artifact</strong><br>
+        # SearchQA / Spreadsheet / OfficeQA skill<br>
+        ## Learned rules<br>
+        - gather evidence before answering<br>
+        - verify spreadsheet dimensions and formulas<br>
+        - preserve output schema exactly<br><br>
+        &lt;!-- SLOW_UPDATE_START --&gt;<br>
+        epoch-wise guidance: which edits helped, which failed<br>
+        &lt;!-- SLOW_UPDATE_END --&gt;
+      </div>
+      <div class="img-frame">
+        <img src="../../../pdf_xml/microsoft-skillopt-agent-skill-optimization/final/images/table_006.png" alt="SkillOpt skill artifact token and edit counts">
+        <div class="caption">论文 artifact 表：最终 skill 仍是紧凑文本，通常只经过 1-4 个 accepted edits，训练成本集中在离线 rollout。</div>
+      </div>
+    </div>
+    <div class="source-line">Paper related work: GEPA / TextGrad / Trace2Skill / EvoSkill; GitHub README: deployable best_skill.md artifacts.</div>
+    <div class="deck-footer"><span>判断：它把 APO 的“文本可优化”推进到 Agent skill 生命周期</span><span class="slide-number" data-current="6" data-total="8"></span></div>
+    <div class="notes">本页回应“与提示工程/自动提示优化的关系”。重点不是否定 APO，而是说明 SkillOpt 的优化对象和接受机制更工程化。</div>
+  </section>
+
+  <section class="slide" data-title="为什么有效">
+    <p class="kicker">06 · Ablations & Transfer</p>
+    <h2 class="h2">有效性来自受控更新，而不是单纯让强模型重写 skill</h2>
+    <div class="concept-grid">
+      <div class="stack">
+        <div class="rule-card">
+          <h3>学习率是 edit budget</h3>
+          <p>消融显示默认 lr=4 在 SearchQA、SpreadsheetBench、LiveMath 上均强于 without lr，说明文本小步更新比无约束重写稳定。</p>
+        </div>
+        <div class="rule-card">
+          <h3>拒绝记录也是训练信号</h3>
+          <p>with rejected buffer 优于 without rejected buffer，失败候选会变成后续优化器的负反馈。</p>
+        </div>
+        <div class="rule-card">
+          <h3>迁移验证 artifact 属性</h3>
+          <p>跨模型、跨 harness、跨 benchmark transfer 都有正增益，支持 skill 是可复用程序文档而非过拟合日志摘要。</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="img-frame">
+          <img src="../../../pdf_xml/microsoft-skillopt-agent-skill-optimization/final/images/table_003.png" alt="SkillOpt ablation components">
+          <div class="caption">消融表：learning-rate form、rejected buffer、slow/meta update 三类控制均贡献稳定性。</div>
+        </div>
+        <div class="img-frame">
+          <img src="../../../pdf_xml/microsoft-skillopt-agent-skill-optimization/final/images/table_004.png" alt="SkillOpt transfer results">
+          <div class="caption">Transfer 表：跨模型、跨 harness、跨 benchmark 均报告正向迁移。</div>
+        </div>
+      </div>
+    </div>
+    <div class="deck-footer"><span>证据边界：迁移实验支持相邻设置复用，不等于任意任务泛化</span><span class="slide-number" data-current="7" data-total="8"></span></div>
+    <div class="notes">这页的核心是机制归因。不要把结果讲成“强模型自动写得更好”，而是强调 gate、budget、buffer、slow/meta update。</div>
+  </section>
+
+  <section class="slide" data-title="落地价值">
+    <p class="kicker">07 · Enterprise Implication</p>
+    <h2 class="h2">企业 Agent 工作流的入口不是“自动进化”，而是“可评测的技能资产”</h2>
+    <div class="qa-grid">
+      <div class="qa-card"><h3>先有 eval</h3><p>SkillOpt 依赖 scored rollouts 和 held-out selection split。没有可重复评分的数据切分，就无法区分有效 skill 与漂亮改写。</p></div>
+      <div class="qa-card"><h3>再训 skill</h3><p>适合表格、文档问答、工具调用、数学验证、操作规程等可以沉淀流程规则的任务。</p></div>
+      <div class="qa-card"><h3>最后审计部署</h3><p>最终产物是 Markdown 文档，便于 code review、版本管理、灰度、回滚和跨模型迁移测试。</p></div>
+    </div>
+    <div class="two-pane">
+      <div class="compare-card">
+        <h3>适合先试</h3>
+        <ul>
+          <li>已有任务集、评分器或验收脚本。</li>
+          <li>失败模式重复出现，且能被流程规则修复。</li>
+          <li>希望减少推理期额外 agent 调用。</li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h3>不要过度承诺</h3>
+        <ul>
+          <li>论文结果仍在特定 benchmark / model / harness 范围内。</li>
+          <li>训练成本取决于 rollout 数量和 optimizer model 调用。</li>
+          <li>安全关键任务仍需要人工审阅和生产灰度。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="evidence">后续 PPT brief 建议主线：SkillOpt 的真正价值不是“让 Agent 自己变聪明”，而是把 skill 从手写经验变成可训练、可验证、可审计、可迁移的软件资产。</div>
+    <div class="deck-footer"><span>下一步 gate：用户批准后，进入 ppt-brief-hitl 与 content brief</span><span class="slide-number" data-current="8" data-total="8"></span></div>
+    <div class="notes">这是审批前的收束页。需要用户确认是否接受这个理解作为证据基线，然后才能进入 ppt_content_brief。</div>
+  </section>
+
+</div>
+<script src="../../../../skills/ppt-deep-search/html-ppt-skill/assets/runtime.js"></script>
+</body>
+</html>
