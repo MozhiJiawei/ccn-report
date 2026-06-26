@@ -1,0 +1,39 @@
+{
+  "topic": "RTPurboV2 注意力压缩技术",
+  "source_set": [
+    "Full Attention Strikes Back: Transferring Full Attention into Sparse within Hundred Training Steps, arXiv:2605.16928",
+    "GROBID + Docling parsed XML package under .tmp/pdf_xml/full-attention-strikes-back-rtpurbo/",
+    "Approved source_understanding_review.html baseline"
+  ],
+  "audience": {
+    "target_reader": "AI Infra 技术负责人 / 架构负责人",
+    "use_case": "技术热点解读和路线判断，用来决定是否投入注意力压缩方向",
+    "current_judgment": "稀疏注意力路线很多，但训练成本、泛化范围和真实收益不清楚",
+    "desired_judgment": "RTPurboV2 是低成本后训练稀疏化路线，关键看模型范围、精度边界和端到端收益口径，不应只看单点加速数字"
+  },
+  "scqa": {
+    "situation": "AI Infra 团队正在评估长上下文推理成本，Full Attention 的计算和显存开销正在压住 prefill 与 decode。",
+    "complication": "稀疏注意力路线很多，但常见方案要么训练成本高，要么精度和真实加速口径不稳。",
+    "question": "RTPurboV2 是否值得作为注意力压缩方向投入验证？",
+    "answer": "值得受控复现；它的核心是把既有 Full Attention 模型迁移到可训练、可部署的稀疏注意力路径。"
+  },
+  "summary_page": {
+    "page_number": "Page 1",
+    "title": "RTPurboV2实现稀疏注意力迁移",
+    "subtitle": "它用少量后训练把既有 Full Attention 模型转成稀疏推理路径，决策时要分开看精度、模型范围和真实加速口径",
+    "analysis": [
+      "迁移路径：用 head 分工、低维召回和动态 top-p，把全量注意力改造成稀疏推理",
+      "收益信号：长上下文和推理精度接近 Full Attention，并报告最高 9.36× prefill、约 2.01× decode 加速"
+    ],
+    "notes": "面向 AI Infra 技术负责人 / 架构负责人；Summary Page 需要同时呈现路线判断和收益口径边界。"
+  },
+  "page_count": {
+    "total_pages": 1,
+    "counting_rule": "只生成 1 页 Summary Page；不包含 cover、contents 和内容页。",
+    "page_structure": [
+      "Page 1 summary"
+    ]
+  },
+  "table_of_contents": [],
+  "content_pages": []
+}

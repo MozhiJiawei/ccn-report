@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="engineering-whiteprint">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MiMo × TileRT 1000 TPS Source Understanding</title>
+<link rel="stylesheet" href="../deps/html-ppt-skill/assets/fonts.css">
+<link rel="stylesheet" href="../deps/html-ppt-skill/assets/base.css">
+<link rel="stylesheet" id="theme-link" href="../deps/html-ppt-skill/assets/themes/engineering-whiteprint.css">
+<link rel="stylesheet" href="../deps/html-ppt-skill/assets/animations/animations.css">
+<style>
+  :root {
+    --su-ink: #172033;
+    --su-muted: #566275;
+    --su-line: #ccd6e5;
+    --su-blue: #1d5fd1;
+    --su-red: #b3261e;
+    --su-green: #177245;
+    --su-amber: #9a6700;
+    --su-fill: rgba(29, 95, 209, 0.07);
+  }
+  body { color: var(--su-ink); }
+  .slide { padding: 54px 66px 46px; }
+  .kicker { letter-spacing: 0; color: var(--su-blue); font-weight: 760; }
+  .h1 { font-size: 68px; line-height: 1.04; letter-spacing: 0; max-width: 1500px; }
+  .h2 { font-size: 48px; line-height: 1.12; letter-spacing: 0; margin-bottom: 14px; }
+  .lede { color: var(--su-muted); max-width: 1420px; font-size: 25px; line-height: 1.45; }
+  .grid { display: grid; gap: 18px; }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .card {
+    border: 1px solid var(--su-line);
+    background: rgba(255,255,255,0.84);
+    border-radius: 8px;
+    padding: 18px 20px;
+    box-shadow: none;
+  }
+  .card h3, .card h4 { margin: 0 0 9px; letter-spacing: 0; }
+  .card p, .card li { color: var(--su-muted); font-size: 18px; line-height: 1.38; }
+  .metric {
+    border-left: 6px solid var(--su-blue);
+    background: var(--su-fill);
+    padding: 15px 18px;
+    min-height: 118px;
+  }
+  .metric strong { display:block; font-size: 40px; line-height: 1; margin-bottom: 9px; color: var(--su-ink); }
+  .tag { display:inline-block; border: 1px solid var(--su-line); border-radius: 999px; padding: 5px 10px; font-size: 15px; margin: 3px 5px 3px 0; color: var(--su-muted); background:#fff; }
+  .quote { border-left: 5px solid var(--su-blue); padding: 10px 18px; background: var(--su-fill); color: var(--su-ink); font-size: 21px; line-height: 1.42; }
+  .source { font-size: 14px; color: var(--su-muted); margin-top: 8px; }
+  .warn { color: var(--su-red); font-weight: 760; }
+  .ok { color: var(--su-green); font-weight: 760; }
+  .amber { color: var(--su-amber); font-weight: 760; }
+  table { width: 100%; border-collapse: collapse; font-size: 17px; line-height: 1.25; background: white; }
+  th, td { border: 1px solid var(--su-line); padding: 10px 12px; vertical-align: top; }
+  th { background: #eef4ff; text-align: left; color: var(--su-ink); }
+  .flow { display: grid; grid-template-columns: 1fr 64px 1fr 64px 1fr; gap: 12px; align-items: stretch; margin-top: 28px; }
+  .arrow { display:flex; align-items:center; justify-content:center; color: var(--su-blue); font-size: 46px; font-weight: 800; }
+  .node { border: 1px solid var(--su-line); border-top: 5px solid var(--su-blue); border-radius: 8px; padding: 18px; background:#fff; }
+  .node h3 { margin: 0 0 10px; font-size: 27px; }
+  .node p { margin: 0; color: var(--su-muted); font-size: 18px; line-height:1.38; }
+  .img-wide { width: 1360px; max-width: 100%; display:block; margin: 18px auto 8px; border: 1px solid var(--su-line); border-radius: 6px; background: white; }
+  .img-medium { width: 1160px; max-width: 100%; display:block; margin: 18px auto 8px; border: 1px solid var(--su-line); border-radius: 6px; background: white; }
+  .img-dflash { width: 920px; max-width: 100%; display:block; margin: 12px auto 8px; border: 1px solid var(--su-line); border-radius: 6px; background: white; }
+  .two-pane { display:grid; grid-template-columns: 0.9fr 1.1fr; gap: 22px; align-items:start; }
+  .mini { font-size: 15px; color: var(--su-muted); line-height: 1.35; }
+  .deck-footer { font-size: 13px; color: var(--su-muted); }
+</style>
+</head>
+<body data-themes="engineering-whiteprint,academic-paper,swiss-grid,minimal-white" data-theme-base="../deps/html-ppt-skill/assets/themes/">
+<div class="deck">
+
+<section class="slide" data-title="结论">
+  <p class="kicker">Source Understanding · 2026-06-25</p>
+  <h1 class="h1">1000+ TPS 来自模型和系统同时改形</h1>
+  <p class="lede">MiMo × TileRT 的官方叙事不是“某个 kernel 更快”，而是把 1.02T / 42B active 的 MoE 模型、专家 FP4、DFlash 块级投机解码和 TileRT 常驻执行模型绑成一条低延迟流水线。</p>
+  <div class="grid g4" style="margin-top:32px">
+    <div class="metric"><strong>1T+</strong><p>官方称万亿参数模型；模型卡给出 backbone 1.02T / active 42B。</p></div>
+    <div class="metric"><strong>1000+</strong><p>MiMo 与 TileRT 文均称在通用 GPU 上突破 1000 tokens/s。</p></div>
+    <div class="metric"><strong>8</strong><p>MiMo 文称“一个标准 8 卡通用 GPU 节点”，但未公开 GPU 型号。</p></div>
+    <div class="metric"><strong>8 draft</strong><p>DFlash mask block size 设为 8；不同场景平均接受长度约 3.18-6.30。</p></div>
+  </div>
+  <div class="quote" style="margin-top:30px">可用判断：这是一次“模型结构、量化、投机解码、执行 runtime”协同案例；不可直接判断：它与任意主流 serving 框架在同硬件、同 batch、同任务下的公平胜负。</div>
+  <div class="source">来源：MiMo 官方博客；TileRT 官方博客；HuggingFace 模型卡。</div>
+</section>
+
+<section class="slide" data-title="证据地图">
+  <p class="kicker">Evidence Map</p>
+  <h2 class="h2">三类原始来源分别回答不同问题</h2>
+  <div class="grid g3" style="margin-top:22px">
+    <div class="card">
+      <h3>MiMo 官方发布</h3>
+      <p>给出 1000 tokens/s、8 卡通用 GPU 节点、FP4 + DFlash + TileRT codesign 的整体叙事。</p>
+      <p class="mini">文件：sources/web/mimo-blog-1000tps/source.md</p>
+    </div>
+    <div class="card">
+      <h3>TileRT 技术原文</h3>
+      <p>解释系统侧为什么从“算子优化”转为“常驻引擎 + tile pipeline + warp specialization”。</p>
+      <p class="mini">文件：sources/web/tilert-breaking-1000tps/source.md</p>
+    </div>
+    <div class="card">
+      <h3>HF 模型卡</h3>
+      <p>补齐模型参数、FP4 范围、DFlash 配置、SGLang 部署参数与接受长度表。</p>
+      <p class="mini">文件：sources/web/hf-mimo-v25-pro-fp4-dflash/source.md</p>
+    </div>
+  </div>
+  <table style="margin-top:28px">
+    <tr><th>证据问题</th><th>已公开</th><th>仍缺口</th></tr>
+    <tr><td>硬件</td><td>“标准 8 卡通用 GPU 节点”</td><td class="warn">GPU 型号、互联、显存、驱动与集群拓扑未公开</td></tr>
+    <tr><td>TPS 口径</td><td>“1000+ tokens/s output / generation / decode speed”</td><td class="warn">batch、并发、prompt/output length、采样参数、是否按 accepted token 计数未公开</td></tr>
+    <tr><td>模型结构</td><td>1.02T total / 42B active；70 层；GQA；max context 1M</td><td class="amber">MoE expert 数、路由细节与线上服务配置未完整披露</td></tr>
+    <tr><td>可复现性</td><td>HF 公开 FP4+DFlash checkpoint；SGLang 命令示例</td><td class="warn">TileRT UltraSpeed runtime 与 8 卡 1000+ TPS 测试脚本未作为同一复现实验公开</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-title="协同机制">
+  <p class="kicker">Mechanism</p>
+  <h2 class="h2">速度提升链条：少搬参数、少跑轮次、少断流水</h2>
+  <div class="flow">
+    <div class="node">
+      <h3>专家 FP4</h3>
+      <p>只把 MoE experts 量化到 MXFP4，其他模块保持更高精度，先压低万亿模型 decode 的访存压力。</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node">
+      <h3>DFlash</h3>
+      <p>draft 一次填充整块 mask token，再由 backbone 验证；block size 8，目标是让一次验证吞下更多 token。</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node">
+      <h3>TileRT</h3>
+      <p>用常驻执行模型消除 operator boundary，把数据搬运、tensor compute 和通信拆成连续 tile pipeline。</p>
+    </div>
+  </div>
+  <div class="grid g2" style="margin-top:30px">
+    <div class="card">
+      <h3>为什么不是单点技术</h3>
+      <p>MiMo 文明确说“不是单一技术突破”；TileRT 文也把 1000+ TPS 归因于模型与系统在硬件边界上的深度收敛。</p>
+    </div>
+    <div class="card">
+      <h3>为什么口径要保守</h3>
+      <p>公开材料能证明官方实现与思路，但没有给出可复现实验矩阵；PPT 中应把 1000+ TPS 写成官方发布结果，而非通用可迁移基准。</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="FP4">
+  <p class="kicker">Model Side · FP4</p>
+  <h2 class="h2">FP4 只打 MoE experts，换取带宽收益而非全模型压缩</h2>
+  <div class="grid g2" style="margin-top:12px">
+    <div class="card">
+      <h3>核心判断</h3>
+      <p>MiMo/HF 均强调“expert-only FP4”：专家占参数大头且更耐量化，所以只对 experts 用 MXFP4；attention projections 与其他模块保持更高精度。</p>
+    </div>
+    <div class="card">
+      <h3>质量证据</h3>
+      <p>图表显示 FP4 与 FP8 在 agent/code benchmark 上接近；适合表达为“接近 FP8 基线”，不宜写成“无损”。</p>
+    </div>
+  </div>
+  <img class="img-wide" src="../sources/web/mimo-blog-1000tps/images/image-02.png" alt="FP4 量化能力对比">
+  <div class="source">图源：MiMo 官方博客 / HF 模型卡，FP4 experts-only 与 FP8 benchmark 对比；HF 还点名每层 attention o_proj 排除在 FP4 外。</div>
+</section>
+
+<section class="slide" data-title="DFlash">
+  <p class="kicker">Model Side · DFlash</p>
+  <h2 class="h2">DFlash 用 target hidden states 引导 block diffusion draft</h2>
+  <div class="two-pane">
+    <div>
+      <img class="img-dflash" src="../sources/web/dflash-paper/images/image-02-inference-design.png" alt="DFlash Inference Design">
+      <div class="source">图源：DFlash 论文 Figure 2。蓝色为 fused target context feature，黄色为 target decode token，绿色为 mask token。</div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>推理路径</h3>
+        <p>target model 先产生已确认 token 与 hidden features；DFlash 把多层 hidden states 融合成 context feature，再注入每层 draft layer 的 Key/Value cache。</p>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h3>为什么更像“适配器”</h3>
+        <p>draft model 不是从零推理未来 token，而是借 target 表征做条件生成；论文称这让小 diffusion drafter 兼得并行 draft 与较高接受率。</p>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h3>和 MiMo 的映射</h3>
+        <p>MiMo 模型卡给出 5-layer BF16 drafter、captured layers [0, 15, 31, 47, 69]、block size 8，正对应图中的 target feature 注入和 block draft。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="DFlash Training">
+  <p class="kicker">DFlash · Training Attention</p>
+  <h2 class="h2">训练时用 anchor + mask block 对齐推理时的验证循环</h2>
+  <div class="two-pane">
+    <div>
+      <div class="card">
+        <h3>训练样本怎么构造</h3>
+        <p>论文不是把 response 均匀切块，而是随机采样 clean anchor token，把 anchor 后面的若干位置变成 mask，让 drafter 学“从已确认 token 开始并行预测下一块”。</p>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h3>attention mask 约束</h3>
+        <p>同一 block 内可双向看，且能看对应 target context feature；跨 block 被 invisible tokens 隔离，避免训练时偷看不该看的未来信息。</p>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h3>早错更贵</h3>
+        <p>loss 对 block 前部 token 加更高权重，因为 speculative verification 只接受连续前缀；第一个错 token 会截断后续 token 的收益。</p>
+      </div>
+    </div>
+    <div>
+      <img class="img-dflash" src="../sources/web/dflash-paper/images/image-04-training-attention.png" alt="DFlash training attention">
+      <div class="source">图源：DFlash 论文 Figure 4。蓝色 target context feature，黄色 clean token，绿色 mask token，白色 invisible token。</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="DFlash Performance">
+  <p class="kicker">DFlash · Performance & Boundary</p>
+  <h2 class="h2">DFlash 的优势来自“draft latency 不随 token 数线性增长”</h2>
+  <div class="grid g2" style="margin-top:14px">
+    <div>
+      <img class="img-dflash" src="../sources/web/dflash-paper/images/image-01-speedup.png" alt="DFlash speedup comparison">
+      <div class="source">图源：DFlash 论文 Figure 1，Qwen3-8B / Transformers backend；不是 MiMo 8-GPU 1000+ TPS benchmark。</div>
+    </div>
+    <div>
+      <img class="img-dflash" style="width:640px" src="../sources/web/dflash-paper/images/image-03-draft-cost.png" alt="DFlash draft cost">
+      <div class="source">图源：DFlash 论文 Figure 3，展示不同 draft token 数下的 draft latency。</div>
+    </div>
+  </div>
+  <table style="margin-top:18px">
+    <tr><th>要点</th><th>对 MiMo deck 的含义</th></tr>
+    <tr><td>AR drafter 要逐 token 生成，draft cost 随 speculative token 数增加</td><td>解释为什么传统 speculative decoding 在极低延迟场景仍有串行瓶颈</td></tr>
+    <tr><td>DFlash 一次 forward 预测整块 mask token</td><td>解释 MiMo “block size 8 / 接受长度 6.30”如何转化为 fewer backbone rounds</td></tr>
+    <tr><td>论文结果基于 Qwen3 等模型，MiMo 是工程落地变体</td><td class="warn">不能把论文 6× speedup 直接等同于 MiMo 1000+ TPS；两者是机制支撑关系</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-title="DFlash MiMo Acceptance">
+  <p class="kicker">MiMo DFlash · Acceptance Length</p>
+  <h2 class="h2">MiMo 里的 DFlash 收益对 coding/agent 更明显</h2>
+  <div class="grid g2" style="margin-top:20px">
+    <div class="card">
+      <h3>接受长度</h3>
+      <table>
+        <tr><th>场景</th><th>平均接受长度</th><th>含义</th></tr>
+        <tr><td>WebDev / Coding</td><td>6.30</td><td>8 个 draft token 中平均可接受 6 个以上</td></tr>
+        <tr><td>Math500</td><td>5.56</td><td>推理场景接受长度较高</td></tr>
+        <tr><td>HumanEval</td><td>4.54</td><td>代码生成中等偏高</td></tr>
+        <tr><td>SWE-Bench / Agent</td><td>4.29</td><td>agent 场景仍有端到端收益空间</td></tr>
+        <tr><td>MT-Bench</td><td>3.18</td><td>开放对话接受率较低，官方承认泛化仍在优化</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>读法</h3>
+      <p>接受长度不是“draft 输出几个 token”，而是 target verifier 确认的连续前缀长度；block size 8 的情况下，接受长度越接近 8，target backbone 每轮验证摊到的 token 越多。</p>
+      <p>MiMo 官方中文文把 coding 场景写为 6.30，部分样本最高 7.14；HF 模型卡还列出 HumanEval、MT-Bench 等更细分项。</p>
+      <p class="warn">因此 PPT 应强调“场景相关”：coding/agent 更受益，开放对话不能套用最高接受长度。</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="TileRT">
+  <p class="kicker">System Side · TileRT</p>
+  <h2 class="h2">TileRT 的关键是消除微秒级 operator boundary</h2>
+  <img class="img-medium" src="../sources/web/tilert-breaking-1000tps/images/image-02.png" alt="Execution Gap">
+  <div class="source">图源：TileRT 官方博客，传统执行模型的 operator boundary / execution gap。</div>
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card">
+      <h3>第一跃迁：执行模型</h3>
+      <p>传统逐算子 launch 在 ultra-low latency 下暴露 host launch、hardware sync、global memory round-trip 等间隙；Persistent Engine 让整条流水线常驻硬件内部。</p>
+    </div>
+    <div class="card">
+      <h3>第二跃迁：模型系统共设计</h3>
+      <p>RMSNorm、RoPE、KV cache writes、metadata 等非核心操作也会吞掉微秒预算；因此 FP4、DFlash、SWA window 和 verification cost 需要共同权衡。</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="模型与部署">
+  <p class="kicker">Model Card</p>
+  <h2 class="h2">开源模型卡支持“结构可查”，但不等于 8 卡结果可复现</h2>
+  <div class="grid g2" style="margin-top:20px">
+    <div class="card">
+      <h3>模型结构</h3>
+      <table>
+        <tr><th>项</th><th>Backbone</th><th>DFlash drafter</th></tr>
+        <tr><td>参数</td><td>1.02T total / 42B active</td><td>5-layer draft</td></tr>
+        <tr><td>层数</td><td>70</td><td>5</td></tr>
+        <tr><td>注意力</td><td>128 heads / 8 KV heads</td><td>128 heads / 8 KV heads</td></tr>
+        <tr><td>SWA window</td><td>128</td><td>1024</td></tr>
+        <tr><td>精度</td><td>MXFP4 experts mixed</td><td>BF16</td></tr>
+        <tr><td>上下文</td><td>1M max context</td><td>未给出</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>部署线索</h3>
+      <p>HF 模型卡给出 SGLang 示例：DFLASH、speculative-num-draft-tokens 8、ep-size 16、tensor-parallel-size 16、data-parallel-size 2、context-length 65536。</p>
+      <p class="warn">这更像多节点/多并行拓扑示例，不是 MiMo 官方“单个 8 卡节点 1000+ TPS”的完整复现实验。</p>
+      <p>公开模型的 HF 页面还显示 model size 554B params，tensor types 包含 F32、BF16、F8_E4M3、U8；这与 1.02T total / expert FP4 混合精度需要在 brief 中解释清楚。</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="审阅结论">
+  <p class="kicker">Review Gate</p>
+  <h2 class="h2">后续 brief 的建议基线</h2>
+  <div class="grid g3" style="margin-top:20px">
+    <div class="card">
+      <h3 class="ok">可强表达</h3>
+      <p>这是模型-系统 codesign，而非单点 kernel 或单一投机解码技巧；官方原文与模型卡互相支撑。</p>
+    </div>
+    <div class="card">
+      <h3 class="amber">可中等表达</h3>
+      <p>FP4 experts-only 与 DFlash 是把 1T decode 成本压下来的两条模型侧主线；TileRT 负责把微秒级间隙压到 runtime 层。</p>
+    </div>
+    <div class="card">
+      <h3 class="warn">必须弱表达</h3>
+      <p>1000+ TPS 的硬件与 benchmark 口径不完整，不能写成“公开可复现的行业通用基准”或“公平超越某框架”。</p>
+    </div>
+  </div>
+  <table style="margin-top:30px">
+    <tr><th>进入 Content Brief 前要保持的边界</th><th>建议措辞方向</th></tr>
+    <tr><td>硬件配置未公开 GPU 型号</td><td>“在官方称标准 8 卡通用 GPU 节点上实现”，不要补猜 H100/B200/A100。</td></tr>
+    <tr><td>TPS 统计口径未完整公开</td><td>“官方发布的 decode/output speed 超 1000 tokens/s”，不要与 vLLM/TensorRT-LLM 横向排名。</td></tr>
+    <tr><td>DFlash 对场景敏感</td><td>突出 coding/agent 的高接受长度，同时说明开放对话接受率较低。</td></tr>
+    <tr><td>开源与线上 runtime 分离</td><td>HF checkpoint 公开，TileRT UltraSpeed 生产 runtime 未完整开源复现。</td></tr>
+  </table>
+  <div class="deck-footer"><span>MiMo × TileRT Source Understanding</span><span class="slide-number" data-current="11" data-total="11"></span></div>
+</section>
+
+</div>
+<script src="../deps/html-ppt-skill/assets/runtime.js"></script>
+</body>
+</html>
