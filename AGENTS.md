@@ -62,6 +62,31 @@
 - 远程 `http(s)` 图片和 `data:` 内嵌图片不会被本地资产门禁强制要求归档，但正式交付优先使用随仓库归档的本地图片，避免外部网络或上游资源变化导致报告不可读。
 - `python scripts/pre_commit_gate.py` 会检查 Markdown / HTML 中的本地图片依赖是否存在、是否位于 `ccn-report` 仓库内；若发现缺失、根路径或仓库外路径，会失败。
 
+## HTML Asset Compression
+
+- 报告目录中的图片资产默认必须使用 q70 WebP 入库；不要直接归档 `.png`、`.jpg`、`.jpeg` 或 `.gif`。
+- 提交前若新增或修改报告资产，先运行：
+
+```powershell
+python scripts/compress_report_assets.py --quality 70
+```
+
+- 该脚本会在当前工作树内把报告图片转为 q70 WebP，并改写 HTML / Markdown / CSS / JS / JSON / SVG / XML 中的本地引用。
+- `python scripts/pre_commit_gate.py` 会拒绝未转换的 `.png`、`.jpg`、`.jpeg`、`.gif` 报告资产。
+- SVG、WebP、AVIF、PPTX、PDF 和 draw.io 等正式交付件不受该压缩规则影响。
+
+## Release Package
+
+- GitHub Release 只保留最新可下载离线包；不要为每次合入创建永久日期 Release。
+- PR 合入 `main` 后，更新滚动 Release：
+
+```powershell
+python scripts/release_compressed_archive.py --quality 70
+```
+
+- 默认 tag 为 `latest-compressed-archive`，脚本会覆盖该 Release 的 zip、`manifest.json` 和 `SHA256SUMS.txt`。
+- 只有人工明确要求保留里程碑快照时，才使用 `--snapshot` 创建带时间戳的独立 Release。
+
 ## Git LFS Rules
 
 三大归档目录下的文件默认走 Git LFS。
@@ -83,4 +108,4 @@
 python scripts/pre_commit_gate.py
 ```
 
-若门禁失败，先修复目录层级、命名问题或 Markdown / HTML 本地图片依赖问题，再提交。
+若门禁失败，先修复目录层级、命名问题、Markdown / HTML 本地图片依赖问题或未转换图片资产，再提交。

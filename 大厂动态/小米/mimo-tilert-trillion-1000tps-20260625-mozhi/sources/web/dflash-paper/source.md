@@ -37,7 +37,7 @@ This KV injection differs from feeding target features only as the draft model's
 
 ## Inference Design Figure
 
-![DFlash Inference Design](images/image-02-inference-design.png)
+![DFlash Inference Design](images/image-02-inference-design.webp)
 
 Original image URL: https://arxiv.org/html/2602.06036v1/x2.png
 
@@ -45,7 +45,7 @@ Caption / nearby text: Figure 2, DFlash Inference Design. Hidden context feature
 
 ## Training Attention Figure
 
-![DFlash training attention](images/image-04-training-attention.png)
+![DFlash training attention](images/image-04-training-attention.webp)
 
 Original image URL: https://arxiv.org/html/2602.06036v1/x4.png
 
@@ -53,7 +53,7 @@ Caption / nearby text: Figure 4, DFlash training attention. The target model pro
 
 ## Speedup Comparison Figure
 
-![DFlash speedup comparison](images/image-01-speedup.png)
+![DFlash speedup comparison](images/image-01-speedup.webp)
 
 Original image URL: https://arxiv.org/html/2602.06036v1/x1.png
 
@@ -61,7 +61,7 @@ Caption / nearby text: Figure 1, DFlash and EAGLE-3 speedup against autoregressi
 
 ## Draft Cost Figure
 
-![DFlash draft cost](images/image-03-draft-cost.png)
+![DFlash draft cost](images/image-03-draft-cost.webp)
 
 Original image URL: https://arxiv.org/html/2602.06036v1/x3.png
 

@@ -328,7 +328,7 @@
         <div class="content">
           <p>原文给出的强信号是：Claude Code 搭配技能的完成率达到 82%，没有技能时降到 9%。但文章没有停在这个数字，而是强调还要理解为什么失败。LangSmith 记录 agent 读了哪些文件、写了哪些脚本、调用或漏调了哪些技能。</p>
           <figure>
-            <img src="assets/skill_trace.png" alt="LangSmith 中 Claude Code session 的 trace 截图">
+            <img src="assets/skill_trace.webp" alt="LangSmith 中 Claude Code session 的 trace 截图">
             <figcaption>这张 trace 截图支撑“看见 agent 每一步动作”的观点：右侧能看到通过检查、轮次、耗时和状态，左侧能看到 Claude Code 调用链与技能节点。</figcaption>
           </figure>
         </div>
@@ -339,7 +339,7 @@
         <div class="content">
           <p>文章列出的实验条件包括无技能对照、全技能、少数大技能、多个小技能。不同拆法会在不同用例上表现更好，所以评估平台需要同时看完成率、检查通过率、耗时和轮次，而不是只看单一分数。</p>
           <figure>
-            <img src="assets/skill_experiment.png" alt="LangSmith experiment table 对比技能评估结果的截图">
+            <img src="assets/skill_experiment.webp" alt="LangSmith experiment table 对比技能评估结果的截图">
             <figcaption>这张 experiment 截图支撑“对照比较”的观点：表格把输入、输出、检查通过率、耗时、轮次和 pass 放在同一视图里，便于发现技能组合的取舍。</figcaption>
           </figure>
         </div>

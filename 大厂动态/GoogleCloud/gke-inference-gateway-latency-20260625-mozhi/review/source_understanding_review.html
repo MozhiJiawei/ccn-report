@@ -119,7 +119,7 @@
       </div>
       <div class="visual-frame annotated" style="height:720px;">
         <span class="figure-title">原始 benchmark 图</span>
-        <div class="bg-figure" role="img" aria-label="Mean latency benchmark chart" style="background-image:url('../sources/web/google-gke-inference-gateway-prefix-caching/images/image-01.jpg')"></div>
+        <div class="bg-figure" role="img" aria-label="Mean latency benchmark chart" style="background-image:url('../sources/web/google-gke-inference-gateway-prefix-caching/images/image-01.webp')"></div>
         <div class="pin" style="right:18px; bottom:18px;">
           <strong>蓝线更平，虚线飙升</strong>
           <span>图中对比的是 normalized TPOT vs request rate；精确 TTFT/ITL/吞吐来自同页表格。</span>
@@ -135,7 +135,7 @@
     <p class="lede">Google 的博客把“AI responses”写得很大，但表格里的最大数字只对应 mean time to first token。更完整的表达应该同时带上 workload、对照组和硬件条件。</p>
     <div class="full-figure" style="top:166px; bottom:34px;">
       <span class="figure-title">Google Cloud Blog Figure 3</span>
-      <div class="bg-figure" role="img" aria-label="GKE mean latency chart" style="background-image:url('../sources/web/google-gke-inference-gateway-prefix-caching/images/image-01.jpg')"></div>
+      <div class="bg-figure" role="img" aria-label="GKE mean latency chart" style="background-image:url('../sources/web/google-gke-inference-gateway-prefix-caching/images/image-01.webp')"></div>
     </div>
     <div class="overlay-note" style="right:92px; top:214px; width:430px;">
       <strong>精确表格口径</strong>
@@ -155,7 +155,7 @@
     <div class="cols-60-40">
       <div class="visual-frame annotated" style="height:674px;">
         <span class="figure-title">GKE request flow</span>
-        <div class="bg-figure" role="img" aria-label="GKE Inference Gateway request flow" style="background-image:url('../sources/web/google-docs-about-gke-inference-gateway/images/image-03.png')"></div>
+        <div class="bg-figure" role="img" aria-label="GKE Inference Gateway request flow" style="background-image:url('../sources/web/google-docs-about-gke-inference-gateway/images/image-03.webp')"></div>
         <div class="pin" style="left:22px; bottom:22px;"><strong>EPP 是路由大脑</strong><span>Gateway 调用 Endpoint Picker，再把请求转给选中的 model server。</span></div>
       </div>
       <div class="stack">
@@ -175,7 +175,7 @@
     <div class="cols-60-40 mt-l">
       <div class="visual-frame annotated" style="height:674px;">
         <span class="figure-title">GKE resource model</span>
-        <div class="bg-figure" role="img" aria-label="GKE Inference Gateway resource model" style="background-image:url('../sources/web/google-docs-about-gke-inference-gateway/images/image-01.png')"></div>
+        <div class="bg-figure" role="img" aria-label="GKE Inference Gateway resource model" style="background-image:url('../sources/web/google-docs-about-gke-inference-gateway/images/image-01.webp')"></div>
         <div class="pin" style="right:18px; bottom:18px;"><strong>不是单点网关</strong><span>Gateway + InferencePool + Objective + 安全/观测/模型 server 共同构成产品面。</span></div>
       </div>
       <div>
@@ -196,7 +196,7 @@
     <p class="lede">Google 的 llm-d 博客把它描述为 vLLM 之上的分布式 serving stack：调度器、prefill/decode 分离、多层 KV cache 共同服务于低延迟和低硬件消耗。</p>
     <div class="full-figure" style="top:166px; bottom:34px;">
       <span class="figure-title">llm-d stack architecture</span>
-      <div class="bg-figure" role="img" aria-label="llm-d stack architecture" style="background-image:url('../sources/web/google-llm-d-vllm-distributed-inference/images/image-01.jpg')"></div>
+      <div class="bg-figure" role="img" aria-label="llm-d stack architecture" style="background-image:url('../sources/web/google-llm-d-vllm-distributed-inference/images/image-01.webp')"></div>
     </div>
     <div class="overlay-note" style="right:92px; top:210px; width:390px;">
       <strong>三条主线</strong>
@@ -215,7 +215,7 @@
     <p class="lede">与 llm-d 一样，Dynamo 也不把推理优化停在 HTTP 负载均衡；它把路由、P/D 分离、KV 迁移和 Kubernetes 调度拆成一套数据中心级推理编排框架。</p>
     <div class="full-figure" style="top:170px; bottom:42px;">
       <span class="figure-title">NVIDIA Dynamo architecture and components</span>
-      <div class="bg-figure" role="img" aria-label="NVIDIA Dynamo architecture" style="background-image:url('../sources/web/nvidia-dynamo-inference-framework/images/image-01.png')"></div>
+      <div class="bg-figure" role="img" aria-label="NVIDIA Dynamo architecture" style="background-image:url('../sources/web/nvidia-dynamo-inference-framework/images/image-01.webp')"></div>
     </div>
     <div class="overlay-note" style="left:92px; bottom:74px; width:470px;">
       <strong>与 llm-d 的同层比较</strong>
@@ -231,7 +231,7 @@
     <div class="cols-50 mt-l">
       <div class="visual-frame annotated" style="height:680px;">
         <span class="figure-title">AIBrix control-plane diagram</span>
-        <div class="bg-figure" role="img" aria-label="AIBrix control-plane diagram" style="background-image:url('../sources/web/vllm-aibrix-control-plane/images/image-01.png')"></div>
+        <div class="bg-figure" role="img" aria-label="AIBrix control-plane diagram" style="background-image:url('../sources/web/vllm-aibrix-control-plane/images/image-01.webp')"></div>
       </div>
       <div class="stack">
         <div class="axis"><span class="tag">Gateway</span><h4>LLM Gateway and Routing</h4><p>管理多模型、多副本请求入口，按资源、负载和异构性做感知路由。</p></div>

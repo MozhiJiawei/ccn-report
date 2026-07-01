@@ -18,6 +18,7 @@ def main() -> int:
     checks = [
         [sys.executable, "scripts/check_report_archive.py"],
         [sys.executable, "scripts/check_local_media_assets.py"],
+        [sys.executable, "scripts/check_compressed_assets.py"],
     ]
 
     for check in checks:

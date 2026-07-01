@@ -8,7 +8,7 @@
 
 ## Article / Main Content
 
-![logo](images/image-01.png)
+![logo](images/image-01.webp)
 
 Original image URL: https://cdn.cnbj1.fds.api.mi-img.com/aife/mimo-blog-fe/doc_build/static/image/logo.99baaffe.png
 
@@ -60,7 +60,7 @@ API 平台：platform.xiaomimimo.com/ultraspeed。由于资源紧张，本次试
 
 然而，如果对整个模型"一刀切"地进行 FP4 量化，模型在复杂推理、逻辑代码上的精度和泛化能力往往会遭遇退化。针对 Xiaomi MiMo-V2.5-Pro 典型的 MoE（Mixture of Experts）架构特性，其 Expert 占据了参数的绝大部分，且对量化的精度容忍度最高。因此，我们选择只对 MoE Expert 进行参数 FP4 量化，而对其他模块则保留原有精度。通过这样的 FP4 QAT（量化感知训练），我们在大幅缩减模型体积、榨干硬件带宽的同时，使模型的整体能力与原模型基本持平。如下图所示：
 
-![FP4 量化（仅 MoE Expert）与 FP8 在各项评测上的模型能力对比，整体能力与原模型基本持平](images/image-02.png)
+![FP4 量化（仅 MoE Expert）与 FP8 在各项评测上的模型能力对比，整体能力与原模型基本持平](images/image-02.webp)
 
 Original image URL: https://mimo.xiaomi.com/mimo-tilert-1000tps/1000tpsfp4.png
 
@@ -110,13 +110,13 @@ TileRT 团队是聚焦于下一代 AI 基础设施、专注于极致低延迟推
 
 ### 五、更多效果展示
 
-![仅需 10 秒，做一个贪吃蛇小游戏](images/image-03.gif)
+![仅需 10 秒，做一个贪吃蛇小游戏](images/image-03.webp)
 
 Original image URL: https://mimo.xiaomi.com/mimo-tilert-1000tps/snake.gif
 
 Caption / nearby text: 仅需 10 秒，做一个贪吃蛇小游戏
 
-![仅需 1 分钟，复刻一个 MacOS 系统](images/image-04.gif)
+![仅需 1 分钟，复刻一个 MacOS 系统](images/image-04.webp)
 
 Original image URL: https://mimo.xiaomi.com/mimo-tilert-1000tps/1000tps_macos.gif
 

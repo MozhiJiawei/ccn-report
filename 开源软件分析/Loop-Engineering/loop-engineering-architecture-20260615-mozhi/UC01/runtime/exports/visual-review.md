@@ -2,13 +2,13 @@
 
 ## loop-init 脚手架路径
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\loop-init 脚手架路径.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\loop-init 脚手架路径.webp`
 - Reference: not found
 - Metrics: `1231x803`, non-white pixel ratio `0.0947`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\loop-init 脚手架路径.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\loop-init 脚手架路径.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 1231x803, non-white pixel ratio 0.0947.
 4. State explicitly that you reviewed both the export and the reference before judging quality.
@@ -20,13 +20,13 @@ AI visual review task:
 
 ## 人工选型与边界设计
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\人工选型与边界设计.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\人工选型与边界设计.webp`
 - Reference: not found
 - Metrics: `1025x559`, non-white pixel ratio `0.1181`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\人工选型与边界设计.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\人工选型与边界设计.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 1025x559, non-white pixel ratio 0.1181.
 4. State explicitly that you reviewed both the export and the reference before judging quality.
@@ -38,13 +38,13 @@ AI visual review task:
 
 ## 成本估算与 readiness 反馈
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\成本估算与 readiness 反馈.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\成本估算与 readiness 反馈.webp`
 - Reference: not found
 - Metrics: `1231x1047`, non-white pixel ratio `0.0842`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\成本估算与 readiness 反馈.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\runtime\exports\成本估算与 readiness 反馈.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 1231x1047, non-white pixel ratio 0.0842.
 4. State explicitly that you reviewed both the export and the reference before judging quality.

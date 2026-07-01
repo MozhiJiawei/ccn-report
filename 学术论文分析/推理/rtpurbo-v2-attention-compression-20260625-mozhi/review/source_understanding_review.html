@@ -307,7 +307,7 @@
       <div class="su-card su-stat"><strong>2.01×</strong><p>论文报告 decode 阶段约 2.01× speedup。</p></div>
     </div>
     <div class="su-evidence su-image-wide">
-      <img src="assets/fig1-teaser.png" alt="RTPurbo efficiency and accuracy teaser">
+      <img src="assets/fig1-teaser.webp" alt="RTPurbo efficiency and accuracy teaser">
       <p class="su-caption">Figure 1 给出 RTPurbo 的效率与精度概览；后续页将拆开核验证据口径。</p>
     </div>
     <div class="notes">这一页只建立结论：RTPurboV2/RTPurbo 不是训练一个全新稀疏模型，而是从 Full Attention 模型中释放内生稀疏性。重点数字来自论文摘要与 Figure 1。</div>
@@ -366,12 +366,12 @@
           </ul>
         </div>
         <div class="su-evidence" style="margin-top:20px">
-          <img src="assets/fig2-retrieval-heads.png" alt="Retrieval heads attend to semantically related distant regions">
+          <img src="assets/fig2-retrieval-heads.webp" alt="Retrieval heads attend to semantically related distant regions">
           <p class="su-caption">Figure 2：retrieval head 会跨距离关注与 query 语义相关的区域。</p>
         </div>
       </div>
       <div class="su-evidence">
-        <img src="assets/fig8-head-scores.png" alt="Head-wise retrieval scores in Qwen3-Coder-30B-A3B">
+        <img src="assets/fig8-head-scores.webp" alt="Head-wise retrieval scores in Qwen3-Coder-30B-A3B">
         <p class="su-caption">Figure 8：Qwen3-Coder-30B-A3B 的 head-wise retrieval score，支持“少数头承担长程召回”的校准策略。</p>
       </div>
     </div>
@@ -398,7 +398,7 @@
         <h3>配置含义</h3>
         <p>论文配置里 token indexer 使用 <code>hidden size = 16</code>；结合 retrieval-head ratio、top-p 和 GQA group size，形成完整 sparse decode 配置。</p>
         <div class="su-evidence" style="margin-top:18px">
-          <img src="assets/table2-config.png" alt="RTPurbo configuration table">
+          <img src="assets/table2-config.webp" alt="RTPurbo configuration table">
           <p class="su-caption">Table 2：RTPurbo config。低维大小是理解 feature compression 的关键。</p>
         </div>
       </div>
@@ -424,7 +424,7 @@
         </ul>
       </div>
       <div class="su-evidence">
-        <img src="assets/table1-topk-topp.png" alt="Fixed top-k trades recall for sparsity">
+        <img src="assets/table1-topk-topp.webp" alt="Fixed top-k trades recall for sparsity">
         <p class="su-caption">Table 1：固定 top-k 与 top-p 的对比；论文指出 top-16k 多算约 8k token，却只多恢复 3.8% attention mass。</p>
       </div>
     </div>
@@ -446,7 +446,7 @@
     </div>
     <h2 class="su-title">RTPurbo 的推理路径是“离线校准 + prefill 索引 + decode 稀疏选择”</h2>
     <div class="su-evidence su-image-tight">
-      <img src="assets/fig4-architecture.png" alt="Overall architecture of RTPurbo">
+      <img src="assets/fig4-architecture.webp" alt="Overall architecture of RTPurbo">
       <p class="su-caption">Figure 4：RTPurbo 总体架构。图中把 head 校准、KV/索引保存、稀疏 decode 串成完整路径。</p>
     </div>
     <div class="su-grid-3" style="margin-top:20px">
@@ -474,7 +474,7 @@
         </ul>
       </div>
       <div class="su-evidence">
-        <img src="assets/table5-reasoning.png" alt="Accuracy comparison on reasoning benchmarks">
+        <img src="assets/table5-reasoning.webp" alt="Accuracy comparison on reasoning benchmarks">
         <p class="su-caption">Table 5：reasoning benchmarks 精度对比。该表用于观察低成本适配后是否保留推理能力。</p>
       </div>
     </div>
@@ -491,7 +491,7 @@
     <h2 class="su-title">RULER 表说明：RTPurbo 在检索型长上下文任务上接近 Full Attention</h2>
     <div class="su-result-layout">
       <div class="su-evidence">
-        <img src="assets/table4-ruler.png" alt="Accuracy comparison on RULER">
+        <img src="assets/table4-ruler.webp" alt="Accuracy comparison on RULER">
         <p class="su-caption">Table 4：RULER accuracy comparison。表中 Full Attention 作为 dense baseline，不参与 sparse 方法排名；粗体表示 sparse 方法最优。</p>
       </div>
       <div>
@@ -531,7 +531,7 @@
     <h2 class="su-title">Ultra-long 图说明：越到极长上下文，动态 top-p 的优势越明显</h2>
     <div class="su-result-layout">
       <div class="su-evidence">
-        <img src="assets/fig6-ultralong.png" alt="Accuracy and sparsity on ultra-long multi-hop tasks">
+        <img src="assets/fig6-ultralong.webp" alt="Accuracy and sparsity on ultra-long multi-hop tasks">
         <p class="su-caption">Figure 6：128K-512K ultra-long multi-hop tasks。柱子是 accuracy score，黑线是 RTPurbo sparsity。</p>
       </div>
       <div>
@@ -571,7 +571,7 @@
     <h2 class="su-title">Reasoning 表说明：短输入长生成场景里，稀疏化没有明显破坏推理能力</h2>
     <div class="su-result-layout">
       <div class="su-evidence">
-        <img src="assets/table5-reasoning.png" alt="Accuracy comparison on reasoning benchmarks">
+        <img src="assets/table5-reasoning.webp" alt="Accuracy comparison on reasoning benchmarks">
         <p class="su-caption">Table 5：reasoning benchmark accuracy。论文说明 AIME 输入短但生成 reasoning traces 长，瓶颈转向 decode 阶段。</p>
       </div>
       <div>
@@ -610,7 +610,7 @@
     <h2 class="su-title">Decode 图说明：RTPurbo 的加速来自低维打分、稀疏规约和自定义 GEMV kernel</h2>
     <div class="su-result-layout">
       <div class="su-evidence">
-        <img src="assets/fig7-speedup.png" alt="Sparse decoding speedup of RTPurbo">
+        <img src="assets/fig7-speedup.webp" alt="Sparse decoding speedup of RTPurbo">
         <p class="su-caption">Figure 7：Sparse decoding speedup。横轴为 latency，三组 KV 长度分别是 128K、256K、512K；H=32。</p>
       </div>
       <div>

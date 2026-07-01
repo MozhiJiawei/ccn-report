@@ -2,13 +2,13 @@
 
 ## development-view
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\development\exports\development-view.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\development\exports\development-view.webp`
 - Reference: not found
 - Metrics: `1757x1487`, non-white pixel ratio `0.2966`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\development\exports\development-view.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\development\exports\development-view.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 1757x1487, non-white pixel ratio 0.2966.
 4. State explicitly that you reviewed both the export and the reference before judging quality.

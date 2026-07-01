@@ -91,28 +91,28 @@
             <h3>模型流不是一次调用，而是可观察的工具闭环</h3>
             <p>model flow 图把 request、model、tools 和 result 串起来，说明 runtime 需要跟踪每次工具选择和返回，而不是只记录最终答案。</p>
           </div>
-          <figure><img src="assets/69e9d28c1155428902746622_69e7b90b41bb837eab283086_diagram4_model_flow_dark-201.png" alt="模型流不是一次调用，而是可观察的工具闭环"><figcaption>Model flow 图显示 request 进入模型后会在工具调用和结果之间往返，支撑“运行时需要观察中间步骤”的结论。</figcaption></figure>
+          <figure><img src="assets/69e9d28c1155428902746622_69e7b90b41bb837eab283086_diagram4_model_flow_dark-201.webp" alt="模型流不是一次调用，而是可观察的工具闭环"><figcaption>Model flow 图显示 request 进入模型后会在工具调用和结果之间往返，支撑“运行时需要观察中间步骤”的结论。</figcaption></figure>
         </article>
         <article class="section-card with-image">
           <div>
             <h3>durable execution 把崩溃恢复变成运行时能力</h3>
             <p>crash recovery 图展示 worker A 失败后，worker B 能从持久化层恢复 c2 并继续执行 c3，说明 checkpoint 是生产 agent 的基础设施。</p>
           </div>
-          <figure><img src="assets/69e9d28c115542890274661f_69e64614ec8287bee98a7e88_diagram2_durable_execution_crash_recovery_dark-201.png" alt="durable execution 把崩溃恢复变成运行时能力"><figcaption>Durable execution 图显示执行状态落到 persistence layer，另一个 worker 可以从中断点继续。</figcaption></figure>
+          <figure><img src="assets/69e9d28c115542890274661f_69e64614ec8287bee98a7e88_diagram2_durable_execution_crash_recovery_dark-201.webp" alt="durable execution 把崩溃恢复变成运行时能力"><figcaption>Durable execution 图显示执行状态落到 persistence layer，另一个 worker 可以从中断点继续。</figcaption></figure>
         </article>
         <article class="section-card with-image">
           <div>
             <h3>interrupt checkpoint 给人工介入留下明确位置</h3>
             <p>interrupt checkpoint 图把 review、edit action 和 continue 放在同一条状态线上，说明 human-in-the-loop 不是额外聊天，而是 runtime 的可恢复节点。</p>
           </div>
-          <figure><img src="assets/69e9d28d1155428902746637_69e646bcd3a160827f8db9d9_diagram5_interrupt_checkpoint_dark-201.png" alt="interrupt checkpoint 给人工介入留下明确位置"><figcaption>Interrupt checkpoint 图展示人工 review、修改动作和继续执行之间的状态关系。</figcaption></figure>
+          <figure><img src="assets/69e9d28d1155428902746637_69e646bcd3a160827f8db9d9_diagram5_interrupt_checkpoint_dark-201.webp" alt="interrupt checkpoint 给人工介入留下明确位置"><figcaption>Interrupt checkpoint 图展示人工 review、修改动作和继续执行之间的状态关系。</figcaption></figure>
         </article>
         <article class="section-card with-image">
           <div>
             <h3>短期记忆和长期记忆都需要 runtime 管理</h3>
             <p>memory 图把 checkpoint 中的短期消息与长期 store 分开，说明 runtime 同时承担会话恢复和跨会话记忆读取。</p>
           </div>
-          <figure><img src="assets/69e9d28d115542890274664f_69e666ea5bd7ae91146d6ae8_diagram6_memory_dark-201-20-1-.png" alt="短期记忆和长期记忆都需要 runtime 管理"><figcaption>Memory 图区分 short-term checkpoint 和 long-term store，支撑 runtime 管理状态与记忆的观点。</figcaption></figure>
+          <figure><img src="assets/69e9d28d115542890274664f_69e666ea5bd7ae91146d6ae8_diagram6_memory_dark-201-20-1-.webp" alt="短期记忆和长期记忆都需要 runtime 管理"><figcaption>Memory 图区分 short-term checkpoint 和 long-term store，支撑 runtime 管理状态与记忆的观点。</figcaption></figure>
         </article>
       </div>
     </section>

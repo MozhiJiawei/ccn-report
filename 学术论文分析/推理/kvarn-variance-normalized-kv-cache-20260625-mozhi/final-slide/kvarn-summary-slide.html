@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KVarN Summary Slide</title>
+  <link rel="stylesheet" href="../html-ppt-assets/fonts.css">
+  <link rel="stylesheet" href="../html-ppt-assets/base.css">
+  <link rel="stylesheet" id="theme-link" href="../html-ppt-assets/themes/engineering-whiteprint.css">
+  <link rel="stylesheet" href="../html-ppt-assets/animations/animations.css">
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --surface-2: #eef3f8;
+      --text-1: #111827;
+      --text-2: #425066;
+      --text-3: #6b7a90;
+      --accent: #d71920;
+      --accent-2: #2463eb;
+      --accent-3: #0f9f6e;
+      --warn: #b36b00;
+      --good: #16845c;
+      --bad: #c52b32;
+      --border: rgba(22, 34, 51, .12);
+      --border-strong: rgba(22, 34, 51, .24);
+      --radius: 8px;
+      --radius-sm: 6px;
+      --shadow: 0 12px 36px rgba(22, 34, 51, .10);
+      --letter-normal: 0;
+      --letter-tight: 0;
+    }
+
+    body.single .slide {
+      padding: 28px 34px;
+      background:
+        linear-gradient(90deg, rgba(215, 25, 32, .08) 0 10px, transparent 10px),
+        linear-gradient(180deg, #ffffff 0, #f3f6fa 100%);
+    }
+
+    .board {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: 100px 1fr 42px;
+      gap: 14px;
+    }
+
+    .topline {
+      display: grid;
+      grid-template-columns: 1fr 356px;
+      gap: 18px;
+      align-items: stretch;
+      border-bottom: 2px solid var(--border-strong);
+      padding-bottom: 12px;
+    }
+
+    .kicker {
+      margin: 0 0 4px;
+      color: var(--accent);
+      font-size: 13px;
+      letter-spacing: .08em;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--text-1);
+      font-size: 34px;
+      line-height: 1.08;
+      letter-spacing: 0;
+      font-weight: 900;
+    }
+
+    .subline {
+      margin-top: 8px;
+      color: var(--text-2);
+      font-size: 14px;
+      line-height: 1.35;
+      font-weight: 650;
+    }
+
+    .verdict {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 12px;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      border-radius: var(--radius);
+    }
+
+    .verdict .stamp {
+      display: grid;
+      place-items: center;
+      height: 64px;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #8f1116);
+      border-radius: var(--radius-sm);
+      font-weight: 900;
+      font-size: 17px;
+      line-height: 1.05;
+      text-align: center;
+    }
+
+    .verdict strong {
+      display: block;
+      color: var(--text-1);
+      font-size: 17px;
+      line-height: 1.15;
+    }
+
+    .verdict span {
+      display: block;
+      margin-top: 5px;
+      color: var(--text-2);
+      font-size: 12px;
+      line-height: 1.28;
+      font-weight: 650;
+    }
+
+    .evidence-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 30% 41% 29%;
+      gap: 14px;
+    }
+
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 20px rgba(22, 34, 51, .06);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #ffffff, #f9fbfd);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.15;
+      font-weight: 900;
+      color: var(--text-1);
+    }
+
+    .panel-tag {
+      color: var(--text-3);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      letter-spacing: 0;
+    }
+
+    .panel-body {
+      min-height: 0;
+      flex: 1;
+      padding: 10px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .figure-card {
+      min-height: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: #ffffff;
+      padding: 7px;
+      overflow: hidden;
+    }
+
+    .figure-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .method-img {
+      height: 104px;
+    }
+
+    .error-img {
+      height: 126px;
+    }
+
+    .quality-img {
+      height: 310px;
+      padding: 8px;
+    }
+
+    .perf-img {
+      height: 132px;
+    }
+
+    .dequant-img {
+      height: 126px;
+    }
+
+    .caption {
+      margin: 5px 1px 0;
+      color: var(--text-3);
+      font-size: 10.5px;
+      line-height: 1.25;
+      font-weight: 650;
+    }
+
+    .signal-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .signal {
+      border-left: 4px solid var(--accent-2);
+      background: var(--surface-2);
+      border-radius: var(--radius-sm);
+      padding: 8px 9px;
+    }
+
+    .signal.green {
+      border-left-color: var(--good);
+    }
+
+    .signal.red {
+      border-left-color: var(--accent);
+    }
+
+    .signal b {
+      display: block;
+      font-size: 15px;
+      line-height: 1.05;
+      color: var(--text-1);
+    }
+
+    .signal span {
+      display: block;
+      margin-top: 4px;
+      font-size: 10.5px;
+      line-height: 1.22;
+      color: var(--text-2);
+      font-weight: 650;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+
+    .step {
+      min-height: 58px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 7px 6px;
+      background: #fbfcfe;
+      position: relative;
+    }
+
+    .step:not(:last-child)::after {
+      content: ">";
+      position: absolute;
+      right: -7px;
+      top: 18px;
+      color: var(--accent);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .step small {
+      display: block;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .step b {
+      display: block;
+      margin-top: 2px;
+      color: var(--text-1);
+      font-size: 12px;
+      line-height: 1.15;
+    }
+
+    .step span {
+      display: block;
+      margin-top: 3px;
+      color: var(--text-3);
+      font-size: 9.5px;
+      line-height: 1.15;
+      font-weight: 650;
+    }
+
+    .metric-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 8px 7px;
+      background: #fbfcfe;
+    }
+
+    .metric .num {
+      display: block;
+      color: var(--accent);
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 950;
+      font-family: var(--font-mono);
+    }
+
+    .metric .label {
+      display: block;
+      margin-top: 5px;
+      color: var(--text-2);
+      font-size: 10.5px;
+      line-height: 1.18;
+      font-weight: 700;
+    }
+
+    .quality-callout {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 8px;
+    }
+
+    .compact-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 6px;
+    }
+
+    .compact-list li {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 6px;
+      align-items: start;
+      color: var(--text-2);
+      font-size: 11.5px;
+      line-height: 1.28;
+      font-weight: 650;
+    }
+
+    .compact-list li::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      margin-top: 4px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 0 4px rgba(36, 99, 235, .12);
+    }
+
+    .gate {
+      border: 1px solid rgba(197, 43, 50, .32);
+      background: linear-gradient(180deg, rgba(215, 25, 32, .08), rgba(255,255,255,.96));
+      border-radius: var(--radius-sm);
+      padding: 8px;
+    }
+
+    .gate h3 {
+      margin: 0 0 6px;
+      color: var(--bad);
+      font-size: 13px;
+      line-height: 1.15;
+      font-weight: 900;
+    }
+
+    .gate .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .chip {
+      border: 1px solid rgba(197, 43, 50, .24);
+      background: #fff;
+      color: var(--text-2);
+      border-radius: 999px;
+      padding: 3px 7px;
+      font-size: 10px;
+      line-height: 1.2;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .footer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      color: var(--text-3);
+      font-size: 10.5px;
+      line-height: 1.35;
+      border-top: 1px solid var(--border);
+      padding-top: 7px;
+    }
+
+    .footer b {
+      color: var(--text-2);
+    }
+
+    .source {
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
+    .notes {
+      display: none;
+    }
+  </style>
+</head>
+<body class="single">
+  <div class="deck">
+    <section class="slide is-active" data-title="KVarN Summary">
+      <div class="board">
+        <header class="topline">
+          <div>
+            <p class="kicker">Huawei CSL · KV-cache quantization · 2-bit evidence board</p>
+            <h1>华为发布了KVarN双轴KV量化</h1>
+            <div class="subline">KVarN 在 2-bit KV-cache 上保住推理、代码和指令任务质量；值得进入复现和 serving 性能验证，但论文尚未给出整网 TPOT / TTFT 收益。</div>
+          </div>
+          <div class="verdict">
+            <div class="stamp">复现<br>优先级</div>
+            <div>
+              <strong>Go to validation, not rollout</strong>
+              <span>先验证长输出质量、端到端 latency、2-bit kernel 与 second scale 融合，再判断线上收益。</span>
+            </div>
+          </div>
+        </header>
+
+        <main class="evidence-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">机制：修 token scale 漂移</h2>
+              <span class="panel-tag">Fig. 2 + Fig. 1</span>
+            </div>
+            <div class="panel-body">
+              <div class="figure-card method-img">
+                <img src="../sources/paper/images/picture_002.webp" alt="KVarN 方法链路">
+              </div>
+              <p class="caption">论文方法链路：新产生的 KV block 写回前，先旋转，再在 token/channel 双轴归一化，最后 RTN 量化。</p>
+              <div class="flow">
+                <div class="step"><small>01</small><b>Pseudo-decode</b><span>每段只能读量化后的历史 cache</span></div>
+                <div class="step"><small>02</small><b>Hadamard</b><span>摊平 channel outlier</span></div>
+                <div class="step"><small>03</small><b>VarN 双轴</b><span>压住 token magnitude 漂移</span></div>
+                <div class="step"><small>04</small><b>2.3 bits/elem</b><span>2-bit 主体 + 额外 scale</span></div>
+              </div>
+              <div class="figure-card error-img">
+                <img src="../sources/paper/images/picture_001.webp" alt="token magnitude error 是 top error 主因">
+              </div>
+              <p class="caption">关键判断：top error 中 magnitude / scale error 是主因，KVarN 修的是 decoding 中会被反复读取的长度漂移。</p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">收益：低 bit 下质量保真最强</h2>
+              <span class="panel-tag">Table 1 / 2 / 3</span>
+            </div>
+            <div class="panel-body">
+              <div class="metric-strip">
+                <div class="metric"><span class="num">60.0</span><span class="label">Qwen3-4B AIME24<br>FP16 61.1</span></div>
+                <div class="metric"><span class="num">79.2</span><span class="label">Qwen3-4B MATH500<br>FP16 82.6</span></div>
+                <div class="metric"><span class="num">61.7</span><span class="label">Phi-4 AIME24<br>FP16 62.2</span></div>
+                <div class="metric"><span class="num">84.8</span><span class="label">Phi-4 MATH500<br>FP16 84.9</span></div>
+              </div>
+              <div class="figure-card quality-img">
+                <img src="../sources/paper/images/table_001.webp" alt="AIME24 与 MATH500 质量结果">
+              </div>
+              <div class="quality-callout">
+                <div class="signal-row">
+                  <div class="signal green"><b>数学推理</b><span>AIME24 / MATH500 上 2/2 K/V 接近 FP16，并优于多组 baseline。</span></div>
+                  <div class="signal green"><b>任务覆盖</b><span>HumanEval 与 IFEval 继续支持代码生成、指令跟随质量。</span></div>
+                </div>
+                <ul class="compact-list">
+                  <li>HumanEval：Qwen3-4B 88.4 vs FP16 88.8；Phi-4 88.2 vs FP16 88.9。</li>
+                  <li>IFEval：Qwen3、Llama-3.1、Phi-4 的 strict / loose 指标保持或取得最高结果。</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">性能：只证明局部开销低</h2>
+              <span class="panel-tag">Fig. 6 + Fig. 11</span>
+            </div>
+            <div class="panel-body">
+              <div class="signal-row">
+                <div class="signal red"><b>0.18%</b><span>Qwen3-4B VarN all layers：1.9 ms vs 128-token generation 1050 ms。</span></div>
+                <div class="signal"><b>Dequant 持平</b><span>4k/8k/16k/32k context 下，KVarN median dequant time 与 KIVI 基本持平。</span></div>
+              </div>
+              <div class="figure-card perf-img">
+                <img src="../sources/paper/images/picture_008.webp" alt="VarN normalization 相对生成耗时的局部 overhead">
+              </div>
+              <p class="caption">Figure 6 是 normalization overhead，不是 TPOT/TTFT 或 end-to-end serving latency。</p>
+              <div class="figure-card dequant-img">
+                <img src="../sources/paper/images/picture_013.webp" alt="Triton dequant overhead 与 KIVI 基本持平">
+              </div>
+              <p class="caption">Figure 11 的解释依赖 second scale 融进 dequant kernel，避免额外 HBM round-trip。</p>
+              <div class="gate">
+                <h3>复现 gate：本文未报告整网 serving 指标</h3>
+                <div class="chips">
+                  <span class="chip">质量回归</span>
+                  <span class="chip">长输出 TPOT</span>
+                  <span class="chip">TTFT</span>
+                  <span class="chip">tokens/s</span>
+                  <span class="chip">显存上限</span>
+                  <span class="chip">并发 batch</span>
+                  <span class="chip">KV memory traffic</span>
+                  <span class="chip">2-bit kernel</span>
+                  <span class="chip">second scale fusion</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer class="footer">
+          <div><b>Evidence boundary:</b> KVarN 的可信结论是 2-bit 精度保真 + normalization/dequant 局部开销低；若 serving 栈不支持 2-bit KV-cache 或 scale 融合，低 overhead 不可直接照搬。</div>
+          <div class="source">Sources: brief · source_understanding_review · paper figures</div>
+        </footer>
+      </div>
+      <div class="notes">
+        这页的讲法是：先给出审慎结论，KVarN 可以进入复现，但不是直接上线承诺。左侧解释为什么它不是普通 KV 压缩，而是在 pseudo-decode 口径下处理 token magnitude 漂移。中间用 Table 1 和四个关键数字证明低 bit 质量保真，同时补一句 HumanEval 和 IFEval 的覆盖。右侧强调性能证据边界：0.18% 是 normalization overhead，dequant 持平依赖 second scale 融合，不等价于 TPOT/TTFT 改善。最后落到工程 gate。
+      </div>
+    </section>
+  </div>
+  <script src="../html-ppt-assets/runtime.js"></script>
+</body>
+</html>

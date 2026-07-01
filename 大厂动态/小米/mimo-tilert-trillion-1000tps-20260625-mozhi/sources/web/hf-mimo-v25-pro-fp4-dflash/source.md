@@ -297,7 +297,7 @@ docker model run hf.co/XiaomiMiMo/MiMo-V2.5-Pro-FP4-DFlash
 - SGLang Deployment
 - Citation
 - Contact
-![Xiaomi-MiMo](images/image-02.png)
+![Xiaomi-MiMo](images/image-02.webp)
 
 Original image URL: https://github.com/XiaomiMiMo/MiMo/raw/main/figures/Xiaomi_MiMo_darkmode.png?raw=true
 
@@ -323,7 +323,7 @@ At the trillion-parameter (1T) scale, even 8-bit (FP8/INT8) inference carries se
 
 We quantize only the MoE experts to MXFP4 (block size 32) and keep attention projections and other modules at higher precision (the attention o_proj of every layer is excluded from FP4). With FP4 QAT, quality stays close to the FP8 baseline:
 
-![fp4 compare](images/image-03.png)
+![fp4 compare](images/image-03.webp)
 
 Original image URL: https://huggingface.co/XiaomiMiMo/MiMo-V2.5-Pro-FP4-DFlash/resolve/main/assets/fp4_compare.png
 

@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN" data-theme="engineering-whiteprint">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SlidingServe Source Understanding Review</title>
+<link rel="stylesheet" href="../html-ppt-skill/assets/fonts.css">
+<link rel="stylesheet" href="../html-ppt-skill/assets/base.css">
+<link rel="stylesheet" id="theme-link" href="../html-ppt-skill/assets/themes/engineering-whiteprint.css">
+<link rel="stylesheet" href="../html-ppt-skill/assets/animations/animations.css">
+<style>
+  .slide { padding: 54px 76px 46px; }
+  .deck-footer { position:absolute; left:76px; right:76px; bottom:28px; display:flex; justify-content:space-between; align-items:center; font-size:18px; color:var(--text-3); }
+  .tight { max-width: 1120px; }
+  .small { font-size: 18px; line-height: 1.55; }
+  .micro { font-size: 15px; line-height: 1.45; }
+  .evidence { font-family: var(--font-sans); color: var(--text-2); font-size: 16px; line-height: 1.4; border-left: 3px solid var(--accent); padding-left: 12px; }
+  .paper-title { font-size: 23px; line-height: 1.35; font-weight: 780; color: var(--text-1); }
+  .metric-row { display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; margin-top: 24px; }
+  .metric { border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m); padding:18px 20px; min-height:132px; }
+  .metric b { display:block; font-size:44px; line-height:1; color:var(--accent); margin-bottom:8px; }
+  .metric span { display:block; color:var(--text-2); font-size:17px; line-height:1.38; }
+  .caption { margin-top:8px; font-size:15px; color:var(--text-3); line-height:1.35; }
+  .figure-card { border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m); padding:12px; }
+  .figure-card img { display:block; margin:auto; max-width:100%; height:auto; object-fit:contain; }
+  .hero-figure img { width: 1280px; max-height: 690px; }
+  .wide-figure img { width: 1320px; max-height: 560px; }
+  .medium-figure img { width: 820px; max-height: 430px; }
+  .tall-figure img { width: 360px; max-height: 720px; }
+  .two-pane { display:grid; grid-template-columns: 0.95fr 1.35fr; gap:28px; align-items:start; }
+  .three-stack { display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-top:18px; }
+  .step-card { border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m); padding:18px; min-height:150px; }
+  .step-card h4 { margin:0 0 8px; font-size:23px; }
+  .step-card p { margin:0; color:var(--text-2); font-size:18px; line-height:1.45; }
+  .fact-table { width:100%; border-collapse:collapse; margin-top:18px; font-size:18px; }
+  .fact-table th, .fact-table td { border-bottom:1px solid var(--border); padding:12px 10px; text-align:left; vertical-align:top; }
+  .fact-table th { color:var(--text-1); font-weight:800; }
+  .fact-table td { color:var(--text-2); }
+  .tag-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+  .tag { border:1px solid var(--border); border-radius:999px; padding:7px 12px; background:var(--surface); color:var(--text-2); font-size:16px; }
+  .warning { border-left: 4px solid var(--warn); padding: 12px 16px; background: var(--surface); color: var(--text-2); margin-top: 16px; }
+  .source-ref { position:absolute; right:76px; top:56px; font-size:14px; color:var(--text-3); }
+  .plain-box { border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m); padding:16px 18px; margin-top:14px; }
+  .plain-box h4 { margin:0 0 8px; font-size:22px; }
+  .plain-box p { margin:0; font-size:18px; line-height:1.5; color:var(--text-2); }
+  .term { font-weight:800; color:var(--text-1); }
+  .violation-board { border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-m); padding:18px; }
+  .violation-board h4 { margin:0 0 12px; font-size:25px; }
+  .violation-row { display:grid; grid-template-columns: 108px 1fr 56px; gap:12px; align-items:center; margin:10px 0; font-size:17px; color:var(--text-2); }
+  .bar-track { height:18px; border-radius:999px; background:var(--surface-2); border:1px solid var(--border); overflow:hidden; }
+  .bar-fill { height:100%; border-radius:999px; background:var(--accent); }
+  .violation-legend { display:flex; gap:14px; align-items:center; margin-top:12px; font-size:15px; color:var(--text-3); }
+  .legend-dot { width:12px; height:12px; border-radius:999px; display:inline-block; background:var(--accent); }
+  .source-note { margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
+  .mini-table { width:100%; border-collapse:collapse; font-size:16px; margin-top:10px; }
+  .mini-table th, .mini-table td { border-bottom:1px solid var(--border); padding:8px 6px; text-align:left; color:var(--text-2); }
+  .mini-table th { color:var(--text-1); font-weight:800; }
+  .mini-table td:nth-child(n+2), .mini-table th:nth-child(n+2) { text-align:right; }
+  .best { color:var(--accent); font-weight:850; }
+</style>
+</head>
+<body data-themes="engineering-whiteprint,academic-paper,swiss-grid,minimal-white" data-theme-base="../html-ppt-skill/assets/themes/">
+<div class="deck">
+
+  <section class="slide" data-title="结论与口径">
+    <p class="kicker">Source Understanding · SlidingServe</p>
+    <h1 class="h1 anim-fade-up" data-anim="fade-up">所谓“容量提升 30%”，说的是 <span class="gradient-text">同样不让用户等太久时，系统能多接多少单</span></h1>
+    <p class="lede tight">可以把 LLM 推理服务想成一家很忙的餐厅：用户请求是订单，GPU 是厨房。SlidingServe 的价值不是让每一单都神速出餐，而是在“不能超过承诺等待时间”的前提下，让厨房同时服务更多订单。</p>
+    <div class="metric-row">
+      <div class="metric"><b>9.7%-30%</b><span>比已有先进方案 QoServe 多服务的“合格订单”比例；30% 是论文里的最高值。</span></div>
+      <div class="metric"><b>25%-111%</b><span>比 Sarathi-EDF 多服务的合格订单比例，长文本请求越多，差距越明显。</span></div>
+      <div class="metric"><b>16%-53%</b><span>系统很忙时，超过等待承诺的请求比例下降。</span></div>
+    </div>
+    <p class="evidence mt-m">人话翻译：这里的 capacity / goodput 不是“模型算得更快”，而是“在延迟承诺下，系统每秒能成功服务更多请求”。Source: Abstract; Figure 4; Figure 5.</p>
+    <div class="deck-footer"><span>arXiv 2606.05933 · Source understanding baseline</span><span class="slide-number" data-current="1" data-total="8"></span></div>
+    <div class="notes">本页把听众最容易误读的点先钉住：论文里的“capacity”不是单请求延迟或 token/s，而是在 SLO 约束下还能接住多少请求。</div>
+  </section>
+
+  <section class="slide" data-title="论文问题定义">
+    <p class="kicker">01 · Problem framing</p>
+    <h2 class="h2">LLM 服务最难的是排队：长问题会堵住短问题，短问题又不能一直插队</h2>
+    <div class="two-pane mt-l">
+      <div>
+        <p class="paper-title">一个用户发来很长的提示词，系统要先“读题”再开始生成答案；如果一次读太多，其他正在等下一个字的用户会卡住。</p>
+        <table class="fact-table">
+          <tr><th>术语</th><th>给小白的解释</th></tr>
+          <tr><td>Prefill</td><td>模型先读完整个问题和上下文，好比厨师先看订单。</td></tr>
+          <tr><td>Decode</td><td>模型一个字一个字生成答案，好比开始一道道出餐。</td></tr>
+          <tr><td>SLO</td><td>服务承诺的等待上限：首字不能太慢，后续每个字也不能断太久。</td></tr>
+        </table>
+      </div>
+      <div class="figure-card medium-figure">
+        <img src="../pdf_xml_final/images/table_003.webp" alt="Table 3: SLOs for different model configurations">
+        <p class="caption">Table 3 · 论文给不同任务设了等待承诺：对话场景要求字和字之间更连贯，摘要场景能接受更长等待。</p>
+      </div>
+    </div>
+    <p class="evidence mt-m">核心矛盾：一次多读一点，GPU 更忙更划算；一次少读一点，正在生成的用户更顺滑。调度系统要在两边之间找平衡。</p>
+    <div class="deck-footer"><span>先懂问题：不是模型能力，而是服务排队</span><span class="slide-number" data-current="2" data-total="8"></span></div>
+  </section>
+
+  <section class="slide" data-title="单轮贪心的问题">
+    <p class="kicker">02 · Mechanism A</p>
+    <h2 class="h2">SlidingServe 的第一招：别把这一次的时间额度一次花光</h2>
+    <div class="two-pane mt-l">
+      <div class="figure-card medium-figure">
+        <img src="../pdf_xml_final/images/picture_001.webp" alt="Figure 1: Comparison of different scheduling strategies">
+        <p class="caption">Figure 1 · 如果当前轮“能塞多少塞多少”，下一轮可能只剩很窄的空间；少塞一点，反而两轮合计多处理 100 个 token。</p>
+      </div>
+      <div>
+        <div class="step-card"><h4>像红绿灯配时</h4><p>这次绿灯开太久，下一批车就会堵；调度要看连续两轮，而不是只看眼前一轮。</p></div>
+        <div class="step-card mt-s"><h4>提前估时间</h4><p>系统先估算“如果这批一起跑，大概要花多久”，再决定这轮放多少工作进去。</p></div>
+        <div class="step-card mt-s"><h4>名字不用背</h4><p>论文把这个跨两轮分配时间额度的模块叫 SlidingChunker。</p></div>
+      </div>
+    </div>
+    <p class="evidence mt-m">小白版结论：SlidingServe 不贪“当前轮最多能做多少”，而是问“当前轮和下一轮合起来怎样更顺”。</p>
+    <div class="deck-footer"><span>第一招：跨两轮看，不只看眼前</span><span class="slide-number" data-current="3" data-total="8"></span></div>
+  </section>
+
+  <section class="slide" data-title="批内选择的问题">
+    <p class="kicker">03 · Mechanism B</p>
+    <h2 class="h2">第二招：不是谁都往车上塞，而是先救快要迟到的人</h2>
+    <div class="two-pane mt-l">
+      <div>
+        <p class="paper-title">把请求放进同一批执行，并不代表它一定准时。批次太大时，车虽然开了，但车上某些人还是会迟到。</p>
+        <div class="three-stack">
+          <div class="step-card"><h4>先看谁危险</h4><p>系统判断哪些请求快要超过等待承诺。</p></div>
+          <div class="step-card"><h4>先保关键单</h4><p>优先安排“还有机会准时”的请求。</p></div>
+          <div class="step-card"><h4>有些先等等</h4><p>暂时跳过会拖慢全车、收益不高的请求。</p></div>
+        </div>
+      </div>
+      <div class="figure-card medium-figure">
+        <img src="../pdf_xml_final/images/picture_002.webp" alt="Figure 2: Comparison of In-batch request scheduling within different strategies">
+        <p class="caption">Figure 2 · 原始做法会让多个人迟到；新做法跳过部分请求，先保证 r1/r3，本轮少做一点但准时率更高。</p>
+      </div>
+    </div>
+    <p class="evidence mt-m">小白版结论：系统忙到快爆时，最重要的不是“公平排队”，而是把有限算力留给最可能按时完成的请求。</p>
+    <div class="deck-footer"><span>第二招：先救临界请求</span><span class="slide-number" data-current="4" data-total="8"></span></div>
+  </section>
+
+  <section class="slide" data-title="系统架构">
+    <p class="kicker">04 · System design</p>
+    <h2 class="h2">把它看成一个“智能派单员”：先排优先级，再决定这一轮派哪些单</h2>
+    <div class="two-pane mt-l">
+      <div class="figure-card medium-figure">
+        <img src="../pdf_xml_final/images/picture_003.webp" alt="Figure 3: SlidingServe architecture">
+        <p class="caption">Figure 3 · 请求先进入等待/读题/生成三个队列，再经过排序、风险检查和批次构造，最后交给 GPU 执行。</p>
+      </div>
+      <div>
+        <table class="fact-table">
+          <tr><th>论文模块名</th><th>小白解释</th></tr>
+          <tr><td>Latency Predictor</td><td>像厨房估时：这批订单一起做，大概要多久。</td></tr>
+          <tr><td>Priority Sorter</td><td>像派单排序：谁快迟到、谁还差很多、谁要保护。</td></tr>
+          <tr><td>SlidingChunker</td><td>像安排两轮绿灯：这轮和下轮怎么分时间。</td></tr>
+          <tr><td>BatchConstructor</td><td>像拼车选人：车位有限，先带最该带的人。</td></tr>
+        </table>
+      </div>
+    </div>
+    <p class="evidence mt-m">要点：SlidingServe 没有发明新模型，而是在 LLM 服务系统的“派单层”做更聪明的排队和分批。</p>
+    <div class="deck-footer"><span>系统定位：不是新模型，是新调度员</span><span class="slide-number" data-current="5" data-total="8"></span></div>
+  </section>
+
+  <section class="slide" data-title="Goodput 主结果">
+    <p class="kicker">05 · Capacity evidence</p>
+    <h2 class="h2">主结果：在“不能迟到太多”的规则下，SlidingServe 能接更多请求</h2>
+    <div class="figure-card wide-figure mt-m">
+      <img src="../pdf_xml_final/images/picture_004.webp" alt="Figure 4: Maximum goodput across models, hardware, and datasets">
+      <p class="caption">Figure 4 · 柱子越高，代表每秒能成功服务的请求越多；红色 SlidingServe 在所有测试组合里最高。</p>
+    </div>
+    <div class="three-stack">
+      <div class="step-card"><h4>看红柱</h4><p>红色柱子是 SlidingServe，表示它在相同等待规则下接单更多。</p></div>
+      <div class="step-card"><h4>30% 口径</h4><p>30% 是相对 QoServe 的最高提升，不是所有场景都固定提升 30%。</p></div>
+      <div class="step-card"><h4>长文本更明显</h4><p>Arxiv / mixed 这类长问题多的负载，更容易体现排队调度价值。</p></div>
+    </div>
+    <div class="deck-footer"><span>主证据：Figure 4 · 同等等待规则下的成功服务量</span><span class="slide-number" data-current="6" data-total="8"></span></div>
+  </section>
+
+  <section class="slide" data-title="高负载证据">
+    <p class="kicker">06 · Heavy-load behavior</p>
+    <h2 class="h2">系统很忙时，SlidingServe 的价值是让更少用户“等超时”</h2>
+    <div class="two-pane mt-l">
+      <div>
+        <p class="paper-title">高峰期不可能让所有人都立刻得到服务。SlidingServe 做的是：优先服务还有机会准时的人，减少整体超时比例。</p>
+        <table class="fact-table">
+          <tr><th>术语</th><th>小白解释</th></tr>
+          <tr><td>Violation</td><td>用户等待超过了承诺时间，可以理解成“服务超时”。</td></tr>
+          <tr><td>QPS</td><td>每秒进来多少请求，越高代表系统越忙。</td></tr>
+          <tr><td>Tail latency</td><td>最慢那一小部分请求的等待时间；论文承认它不一定总是更好。</td></tr>
+        </table>
+        <div class="warning small">边界：这不是“所有人都更快”，而是“整体更少人超时”。有些已经很难准时的请求，可能会被放到后面。</div>
+      </div>
+      <div class="violation-board">
+        <h4>怎么读 Figure 5：最高负载点约值</h4>
+        <table class="mini-table">
+          <tr><th>负载</th><th>Sarathi</th><th>QoServe</th><th>SlidingServe</th></tr>
+          <tr><td>ShareGPT</td><td>约 88%</td><td>约 78%</td><td class="best">约 25%</td></tr>
+          <tr><td>Arxiv-v1</td><td>约 90%</td><td>约 88%</td><td class="best">约 75%</td></tr>
+          <tr><td>Arxiv-v2</td><td>约 97%</td><td>约 92%</td><td class="best">约 70%</td></tr>
+          <tr><td>Mixed-v1</td><td>约 90%</td><td>约 90%</td><td class="best">约 50%</td></tr>
+          <tr><td>Mixed-v2</td><td>约 85%</td><td>约 84%</td><td class="best">约 63%</td></tr>
+        </table>
+        <div class="violation-legend"><span><i class="legend-dot"></i>红色列是 SlidingServe</span><span>数字为 Figure 5 读图近似，不是论文单独表格。</span></div>
+        <div class="source-note">
+          <p class="caption">来源：原论文 Figure 5 的 Violation(%) 列。这里重建为大号摘要，保留“最高负载下谁更少超时”的比较口径。</p>
+        </div>
+      </div>
+    </div>
+    <div class="deck-footer"><span>重载证据：violation rate 最多下降 53%</span><span class="slide-number" data-current="7" data-total="8"></span></div>
+  </section>
+
+  <section class="slide" data-title="突发负载与证据边界">
+    <p class="kicker">07 · Transient overload & limits</p>
+    <h2 class="h2">流量忽高忽低时，SlidingServe 也更稳；但落地前要按自己的业务重测</h2>
+    <div class="two-pane mt-l">
+      <div class="figure-card medium-figure">
+        <img src="../pdf_xml_final/images/picture_006.webp" alt="Figure 6: Cumulative violations over time and overall SLO violations across different schemes">
+        <p class="caption">Figure 6 · 模拟 20 分钟流量波动：低峰每秒 1.0 个请求，高峰每秒 2.5 个请求；红线累计超时增长更慢。</p>
+      </div>
+      <div>
+        <table class="fact-table">
+          <tr><th>方案</th><th>超时比例</th><th>小白解读</th></tr>
+          <tr><td>Sarathi-EDF</td><td>57.78%</td><td>请求一多就明显堵住。</td></tr>
+          <tr><td>QoServe</td><td>51.30%</td><td>已经会考虑服务质量，但波动场景仍有大量超时。</td></tr>
+          <tr><td>SlidingServe</td><td>27.56%</td><td>超时少很多，说明派单策略更能适应高低峰切换。</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">公开代码未确认</span>
+          <span class="tag">实验硬件：RTX 3090</span>
+          <span class="tag">测试模型：Qwen2.5-7B / Llama3-8B</span>
+          <span class="tag">30% 依赖论文的等待规则</span>
+        </div>
+      </div>
+    </div>
+    <p class="evidence mt-m">落地提醒：如果你的业务请求很短、等待承诺不同、硬件不同，30% 不应直接照搬；要用自己的请求长度和流量波动复测。</p>
+    <div class="deck-footer"><span>审批后进入 ppt-brief-hitl.md</span><span class="slide-number" data-current="8" data-total="8"></span></div>
+  </section>
+
+</div>
+<script src="../html-ppt-skill/assets/runtime.js"></script>
+</body>
+</html>
+

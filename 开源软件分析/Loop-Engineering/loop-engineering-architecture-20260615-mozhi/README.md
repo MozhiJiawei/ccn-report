@@ -36,8 +36,8 @@ D:\Agent Repo\Mozhi-s-AgentWorkspace\.tmp\generate-3plus1-diagrams\loop-engineer
 
 重点新增页面：
 
-- `UC02/runtime/exports/Codex PR Babysitter tick.png`
-- `UC02/development/exports/pr-babysitter-development-view-with-code.png`
+- `UC02/runtime/exports/Codex PR Babysitter tick.webp`
+- `UC02/development/exports/pr-babysitter-development-view-with-code.webp`
 
 ## 交付内容
 

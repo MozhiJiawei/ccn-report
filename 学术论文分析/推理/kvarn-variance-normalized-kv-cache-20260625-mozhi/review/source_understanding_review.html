@@ -87,7 +87,7 @@ ul.clean li{margin:6px 0}
   <h2 class="h2">旧评测常看 prefill；KVarN 要看 pseudo-decode</h2>
   <div class="two mt-m">
     <div>
-      <img class="evidence-img" src="../sources/paper/images/picture_004.png" alt="Figure 4 pseudo-decode setting" width="760" height="417">
+      <img class="evidence-img" src="../sources/paper/images/picture_004.webp" alt="Figure 4 pseudo-decode setting" width="760" height="417">
       <p class="caption">读图顺序：先看红色虚线，它代表“用 FP16 历史 cache 做推理”；再看绿色实线，它代表“后续步骤读取已经量化过的 cache”。</p>
     </div>
     <div class="stack">
@@ -104,7 +104,7 @@ ul.clean li{margin:6px 0}
   <h2 class="h2">最伤输出质量的不是“很多小误差”，而是少数 token 被缩放错了</h2>
   <div class="two mt-m">
     <div>
-      <img class="evidence-img" src="../sources/paper/images/picture_001.png" alt="Figure 1 magnitude error" width="820" height="260">
+      <img class="evidence-img" src="../sources/paper/images/picture_001.webp" alt="Figure 1 magnitude error" width="820" height="260">
       <p class="caption">左图：top 0.1% / 1% / 5% 最大误差里，magnitude 贡献很高。右图：KIVI 的 token norm 偏移更散，KVarN 更集中。</p>
     </div>
     <div class="stack">
@@ -119,7 +119,7 @@ ul.clean li{margin:6px 0}
 <section class="slide" data-title="Mechanism">
   <p class="kicker">04 / MECHANISM</p>
   <h2 class="h2">KVarN 的机制：先摊平 channel，再校准 token 和 channel 两个方向的方差</h2>
-  <img class="evidence-img mt-m" src="../sources/paper/images/picture_002.png" alt="Figure 2 KVarN schematic" width="930" height="214">
+  <img class="evidence-img mt-m" src="../sources/paper/images/picture_002.webp" alt="Figure 2 KVarN schematic" width="930" height="214">
   <div class="three mt-l">
     <div class="card"><h4>1. Hadamard rotation</h4><p>把 channel 方向的异常值摊开，让输入分布更适合低 bit round-to-nearest。</p></div>
     <div class="card"><h4>2. VarN dual scaling</h4><p>在 token 轴和 channel 轴交替调 scale，让每块 tile 的方差更均衡。</p></div>
@@ -141,7 +141,7 @@ ul.clean li{margin:6px 0}
       <div class="win">KVarN</div><div class="win">rotation + dual scaling 联动</div><div class="win">最贴近 full-precision token norm</div>
     </div>
     <div>
-      <img class="evidence-img" src="../sources/paper/images/picture_010.png" alt="Figure 8 token magnitude distribution" width="810" height="205">
+      <img class="evidence-img" src="../sources/paper/images/picture_010.webp" alt="Figure 8 token magnitude distribution" width="810" height="205">
       <p class="caption">读图方法：横轴是原始 K 的 norm，纵轴是量化后 K 的 norm；越贴近对角线，表示 token scale 保得越好。KVarN 面板最窄、最贴线。</p>
       <div class="callout mt-m"><b>判断边界</b><p class="dim">这页证明的是 scale preservation，而不是直接证明所有任务精度；端到端精度还要看表 1/2/3。</p></div>
     </div>
@@ -177,7 +177,7 @@ ul.clean li{margin:6px 0}
   <p class="kicker">07 / CODING BENCHMARK</p>
   <h2 class="h2">HumanEval 上，KVarN 不是单纯省内存：它把 2-bit 精度拉回接近 FP16</h2>
   <div class="two mt-m">
-    <img class="evidence-img" src="../sources/paper/images/table_002.png" alt="Table 2 HumanEval" width="780" height="249">
+    <img class="evidence-img" src="../sources/paper/images/table_002.webp" alt="Table 2 HumanEval" width="780" height="249">
     <div class="stack">
       <table class="mini-table">
         <thead><tr><th>Method</th><th>Qwen3 Acc.</th><th>Phi-4 Acc.</th><th>bits/elem</th><th>UP</th></tr></thead>
@@ -199,7 +199,7 @@ ul.clean li{margin:6px 0}
   <p class="kicker">08 / INSTRUCTION FOLLOWING</p>
   <h2 class="h2">IFEval 说明：KVarN 的收益不只在数学题，也覆盖格式/约束跟随</h2>
   <div class="two mt-m">
-    <img class="evidence-img" src="../sources/paper/images/table_003.png" alt="Table 3 IFEval" width="735" height="281">
+    <img class="evidence-img" src="../sources/paper/images/table_003.webp" alt="Table 3 IFEval" width="735" height="281">
     <div class="stack">
       <table class="mini-table">
         <thead><tr><th>Model</th><th>FP16 Strict</th><th>KIVI Strict</th><th>KVarN Strict</th><th>KVarN Loose</th></tr></thead>
@@ -221,7 +221,7 @@ ul.clean li{margin:6px 0}
   <h2 class="h2">跑起来性能咋样：论文测到 normalization 开销远小于生成本身</h2>
   <div class="two mt-m">
     <div>
-      <img class="evidence-img" src="../sources/paper/images/picture_008.png" alt="Figure 6 runtime overhead" width="760" height="290">
+      <img class="evidence-img" src="../sources/paper/images/picture_008.webp" alt="Figure 6 runtime overhead" width="760" height="290">
       <p class="caption">读图方法：每个模型左柱是 VarN all layers，右柱是生成 128 token 的耗时；数量级差距很大。</p>
     </div>
     <div class="three">
@@ -246,7 +246,7 @@ ul.clean li{margin:6px 0}
       <div class="card"><h4>什么时候不该照搬</h4><p>如果 serving 框架不支持 2-bit KV-cache，或 second scale 不能融合进 kernel，低 overhead 结论会打折；本文也没有给 TPOT/TTFT 实测收益。</p></div>
     </div>
     <div>
-      <img class="evidence-img" src="../sources/paper/images/picture_013.png" alt="Figure 11 KVarN dequantization overhead" width="610" height="374">
+      <img class="evidence-img" src="../sources/paper/images/picture_013.webp" alt="Figure 11 KVarN dequantization overhead" width="610" height="374">
       <p class="caption">读图方法：绿色是 KIVI 单 scale Triton dequant，粉色是 KVarN 双 scale Triton dequant。4k/8k/16k/32k 下两者几乎重合，说明瓶颈没有因为第二个 scale 明显恶化。</p>
       <table class="mini-table mt-m">
         <thead><tr><th>Context</th><th>KIVI</th><th>KVarN</th><th>判断</th></tr></thead>

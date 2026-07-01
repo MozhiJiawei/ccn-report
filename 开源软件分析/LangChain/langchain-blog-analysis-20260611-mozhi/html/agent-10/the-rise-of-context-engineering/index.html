@@ -23,11 +23,11 @@ h1{font-size:clamp(34px,4.2vw,58px);line-height:1.04;margin:12px 0 18px;letter-s
 <p><b>How</b>上下文来自开发者、用户、历史、工具调用和外部数据；LangGraph 提供低层控制来决定步骤和输入，LangSmith trace 暴露每次 LLM 调用前的真实上下文。</p>
 </div>
 <div class="meta"><span class="pill">June 23, 2025</span><span class="pill">Harrison Chase</span><span class="pill">thin opinion / technical explainer</span><a class="pill" href="https://www.langchain.com/blog/the-rise-of-context-engineering">原文</a></div>
-</div><figure class="hero-media"><img src="assets/04-69f93289bc64d34828c3f815_Screenshot-202026-05-04-20at-2010.12.00-E2-80-AFAM.png" alt=""><figcaption class="caption">这张原图支撑产品机制：读者应关注界面如何暴露状态、步骤或可操作控制。</figcaption></figure></section>
+</div><figure class="hero-media"><img src="assets/04-69f93289bc64d34828c3f815_Screenshot-202026-05-04-20at-2010.12.00-E2-80-AFAM.webp" alt=""><figcaption class="caption">这张原图支撑产品机制：读者应关注界面如何暴露状态、步骤或可操作控制。</figcaption></figure></section>
 <section class="grid">
 <article class="point"><h2>一句话带走</h2><p>文章把 context engineering 定义为构建动态系统，为 LLM 提供完成目标所需的正确信息、工具和格式。</p></article>
 <article class="point"><h2>关键机制</h2><p>上下文来自开发者、用户、历史、工具调用和外部数据；LangGraph 提供低层控制来决定步骤和输入，LangSmith trace 暴露每次 LLM 调用前的真实上下文。</p></article>
 <article class="point"><h2>阅读定位</h2><p>这是一篇thin opinion / technical explainer，重点看它如何把具体场景、产品能力或架构取舍连成一个可执行判断。</p></article>
 </section>
-<section class="section"><h2>context engineering 是系统问题</h2><div><p>它不是静态 prompt 文案，而是动态收集、选择、格式化和传递上下文的运行逻辑。</p><figure class="evidence"><img src="assets/03-69cbaaaf29c6654c4348b960_GtRmoOqaUAEXH2i.jpeg" alt=""><figcaption class="caption">这张原图支撑文章主张：读者应关注它展示的场景、对象或关键证据。</figcaption></figure></div></section><section class="section"><h2>格式和工具与信息同等重要</h2><div><p>短而清晰的错误信息比巨大 JSON 更可用；工具参数和返回格式会直接影响模型能否正确行动。</p></div></section><section class="section"><h2>可控框架和 trace 让问题能被定位</h2><div><p>LangGraph 让开发者控制步骤、状态和 LLM 输入；LangSmith 让开发者看到实际传入模型的数据、工具和格式。</p></div></section>
+<section class="section"><h2>context engineering 是系统问题</h2><div><p>它不是静态 prompt 文案，而是动态收集、选择、格式化和传递上下文的运行逻辑。</p><figure class="evidence"><img src="assets/03-69cbaaaf29c6654c4348b960_GtRmoOqaUAEXH2i.webp" alt=""><figcaption class="caption">这张原图支撑文章主张：读者应关注它展示的场景、对象或关键证据。</figcaption></figure></div></section><section class="section"><h2>格式和工具与信息同等重要</h2><div><p>短而清晰的错误信息比巨大 JSON 更可用；工具参数和返回格式会直接影响模型能否正确行动。</p></div></section><section class="section"><h2>可控框架和 trace 让问题能被定位</h2><div><p>LangGraph 让开发者控制步骤、状态和 LLM 输入；LangSmith 让开发者看到实际传入模型的数据、工具和格式。</p></div></section>
 </main></body></html>
