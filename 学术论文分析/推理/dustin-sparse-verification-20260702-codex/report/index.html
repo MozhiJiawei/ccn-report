@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="engineering-whiteprint">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dustin One-page Evidence Board</title>
+  <link rel="stylesheet" href="assets/fonts.css">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" id="theme-link" href="assets/themes/engineering-whiteprint.css">
+  <link rel="stylesheet" href="assets/animations/animations.css">
+  <style>
+    :root {
+      --ink: #102033;
+      --muted: #58708a;
+      --grid: rgba(16, 32, 51, 0.08);
+      --line: rgba(16, 32, 51, 0.16);
+      --blue: #1769e0;
+      --cyan: #0f95a5;
+      --green: #1d8b5a;
+      --red: #cf3f31;
+      --amber: #b27300;
+      --paper: #fbfdff;
+      --panel: rgba(255,255,255,0.92);
+      --shadow-local: 0 14px 34px rgba(16,32,51,0.09);
+    }
+
+    html, body {
+      letter-spacing: 0;
+      background:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        #f7fbff;
+      background-size: 28px 28px;
+    }
+
+    .slide {
+      padding: 24px 42px 30px;
+      justify-content: flex-start;
+      color: var(--ink);
+    }
+
+    .board-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 612px;
+      gap: 28px;
+      align-items: start;
+      margin-bottom: 10px;
+    }
+
+    .kicker-line {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 7px;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--blue);
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 26px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: rgba(255,255,255,0.88);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 1080px;
+      font-size: 37px;
+      line-height: 1.08;
+      font-weight: 920;
+      letter-spacing: 0;
+    }
+
+    .headline-mark {
+      color: var(--red);
+    }
+
+    .subline {
+      margin: 6px 0 0;
+      max-width: 1060px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.34;
+      font-weight: 650;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .kpi {
+      min-height: 96px;
+      padding: 12px 15px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow-local);
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .kpi .value {
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      font-size: 33px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0;
+      color: var(--blue);
+    }
+
+    .kpi:nth-child(2) .value { color: var(--green); }
+    .kpi:nth-child(3) .value { color: var(--amber); }
+
+    .kpi .note {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.32;
+      font-weight: 680;
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: 500px 1fr 420px;
+      grid-template-rows: 315px 360px 92px;
+      gap: 14px;
+      height: 795px;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.95);
+      box-shadow: var(--shadow-local);
+    }
+
+    .panel-pad {
+      padding: 16px;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 900;
+      letter-spacing: 0;
+      color: var(--ink);
+    }
+
+    .source-label {
+      flex: 0 0 auto;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 4px;
+      background: #e9f1fb;
+      color: var(--blue);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 850;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .figure-wrap {
+      position: relative;
+      border: 1px solid rgba(16,32,51,0.11);
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .figure-wrap img {
+      display: block;
+      width: auto;
+      max-width: none;
+    }
+
+    .bottleneck .figure-wrap {
+      width: 466px;
+      height: 267px;
+      margin: 4px auto 0;
+    }
+
+    .bottleneck {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .bottleneck img {
+      width: 466px;
+      height: 267px;
+    }
+
+    .callout {
+      position: absolute;
+      z-index: 2;
+      display: grid;
+      gap: 2px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(207,63,49,0.35);
+      background: rgba(255,248,245,0.95);
+      color: var(--red);
+      font-weight: 900;
+      box-shadow: 0 8px 20px rgba(207,63,49,0.12);
+    }
+
+    .callout small {
+      color: #74463f;
+      font-size: 11px;
+      line-height: 1.2;
+      font-weight: 750;
+    }
+
+    .bottleneck .callout {
+      right: 14px;
+      top: 58px;
+      width: 158px;
+      font-size: 19px;
+    }
+
+    .why-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .why {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 9px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: #f3f7fb;
+      border: 1px solid rgba(16,32,51,0.08);
+    }
+
+    .why b {
+      font-family: var(--font-mono);
+      color: var(--red);
+      font-size: 14px;
+    }
+
+    .why span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    .mechanism {
+      grid-column: 2 / 3;
+      grid-row: 1 / 3;
+      padding: 16px 18px;
+    }
+
+    .mechanism .figure-wrap {
+      width: 879px;
+      height: 313px;
+      margin: 10px auto 0;
+    }
+
+    .mechanism img {
+      width: 879px;
+      height: 313px;
+    }
+
+    .stage-tags {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .stage-card {
+      min-height: 78px;
+      padding: 10px 12px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: #fbfdff;
+    }
+
+    .stage-card h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      line-height: 1.25;
+      letter-spacing: 0;
+      color: var(--blue);
+    }
+
+    .stage-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .selector-flow {
+      display: grid;
+      grid-template-columns: 1fr 32px 1fr 32px 1fr;
+      align-items: stretch;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .flowbox {
+      min-height: 88px;
+      padding: 10px 12px;
+      border-radius: 7px;
+      border: 1px solid rgba(23,105,224,0.25);
+      background: linear-gradient(180deg, #f8fbff, #eef6ff);
+    }
+
+    .flowbox strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+      line-height: 1.15;
+      color: var(--ink);
+    }
+
+    .flowbox span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.33;
+      font-weight: 700;
+    }
+
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--blue);
+      font-family: var(--font-mono);
+      font-size: 30px;
+      font-weight: 900;
+    }
+
+    .selector-note {
+      display: grid;
+      grid-template-columns: 145px 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 7px;
+      border: 1px solid rgba(29,139,90,0.28);
+      background: #f3fbf7;
+    }
+
+    .budget {
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      height: 65px;
+      border-radius: 6px;
+      background: #e5f6ee;
+      border: 1px solid rgba(29,139,90,0.28);
+      color: var(--green);
+      font-family: var(--font-mono);
+      font-size: 25px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .budget small {
+      margin-top: 5px;
+      color: #4b8069;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .selector-note p {
+      margin: 0;
+      color: #315b49;
+      font-size: 13px;
+      line-height: 1.28;
+      font-weight: 760;
+    }
+
+    .effect .zoom {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .effect {
+      grid-column: 3;
+      grid-row: 1 / 3;
+    }
+
+    .effect .figure-wrap {
+      width: 243px;
+      height: 219px;
+      margin: 0 auto;
+      overflow: visible;
+      border: none;
+      background: transparent;
+    }
+
+    .effect img {
+      width: 243px;
+      height: 219px;
+      transform: scale(1.38);
+      transform-origin: top center;
+      border: 1px solid rgba(16,32,51,0.12);
+      border-radius: 6px;
+      background: white;
+      box-shadow: 0 8px 22px rgba(16,32,51,0.11);
+    }
+
+    .effect-copy {
+      margin-top: 74px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric-mini {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(16,32,51,0.10);
+      background: #f8fbff;
+    }
+
+    .metric-mini b {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 20px;
+      line-height: 1.05;
+      color: var(--blue);
+    }
+
+    .metric-mini span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.25;
+      font-weight: 750;
+    }
+
+    .e2e-table {
+      margin-top: 13px;
+      border: 1px solid rgba(16,32,51,0.11);
+      border-radius: 7px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .e2e-table .rowh,
+    .e2e-table .rowd {
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr 0.9fr;
+      gap: 0;
+      align-items: center;
+    }
+
+    .e2e-table .rowh {
+      background: #edf5ff;
+      color: var(--blue);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .e2e-table .rowd {
+      border-top: 1px solid rgba(16,32,51,0.08);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 780;
+    }
+
+    .e2e-table span {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      padding: 7px 9px;
+    }
+
+    .e2e-table b {
+      color: var(--green);
+      font-family: var(--font-mono);
+      font-size: 15px;
+    }
+
+    .e2e-note {
+      margin-top: 10px;
+      padding: 10px 11px;
+      border-radius: 7px;
+      background: #f4faf7;
+      border: 1px solid rgba(29,139,90,0.22);
+      color: #315b49;
+      font-size: 12px;
+      line-height: 1.32;
+      font-weight: 760;
+    }
+
+    .quality {
+      grid-column: 1;
+      grid-row: 2;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 10px;
+    }
+
+    .quality-bars {
+      display: grid;
+      gap: 9px;
+      margin-top: 6px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 112px 1fr 50px;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .bar {
+      height: 14px;
+      border-radius: 4px;
+      background: #e8edf3;
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+    }
+
+    .boundary {
+      padding: 11px 12px;
+      border-radius: 7px;
+      border: 1px dashed rgba(178,115,0,0.45);
+      background: #fff9ec;
+      color: #6a4a17;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 780;
+    }
+
+    .decision-strip {
+      grid-column: 1 / 4;
+      grid-row: 3;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      align-self: end;
+    }
+
+    .decision {
+      min-height: 92px;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.95);
+      box-shadow: var(--shadow-local);
+    }
+
+    .decision strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.2;
+      font-weight: 920;
+    }
+
+    .decision p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.28;
+      font-weight: 720;
+    }
+
+    .footer {
+      position: absolute;
+      left: 42px;
+      right: 42px;
+      bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      color: #6c7d8f;
+      font-size: 11px;
+      font-weight: 760;
+    }
+  </style>
+</head>
+<body data-themes="engineering-whiteprint" data-theme-base="assets/themes/">
+  <div class="deck">
+    <section class="slide is-active" data-title="Dustin Evidence Board">
+      <header class="board-header">
+        <div>
+          <div class="kicker-line">
+            <span>Dustin evidence board</span>
+            <span class="tag">ICML 2026 Poster</span>
+            <span class="tag">Qwen2.5-72B · 32k · batch16 · KV budget 512</span>
+          </div>
+          <h1>把 target verification 从<span class="headline-mark">全量 KV 读取</span>改成<span class="headline-mark">低开销稀疏读取</span>，长上下文 SD 解码端到端最高 9.17x。</h1>
+          <p class="subline">不是重做 drafter，而是在 verifier 侧用 draft lookahead + target historical attention 选关键 token，再用 Semantic Retrieval Heads 压低在线估计成本。</p>
+        </div>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">local self-attention</div>
+            <div class="value">27.85x</div>
+            <div class="note">Figure 10: 32k / batch16 sparse verification attention.</div>
+          </div>
+          <div class="kpi">
+            <div class="label">decode-stage e2e</div>
+            <div class="value">9.17x</div>
+            <div class="note">Table 2: Qwen2.5-72B, 32k context, batch16.</div>
+          </div>
+          <div class="kpi">
+            <div class="label">quality boundary</div>
+            <div class="value">~FullKV</div>
+            <div class="note">LongBench / PG-19 reported negligible degradation under tested budgets.</div>
+          </div>
+        </div>
+      </header>
+
+      <main class="evidence-grid">
+        <section class="panel panel-pad bottleneck">
+          <div class="panel-title">
+            <h2>1. 瓶颈先验：长上下文 SD 卡在验证</h2>
+            <span class="source-label">Figure 1</span>
+          </div>
+          <div class="figure-wrap">
+            <img src="assets/picture_001.webp" alt="Figure 1 latency breakdown for classic SD, MagicDec, and Dustin">
+            <div class="callout">87.5% <small>verification can dominate a speculative decoding step</small></div>
+          </div>
+          <div class="why-list">
+            <div class="why"><b>读全量</b><span>每次 target verification 仍要访问完整历史 KV cache。</span></div>
+            <div class="why"><b>大 batch</b><span>32k context + batch16 把瓶颈推向 KV loading / memory bandwidth。</span></div>
+          </div>
+        </section>
+
+        <section class="panel mechanism">
+          <div class="panel-title">
+            <h2>2. 机制主轴：hybrid selector 先选 Top-K，再只验证活跃 KV</h2>
+            <span class="source-label">Figure 5 · original mechanism figure</span>
+          </div>
+          <div class="figure-wrap">
+            <img src="assets/picture_005.webp" alt="Figure 5 Dustin sparse verification workflow">
+          </div>
+          <div class="stage-tags">
+            <div class="stage-card">
+              <h3>Stage 1: draft generation & KV selection</h3>
+              <p>draft model 的前瞻 attention 暴露未来草稿 token 可能需要的历史依赖。</p>
+            </div>
+            <div class="stage-card">
+              <h3>Stage 2: sparse verification & update KV</h3>
+              <p>target model 不再读取全量 KV，而是对压缩后的 verification set 做验证。</p>
+            </div>
+          </div>
+          <div class="selector-flow">
+            <div class="flowbox">
+              <strong>保底上下文</strong>
+              <span>attention sinks + recent window 保护稳定上下文与局部连续性。</span>
+            </div>
+            <div class="arrow">+</div>
+            <div class="flowbox">
+              <strong>两路重要性信号</strong>
+              <span>draft lookahead 覆盖“接下来可能重要”；target historical 覆盖“过去已经重要”。</span>
+            </div>
+            <div class="arrow">→</div>
+            <div class="flowbox">
+              <strong>SRH sparse estimation</strong>
+              <span>离线找少量语义检索 heads，在线只用这些 heads 估计 criticality。</span>
+            </div>
+          </div>
+          <div class="selector-note">
+            <div class="budget">512<small>active KV token budget</small></div>
+            <p>工程含义：PoC 优先复现 target-side selector + sparse verification path；不要先把资源花在重新训练或替换 drafter 上。</p>
+          </div>
+        </section>
+
+        <section class="panel panel-pad effect">
+          <div class="panel-title">
+            <h2>3. 效果证据：估计开销没有吃掉收益</h2>
+            <span class="source-label">Figure 10 crop</span>
+          </div>
+          <div class="zoom">
+            <div class="figure-wrap">
+              <img src="assets/figure10-32k-b16.webp" alt="Figure 10 32k batch16 latency breakdown crop">
+            </div>
+          </div>
+          <div class="effect-copy">
+            <div class="metric-mini"><b>27.85x</b><span>self-attention speedup at 32k / batch16.</span></div>
+            <div class="metric-mini"><b>small</b><span>criticality estimation remains far below full-cache latency.</span></div>
+          </div>
+          <div class="e2e-table" aria-label="Table 2 endpoint summary">
+            <div class="rowh"><span>Table 2口径</span><span>tput</span><span>speedup</span></div>
+            <div class="rowd"><span>Vanilla</span><span>25.70</span><span>1.00x</span></div>
+            <div class="rowd"><span>ClassicSD</span><span>48.68</span><span>1.89x</span></div>
+            <div class="rowd"><span>MagicDec</span><span>50.38</span><span>1.96x</span></div>
+            <div class="rowd"><span>Dustin</span><span>235.81</span><span><b>9.17x</b></span></div>
+          </div>
+          <div class="e2e-note">同一实验条件下，局部 self-attention 27.85x 最终折算为 decode-stage 9.17x；两者不能混写。</div>
+        </section>
+
+        <section class="panel panel-pad quality">
+          <div class="panel-title">
+            <h2>4. 质量与边界：接近 FullKV，但不是 KV eviction</h2>
+            <span class="source-label">Table 1 synthesis</span>
+          </div>
+          <div class="quality-bars">
+            <div class="bar-row"><span>Qwen 512</span><div class="bar"><i style="width:99%"></i></div><span>55.23</span></div>
+            <div class="bar-row"><span>FullKV</span><div class="bar"><i style="width:100%"></i></div><span>55.81</span></div>
+            <div class="bar-row"><span>Qwen 128</span><div class="bar"><i style="width:94%"></i></div><span>52.41</span></div>
+            <div class="bar-row"><span>Llama 512</span><div class="bar"><i style="width:104%"></i></div><span>53.23</span></div>
+            <div class="bar-row"><span>FullKV</span><div class="bar"><i style="width:100%"></i></div><span>50.94</span></div>
+          </div>
+          <div class="boundary">边界：Dustin 仍保留完整历史，通过 global indexing 选择验证阶段激活 token；降低的是活跃读取与 attention 计算成本，不直接降低完整 KV cache 显存占用。</div>
+        </section>
+
+        <section class="decision-strip">
+          <div class="decision">
+            <strong>复现 1: 先做本地延迟拆解</strong>
+            <p>按 Figure 1 口径确认 16k/32k、batch 8/16 下 verification 是否主导。</p>
+          </div>
+          <div class="decision">
+            <strong>复现 2: 验证 selector 与 SRH 成本</strong>
+            <p>观察 criticality estimation 是否低于 full-cache self-attention，避免动态选择反噬收益。</p>
+          </div>
+          <div class="decision">
+            <strong>复现 3: 用长文任务压质量边界</strong>
+            <p>在 PG-19 / LongBench 或本地长上下文任务上扫 512 / 256 / 128 budget。</p>
+          </div>
+        </section>
+      </main>
+
+      <div class="footer">
+        <span>Evidence sources: Dustin Figure 1, Figure 5, Figure 10, Table 1, Table 2.</span>
+        <span class="slide-number" data-current="1" data-total="1"></span>
+      </div>
+
+      <div class="notes">这一页按“瓶颈、机制、效果、边界、复现决策”讲。先用标题和两个加速数字建立结论，再指 Figure 1 说明长上下文 speculative decoding 的主要瓶颈在 target verification。中间沿 Figure 5 解释 Dustin 并不是替换 draft model，而是在 verifier 侧构造固定预算的 verification set：保留 sinks 和 recent window，并混合 draft lookahead 与 target historical attention。然后指右侧 Figure 10 局部放大，说明 SRH 估计开销没有吃掉稀疏 attention 的收益。最后用质量条和边界说明把收益限定在论文覆盖的模型、任务、budget 和实现条件内。</div>
+    </section>
+  </div>
+  <script src="assets/runtime.js"></script>
+</body>
+</html>

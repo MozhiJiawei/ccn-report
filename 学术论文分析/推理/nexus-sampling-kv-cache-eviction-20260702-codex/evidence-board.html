@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="minimal-white">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shrivastava课题组发布Nexus论文</title>
+<style>
+:root{
+  --font-sans:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif;
+  --font-mono:"Cascadia Mono","Aptos Mono","SFMono-Regular",Consolas,monospace;
+  --report-bg:#f4f6f8;
+  --ink:#141821;
+  --muted:#667085;
+  --line:#d9dee7;
+  --blue:#1f5eff;
+  --cyan:#0f9bb2;
+  --green:#16845b;
+  --amber:#b76a00;
+  --red:#c2414b;
+  --slate:#273142;
+  --soft-blue:#eaf0ff;
+  --soft-cyan:#e7f7fa;
+  --soft-green:#eaf7f0;
+  --soft-amber:#fff4dd;
+  --soft-red:#fff0f1;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;font-family:var(--font-sans);}
+body{background:var(--report-bg);}
+.deck{width:1920px;height:1080px;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden}
+.notes{display:none}
+.deck{background:
+  linear-gradient(90deg, rgba(31,94,255,.08) 0 1px, transparent 1px) 0 0 / 48px 48px,
+  linear-gradient(0deg, rgba(20,24,33,.045) 0 1px, transparent 1px) 0 0 / 48px 48px,
+  var(--report-bg);
+}
+.slide.report{
+  padding:34px 48px 30px;
+  justify-content:flex-start;
+  color:var(--ink);
+}
+.topline{
+  display:grid;
+  grid-template-columns: 1fr 338px;
+  gap:24px;
+  align-items:start;
+}
+.titleblock{
+  border-left:8px solid var(--blue);
+  padding-left:22px;
+}
+.kicker-line{
+  margin:0 0 5px;
+  font:800 16px/1.1 var(--font-mono);
+  color:var(--blue);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+h1{
+  margin:0;
+  font:900 44px/1.05 var(--font-sans);
+  letter-spacing:0;
+}
+.subtitle{
+  margin:9px 0 0;
+  max-width:1080px;
+  font:650 23px/1.25 var(--font-sans);
+  color:var(--slate);
+}
+.verdict{
+  background:var(--ink);
+  color:white;
+  border-radius:8px;
+  padding:16px 18px;
+  min-height:126px;
+  box-shadow:0 18px 40px rgba(20,24,33,.15);
+}
+.verdict .tag{
+  color:#a8c0ff;
+  font:800 13px/1 var(--font-mono);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.verdict strong{
+  display:block;
+  margin-top:8px;
+  font:900 25px/1.12 var(--font-sans);
+}
+.verdict span{
+  display:block;
+  margin-top:8px;
+  color:#d7deea;
+  font:650 15px/1.35 var(--font-sans);
+}
+.summary{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
+}
+.summary-item{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:13px 16px 13px 18px;
+  display:grid;
+  grid-template-columns:64px 1fr;
+  gap:13px;
+  align-items:center;
+  box-shadow:0 8px 22px rgba(20,24,33,.06);
+}
+.summary-item b{
+  color:var(--blue);
+  font:900 18px/1 var(--font-sans);
+}
+.summary-item p{
+  margin:0;
+  font:750 20px/1.22 var(--font-sans);
+  color:var(--ink);
+}
+.main-grid{
+  margin-top:16px;
+  display:grid;
+  grid-template-columns: 620px 1fr 360px;
+  grid-template-rows: 540px 132px;
+  gap:16px;
+}
+.panel{
+  background:rgba(255,255,255,.94);
+  border:1px solid var(--line);
+  border-radius:8px;
+  box-shadow:0 10px 28px rgba(20,24,33,.07);
+  overflow:hidden;
+}
+.panel-head{
+  height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(90deg, #ffffff, #f7f9fc);
+}
+.panel-head h2{
+  margin:0;
+  font:900 18px/1 var(--font-sans);
+  letter-spacing:0;
+}
+.panel-head span{
+  color:var(--muted);
+  font:750 12px/1 var(--font-mono);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.method{grid-column:1;grid-row:1;}
+.method-body{padding:16px;}
+.method-flow{
+  display:grid;
+  grid-template-columns:1fr 44px 1fr 44px 1fr;
+  align-items:stretch;
+  gap:10px;
+}
+.method-node{
+  border-radius:8px;
+  border:1px solid var(--line);
+  padding:14px 12px;
+  min-height:137px;
+  background:#fbfcff;
+}
+.method-node:nth-child(1){background:var(--soft-blue);}
+.method-node:nth-child(3){background:var(--soft-cyan);}
+.method-node:nth-child(5){background:var(--soft-green);}
+.method-node .num{
+  font:900 18px/1 var(--font-mono);
+  color:var(--blue);
+}
+.method-node h3{
+  margin:9px 0 7px;
+  font:900 21px/1.08 var(--font-sans);
+  letter-spacing:0;
+}
+.method-node p{
+  margin:0;
+  color:var(--slate);
+  font:650 14px/1.35 var(--font-sans);
+}
+.arrow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--muted);
+  font:900 28px/1 var(--font-sans);
+}
+.vs-strip{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.rule-card{
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:13px 14px;
+  background:white;
+}
+.rule-card.bad{border-top:5px solid var(--red);}
+.rule-card.good{border-top:5px solid var(--green);}
+.rule-card h4{
+  margin:0 0 8px;
+  font:900 18px/1.1 var(--font-sans);
+}
+.rule-card p{
+  margin:0;
+  color:var(--muted);
+  font:650 14px/1.38 var(--font-sans);
+}
+.tiny-method{
+  margin-top:14px;
+  height:124px;
+  display:grid;
+  grid-template-columns:1fr 195px;
+  gap:12px;
+}
+.method-claim{
+  border-radius:8px;
+  background:var(--ink);
+  color:white;
+  padding:14px;
+}
+.method-claim b{
+  display:block;
+  color:#9de1c1;
+  font:900 18px/1.1 var(--font-sans);
+}
+.method-claim span{
+  display:block;
+  margin-top:9px;
+  color:#dfe8ef;
+  font:650 14px/1.34 var(--font-sans);
+}
+.source-thumb{
+  border-radius:8px;
+  border:1px solid var(--line);
+  background-size:cover;
+  background-position:center;
+  position:relative;
+  overflow:hidden;
+}
+.source-thumb::after{
+  content:attr(data-label);
+  position:absolute;
+  left:8px;
+  bottom:8px;
+  padding:4px 7px;
+  border-radius:6px;
+  color:white;
+  background:rgba(20,24,33,.74);
+  font:800 11px/1 var(--font-mono);
+}
+.evidence{grid-column:2;grid-row:1 / span 2;}
+.evidence-body{padding:16px 16px 14px;}
+.dense-ref{
+  height:78px;
+  border-radius:8px;
+  background:linear-gradient(90deg, var(--ink), #31415f);
+  color:white;
+  padding:14px 18px;
+  display:grid;
+  grid-template-columns:130px 1fr 160px;
+  align-items:center;
+  gap:18px;
+}
+.dense-ref .big{
+  font:950 50px/1 var(--font-mono);
+  letter-spacing:0;
+}
+.dense-ref p{
+  margin:0;
+  font:750 18px/1.25 var(--font-sans);
+  color:#edf2f7;
+}
+.density{
+  text-align:right;
+  font:800 16px/1.2 var(--font-sans);
+  color:#b8c8ff;
+}
+.matrix{
+  margin-top:13px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:225px 225px;
+  gap:12px;
+}
+.quad{
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:#fff;
+  padding:13px;
+  position:relative;
+}
+.quad.primary{
+  background:linear-gradient(180deg, #fff, var(--soft-green));
+  border-color:rgba(22,132,91,.32);
+}
+.quad h3{
+  margin:0;
+  font:900 18px/1.12 var(--font-sans);
+  letter-spacing:0;
+  color:var(--ink);
+}
+.quad .caption{
+  margin:5px 0 10px;
+  font:700 12px/1.25 var(--font-sans);
+  color:var(--muted);
+}
+.score-row{
+  display:grid;
+  grid-template-columns: 1fr 92px 58px;
+  gap:8px;
+  align-items:center;
+  margin-top:8px;
+}
+.name{
+  color:var(--slate);
+  font:850 15px/1 var(--font-sans);
+}
+.score{
+  text-align:right;
+  font:950 24px/1 var(--font-mono);
+  letter-spacing:0;
+}
+.score.good{color:var(--green);}
+.score.warn{color:var(--amber);}
+.score.bad{color:var(--red);}
+.bar{
+  height:10px;
+  border-radius:99px;
+  background:#e9edf3;
+  overflow:hidden;
+}
+.bar i{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:var(--blue);
+}
+.bar .green{background:var(--green);}
+.bar .amber{background:var(--amber);}
+.bar .red{background:var(--red);}
+.delta-line{
+  margin-top:12px;
+  border-radius:7px;
+  padding:9px 10px;
+  background:rgba(22,132,91,.1);
+  color:var(--green);
+  font:900 15px/1.25 var(--font-sans);
+}
+.delta-line.red{
+  background:rgba(194,65,75,.1);
+  color:var(--red);
+}
+.matrix-note{
+  margin-top:12px;
+  display:block;
+}
+.note-card{
+  border-radius:8px;
+  padding:10px 14px;
+  background:#f8fafc;
+  border:1px solid var(--line);
+  font:800 14px/1.22 var(--font-sans);
+  color:var(--slate);
+}
+.note-card + .note-card{display:none;}
+.note-card b{color:var(--blue);}
+.bounds{grid-column:3;grid-row:1 / span 2; background:#fff;}
+.bounds-body{padding:15px;}
+.risk-title{
+  border-radius:8px;
+  background:var(--soft-amber);
+  border:1px solid rgba(183,106,0,.22);
+  padding:12px 13px;
+}
+.risk-title b{
+  display:block;
+  color:var(--amber);
+  font:950 22px/1.1 var(--font-sans);
+}
+.risk-title span{
+  display:block;
+  margin-top:6px;
+  color:#6d4b17;
+  font:750 13px/1.35 var(--font-sans);
+}
+.risk-list{
+  margin:14px 0 0;
+  display:grid;
+  gap:10px;
+}
+.risk{
+  display:grid;
+  grid-template-columns:44px 1fr;
+  gap:10px;
+  align-items:start;
+  padding:11px 10px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:#fbfcff;
+}
+.risk .metric{
+  font:950 20px/1 var(--font-mono);
+  color:var(--red);
+  text-align:center;
+}
+.risk p{
+  margin:0;
+  font:760 14px/1.32 var(--font-sans);
+  color:var(--slate);
+}
+.risk p b{color:var(--ink);}
+.repro{
+  margin-top:13px;
+  padding:12px 13px;
+  border-radius:8px;
+  background:var(--soft-blue);
+  border:1px solid rgba(31,94,255,.18);
+}
+.repro h3{
+  margin:0 0 9px;
+  color:var(--blue);
+  font:950 19px/1.05 var(--font-sans);
+}
+.repro p{
+  margin:0;
+  color:#24385f;
+  font:760 13px/1.28 var(--font-sans);
+}
+.source-panel{grid-column:1;grid-row:2;}
+.source-body{
+  height:88px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.source-mini{
+  border:1px solid var(--line);
+  border-radius:8px;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:96px 1fr;
+  height:62px;
+  flex:1;
+  background:#fff;
+}
+.source-mini .thumb{
+  background-size:cover;
+  background-position:center;
+  filter:saturate(.92) contrast(.98);
+}
+.source-mini p{
+  margin:0;
+  padding:13px 10px 0;
+  color:var(--muted);
+  font:800 12px/1.25 var(--font-mono);
+  border-left:1px solid var(--line);
+}
+.footer{
+  position:absolute;
+  left:48px;
+  right:48px;
+  bottom:18px;
+  display:flex;
+  justify-content:space-between;
+  color:#7b8495;
+  font:700 11px/1 var(--font-mono);
+}
+</style>
+</head>
+<body>
+<div class="deck">
+  <section class="slide report is-active" data-title="Nexus SWE-Bench Evidence">
+    <div class="topline">
+      <div class="titleblock">
+        <p class="kicker-line">KV-cache true eviction candidate</p>
+        <h1>Shrivastava课题组发布Nexus论文</h1>
+        <p class="subtitle">20% KV density 下，Nexus 在 SWE-bench 抽样 agent 任务中抗 true eviction，但证据仍需复现</p>
+      </div>
+      <div class="verdict">
+        <div class="tag">10-second take</div>
+        <strong>值得复现，不等于已证明生产收益</strong>
+        <span>Nexus 把“每步 top-K 硬删”改为桥接评分 + reservoir 概率保活；SWE-Bench sampled 显示 true eviction 更稳，同时留下清晰挑战边界。</span>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="summary-item"><b>机制</b><p>桥接重要性补足直接注意力，reservoir 替代每步 top-K 硬删</p></div>
+      <div class="summary-item"><b>效果</b><p>SWE-bench 抽样 50 题中 Nexus true eviction 更稳，但 hardest setting 低于 MorphKV 1 题</p></div>
+    </div>
+
+    <div class="main-grid">
+      <div class="panel method">
+        <div class="panel-head"><h2>方法：从硬排名改成缓存生存概率</h2><span>Nexus mechanism</span></div>
+        <div class="method-body">
+          <div class="method-flow">
+            <div class="method-node">
+              <div class="num">01</div>
+              <h3>Nexus score</h3>
+              <p>直接 attention + bridge importance，抬起连接上下文簇和未来检索路径的 token。</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="method-node">
+              <div class="num">02</div>
+              <h3>Weighted reservoir</h3>
+              <p>按权重无放回抽样，让阈值附近 token 仍有非零 inclusion probability。</p>
+            </div>
+            <div class="arrow">→</div>
+            <div class="method-node">
+              <div class="num">03</div>
+              <h3>No top-K hard cut</h3>
+              <p>固定预算下减少“一步误删永久不可恢复”的累积风险。</p>
+            </div>
+          </div>
+          <div class="vs-strip">
+            <div class="rule-card bad">
+              <h4>传统 eviction</h4>
+              <p>importance score 后 deterministic top-K；低于 cutoff 的 token 被永久删除。</p>
+            </div>
+            <div class="rule-card good">
+              <h4>Nexus 原语替换</h4>
+              <p>score 负责发现桥接证据，reservoir 负责把边界证据概率保活。</p>
+            </div>
+          </div>
+          <div class="tiny-method">
+            <div class="method-claim">
+              <b>适配场景</b>
+              <span>固定显存预算、未来查询未知、长生成或 agent trace 让误删持续累积的流式推理。</span>
+            </div>
+            <div class="source-thumb" data-label="paper method figure" style="background-image:url('assets/nexus-method.webp')"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel evidence">
+        <div class="panel-head"><h2>主证据：SWE-Bench sampled / Table 3</h2><span>20% density · 50 tasks · Resolved/Pass@1</span></div>
+        <div class="evidence-body">
+          <div class="dense-ref">
+            <div class="big">12/50</div>
+            <p>Dense reference 只解决 12 题：绝对通过率低，结论应读成 agentic true eviction 压力测试。</p>
+            <div class="density">80% eviction<br>DeepSWE-Preview / Qwen3-32B</div>
+          </div>
+          <div class="matrix">
+            <div class="quad">
+              <h3>Prefill-only · full context every turn</h3>
+              <div class="caption">可恢复压缩口径，不是真正永久删除</div>
+              <div class="score-row"><div class="name">Nexus</div><div class="score good">9/50</div><div class="bar"><i class="green" style="width:75%"></i></div></div>
+              <div class="score-row"><div class="name">SnapKV</div><div class="score">8/50</div><div class="bar"><i style="width:67%"></i></div></div>
+              <div class="score-row"><div class="name">PyramidKV</div><div class="score warn">7/50</div><div class="bar"><i class="amber" style="width:58%"></i></div></div>
+              <div class="delta-line">Nexus 在 prefill-only full context 下领先，但这不是 true eviction 主结论。</div>
+            </div>
+            <div class="quad primary">
+              <h3>Prefill-only · true eviction</h3>
+              <div class="caption">主观察：从可恢复压缩切到永久删除</div>
+              <div class="score-row"><div class="name">Nexus</div><div class="score good">8/50</div><div class="bar"><i class="green" style="width:67%"></i></div></div>
+              <div class="score-row"><div class="name">PyramidKV</div><div class="score bad">1/50</div><div class="bar"><i class="red" style="width:8%"></i></div></div>
+              <div class="score-row"><div class="name">AdaPyramidKV</div><div class="score bad">1/50</div><div class="bar"><i class="red" style="width:8%"></i></div></div>
+              <div class="delta-line">PyramidKV 7/50 → 1/50；Nexus 9/50 → 8/50，true eviction 下更稳。</div>
+            </div>
+            <div class="quad">
+              <h3>Prefill+Decode · full context every turn</h3>
+              <div class="caption">decode 也参与预算压力，但仍保留 full context every turn</div>
+              <div class="score-row"><div class="name">Nexus</div><div class="score good">7/50</div><div class="bar"><i class="green" style="width:58%"></i></div></div>
+              <div class="score-row"><div class="name">MorphKV</div><div class="score">6/50</div><div class="bar"><i style="width:50%"></i></div></div>
+              <div class="score-row"><div class="name">H2O</div><div class="score bad">1/50</div><div class="bar"><i class="red" style="width:8%"></i></div></div>
+              <div class="delta-line">Nexus 在 decode 压力下仍有竞争力。</div>
+            </div>
+            <div class="quad">
+              <h3>Prefill+Decode · true eviction</h3>
+              <div class="caption">hardest setting：永久删除 + 多轮 decode</div>
+              <div class="score-row"><div class="name">MorphKV</div><div class="score good">9/50</div><div class="bar"><i class="green" style="width:75%"></i></div></div>
+              <div class="score-row"><div class="name">Nexus</div><div class="score warn">8/50</div><div class="bar"><i class="amber" style="width:67%"></i></div></div>
+              <div class="score-row"><div class="name">H2O</div><div class="score">4/50</div><div class="bar"><i style="width:33%"></i></div></div>
+              <div class="delta-line red">Nexus 低于 MorphKV 1 题：不能包装成全面领先。</div>
+            </div>
+          </div>
+          <div class="matrix-note">
+            <div class="note-card"><b>证据读法：</b>Nexus 对 true eviction 更稳；业务读法是“候选，先复现 50-task 口径”。</div>
+            <div class="note-card"><b>业务读法：</b>这是 KV-cache true eviction 候选，应先复现相同 50-task 口径，再扩展本地 agent 轨迹。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel bounds">
+        <div class="panel-head"><h2>挑战边界：不要藏成脚注</h2><span>reproduction gate</span></div>
+        <div class="bounds-body">
+          <div class="risk-title">
+            <b>支持“值得复现”</b>
+            <span>不支持“已经证明生产收益”；边界必须和结论一起出现。</span>
+          </div>
+          <div class="risk-list">
+            <div class="risk"><div class="metric">50</div><p><b>sampled tasks</b>，不是完整 SWE-Bench；任务选择需要本地复核。</p></div>
+            <div class="risk"><div class="metric">12</div><p><b>Dense 仅 12/50</b>，说明任务、模型或环境本身通过率低。</p></div>
+            <div class="risk"><div class="metric">8&lt;9</div><p><b>hardest setting</b> 中 Nexus 8/50，低于 MorphKV 9/50。</p></div>
+            <div class="risk"><div class="metric">seed</div><p><b>reservoir 随机性</b> 需要固定 seed、cache 状态记录和回放调试。</p></div>
+          </div>
+          <div class="repro">
+            <h3>复现优先级</h3>
+            <p>先做可开关 eviction policy；同 budget 对照 H2O / PyramidKV / MorphKV / dense；复现 50-task 后再扩到本地 agent trace。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel source-panel">
+        <div class="panel-head"><h2>参考原图 / 可追溯证据</h2><span>source strip</span></div>
+        <div class="source-body">
+          <div class="source-mini"><div class="thumb" style="background-image:url('assets/nexus-method.webp')"></div><p>Method figure: score + reservoir</p></div>
+          <div class="source-mini"><div class="thumb" style="background-image:url('assets/nexus-table-3.webp')"></div><p>Table 3: SWE-Bench sampled</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Source: Nexus Sampling paper · Table 3 / method figure</span>
+      <span>Page 1 / 1</span>
+    </div>
+    <div class="notes">本页主线：Nexus 的创新不是单纯分数更复杂，而是桥接评分加 reservoir，把 top-K 硬删改为概率保留。效果证据只使用 SWE-Bench sampled / agentic coding：Prefill-only true eviction 下 PyramidKV 7/50 到 1/50，而 Nexus 9/50 到 8/50；hardest setting 下 MorphKV 9/50、Nexus 8/50，所以只能说值得复现。</div>
+  </section>
+</div>
+</body>
+</html>

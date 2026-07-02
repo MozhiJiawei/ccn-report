@@ -15,8 +15,6 @@
 | `source_understanding_review.html` | 可离线打开的 Source Understanding HTML 报告 |
 | `assets/` | HTML 本地依赖和报告正文使用的 WebP 图片资产 |
 | `visual-qa.md` | HTML 视觉 QA 记录 |
-| `sources/source-selection.md` | 本次来源选择记录 |
-| `sources/*/source.md` | 三份网页 source package |
 
 ## 来源
 

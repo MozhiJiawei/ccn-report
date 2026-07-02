@@ -1,0 +1,39 @@
+Editable replication QA
+
+Source ratio confirmation:
+- HTML visual source: ../report/index-preview.webp
+- Source PNG size: 1920x1080, 16:9.
+- PPT canvas: 1280x720, 16:9.
+- Coordinate strategy: HTML source coordinates mapped to PPT by 2/3 scale.
+
+Content consistency check:
+- No copy was changed in this visual repair pass.
+- Title preserved: 把 target verification 从全量 KV 读取改成低开销稀疏读取，长上下文 SD 解码端到端最高 9.17x。
+- KPI cards preserved:
+  - LOCAL SELF-ATTENTION / 27.85x / Figure 10: 32k / batch16 sparse verification attention.
+  - DECODE-STAGE E2E / 9.17x / Table 2: Qwen2.5-72B, 32k context, batch16.
+  - QUALITY BOUNDARY / ~FullKV / LongBench / PG-19 reported negligible degradation under tested budgets.
+- Four main blocks preserved:
+  - 1. 瓶颈先验：长上下文 SD 卡在验证
+  - 2. 机制主轴：hybrid selector 先选 Top-K，再只验证活跃 KV
+  - 3. 效果证据：估计开销没有吃掉收益
+  - 4. 质量与边界：接近 FullKV，但不是 KV eviction
+- Bottom replication items preserved:
+  - 复现 1: 先做本地延迟拆解
+  - 复现 2: 验证 selector 与 SRH 成本
+  - 复现 3: 用长文任务压质量边界
+
+Editable coverage check:
+- Native PPT text/shapes: title with editable red emphasis ranges, source tags, KPI cards, all panel titles, Figure callout, Stage 1/2 cards, selector-flow cards, SRH/budget note, metric mini-cards, Table 2 summary, quality bars, boundary note, bottom replication cards, footer, and background grid.
+- Embedded images only: Figure 1, Figure 5, and Figure 10 crop.
+- Full-slide PNG is not used as the slide body.
+
+Visual refinement check:
+- Micro-fix 1: the "512 active KV token budget" card was increased from 30px to 34px high, with the value and small label shifted upward to avoid bottom crowding.
+- Micro-fix 2: the two right-side mini evidence cards were increased from 50px to 54px high, with body text area expanded and body font slightly reduced so the notes no longer sit on the bottom edge.
+- Prior refinements retained: right effect panel green note has safe bottom padding; central mechanism flow cards have improved padding; bottom replication strip has a clearer gap from the main panels.
+- Manual visual check performed on the rendered slide preview after regeneration. No visible copy rewrite, clipping, unwanted overlap, abnormal wrapping, or bottom-edge crowding was observed.
+
+Render check:
+- render_slides.py: PASS; output archived as ../ppt/slide-1-preview.webp
+- slides_test.py: PASS; no overflow detected.
