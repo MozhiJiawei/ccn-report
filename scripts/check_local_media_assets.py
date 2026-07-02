@@ -10,6 +10,9 @@ from urllib.parse import unquote, urlsplit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORT_ROOTS = ("大厂动态", "开源软件分析", "学术论文分析")
+REPORT_DIR_RE = re.compile(
+    r"^(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)-(?P<date>\d{8})-(?P<creator>[\w\u4e00-\u9fff-]+)$"
+)
 DOCUMENT_EXTENSIONS = {".html", ".htm", ".md", ".markdown"}
 IMAGE_EXTENSIONS = {
     ".avif",
@@ -34,6 +37,8 @@ EXTERNAL_SCHEMES = {
     "mailto",
     "tel",
 }
+WINDOWS_DRIVE_PATH_RE = re.compile(r"^[A-Za-z]:[\\/]")
+WINDOWS_UNC_PATH_RE = re.compile(r"^[\\/]{2}[^\\/]+[\\/][^\\/]+")
 CSS_URL_RE = re.compile(r"url\(\s*(?P<quote>['\"]?)(?P<url>.*?)(?P=quote)\s*\)", re.IGNORECASE | re.DOTALL)
 QUOTED_IMAGE_PATH_RE = re.compile(
     r"(?P<quote>['\"])(?P<url>(?:\.{0,2}[\\/]|[^'\"]*[\\/])[^'\"]+\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp)(?:[?#][^'\"]*)?)(?P=quote)",
@@ -147,11 +152,27 @@ def is_external_or_inline(raw_url: str) -> bool:
 
 def clean_local_url(raw_url: str) -> str:
     stripped = strip_markdown_angle_brackets(raw_url)
-    drive_path_match = re.match(r"^[A-Za-z]:[\\/]", stripped)
-    if drive_path_match:
+    if WINDOWS_DRIVE_PATH_RE.match(stripped):
         return stripped
     split = urlsplit(stripped)
     return unquote(split.path)
+
+
+def local_absolute_path_kind(raw_url: str) -> str | None:
+    stripped = strip_markdown_title(raw_url)
+    if WINDOWS_DRIVE_PATH_RE.match(stripped):
+        return "Windows drive-absolute"
+    if WINDOWS_UNC_PATH_RE.match(stripped):
+        return "Windows UNC absolute"
+
+    split = urlsplit(stripped)
+    if split.scheme.lower() == "file":
+        return "file URL absolute"
+
+    url_path = clean_local_url(raw_url).replace("\\", "/")
+    if url_path.startswith("/"):
+        return "root-absolute"
+    return None
 
 
 def has_image_extension(url_path: str) -> bool:
@@ -179,6 +200,27 @@ def is_inside_repo(path: Path) -> bool:
     except ValueError:
         return False
     return True
+
+
+def report_dir_for(path: Path) -> Path | None:
+    try:
+        relative_parts = path.relative_to(REPO_ROOT).parts
+    except ValueError:
+        return None
+    if not relative_parts or relative_parts[0] not in REPORT_ROOTS:
+        return None
+
+    current = path if path.is_dir() else path.parent
+    for parent in (current, *current.parents):
+        if parent == REPO_ROOT:
+            break
+        try:
+            parent.relative_to(REPO_ROOT)
+        except ValueError:
+            break
+        if REPORT_DIR_RE.fullmatch(parent.name):
+            return parent
+    return None
 
 
 def is_file(path: Path) -> bool:
@@ -277,12 +319,11 @@ def should_check_reference(reference: Reference) -> bool:
 
 def validate_reference(reference: Reference) -> str | None:
     raw_url = reference.raw_url.strip()
-    url_path = clean_local_url(raw_url)
-
-    if url_path.replace("\\", "/").startswith("/"):
+    absolute_kind = local_absolute_path_kind(raw_url)
+    if absolute_kind is not None:
         return (
             f"{reference.document_path.relative_to(REPO_ROOT)}:{reference.line}: "
-            f"{reference.source} uses root-absolute local image path {raw_url!r}. "
+            f"{reference.source} uses {absolute_kind} local image path {raw_url!r}. "
             "Use a relative path and archive the image with the report."
         )
 
@@ -295,6 +336,21 @@ def validate_reference(reference: Reference) -> str | None:
             f"{reference.source} points outside ccn-report: {raw_url!r}. "
             "Copy the image into the report directory and reference it with a relative path."
         )
+
+    document_report_dir = report_dir_for(reference.document_path)
+    target_report_dir = report_dir_for(target)
+    if document_report_dir is None or target_report_dir != document_report_dir:
+        expected = (
+            str(document_report_dir.relative_to(REPO_ROOT))
+            if document_report_dir is not None
+            else "the current report directory"
+        )
+        return (
+            f"{reference.document_path.relative_to(REPO_ROOT)}:{reference.line}: "
+            f"{reference.source} points outside its report package: {raw_url!r}. "
+            f"Copy the image under {expected} and reference it with a package-local relative path."
+        )
+
     if not is_file(target):
         return (
             f"{reference.document_path.relative_to(REPO_ROOT)}:{reference.line}: "
