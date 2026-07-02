@@ -5,7 +5,7 @@
 目标读者：推理系统/LLM Serving 工程负责人
 页数口径：1 页；单页输出；只生成 Summary Page，不包含 cover、contents 或额外内容页。
 核心结论：KVarN 值得进入复现和 serving 性能验证，但当前证据只能支持 2-bit 精度保真与局部开销低，不能直接支持线上 TPOT/TTFT 收益。
-内容来源：ccn-report/学术论文分析/推理/kvarn-variance-normalized-kv-cache-20260625-mozhi/review/source_understanding_review.html；ccn-report/学术论文分析/推理/kvarn-variance-normalized-kv-cache-20260625-mozhi/sources/paper/source-summary.md；.tmp/pdf_xml/kvarn-2606.03458/final/kvarn-2606.03458.xml；.tmp/pdf_xml/kvarn-2606.03458/final/images/
+内容来源：review/source_understanding_review.html；sources/paper/source-summary.md；sources/paper/images/
 
 ## Summary Page
 页码：Page 1
@@ -31,11 +31,11 @@ Table 2 和 Table 3 扩展了收益范围。HumanEval 上，KVarN 在 Qwen3-4B �
 
 这一页需要明确告诉读者：论文没有报告整网 serving 的 TPOT、TTFT、tokens/s、throughput 或 end-to-end latency；因此不能从本文证据直接推出首 token 更快、每 token latency 更低，或线上吞吐已经提升。真正的工程结论是“值得排期复现，但复现 gate 要设在端到端 serving 指标上”。建议验证指标包括：目标模型上的质量回归、长输出 TPOT、TTFT、tokens/s、显存上限、并发 batch 下的 KV-cache memory traffic、2-bit KV-cache kernel 可用性，以及 second scale 是否能在目标框架中融合。若本地 serving 框架不支持 2-bit KV-cache，或者 second scale 不能融合进 kernel，论文中的低 overhead 结论就不能直接照搬。
 参考图片：
-- ![Figure 2: KVarN 方法链路](D:\Agent Repo\Mozhi-s-AgentWorkspace\ccn-report\学术论文分析\推理\kvarn-variance-normalized-kv-cache-20260625-mozhi\sources\paper\images\picture_002.webp)
-- ![Figure 1: token magnitude error 是 top error 主因](D:\Agent Repo\Mozhi-s-AgentWorkspace\ccn-report\学术论文分析\推理\kvarn-variance-normalized-kv-cache-20260625-mozhi\sources\paper\images\picture_001.webp)
-- ![Table 1: AIME24 与 MATH500 质量结果](D:\Agent Repo\Mozhi-s-AgentWorkspace\ccn-report\学术论文分析\推理\kvarn-variance-normalized-kv-cache-20260625-mozhi\sources\paper\images\table_001.webp)
-- ![Figure 6: VarN normalization 相对生成耗时的局部 overhead](D:\Agent Repo\Mozhi-s-AgentWorkspace\ccn-report\学术论文分析\推理\kvarn-variance-normalized-kv-cache-20260625-mozhi\sources\paper\images\picture_008.webp)
-- ![Figure 11: Triton dequant overhead 与 KIVI 基本持平](D:\Agent Repo\Mozhi-s-AgentWorkspace\ccn-report\学术论文分析\推理\kvarn-variance-normalized-kv-cache-20260625-mozhi\sources\paper\images\picture_013.webp)
+- ![Figure 2: KVarN 方法链路](sources/paper/images/picture_002.webp)
+- ![Figure 1: token magnitude error 是 top error 主因](sources/paper/images/picture_001.webp)
+- ![Table 1: AIME24 与 MATH500 质量结果](sources/paper/images/table_001.webp)
+- ![Figure 6: VarN normalization 相对生成耗时的局部 overhead](sources/paper/images/picture_008.webp)
+- ![Figure 11: Triton dequant overhead 与 KIVI 基本持平](sources/paper/images/picture_013.webp)
 备注：
 - 论文首页作者 Lorenz K. Muller、Philippe Bich、Chiara Boretti、Hyun-Min Chang、Jiawei Zhuang、Lukas Cavigelli 均标注 Huawei，代码仓库为 huawei-csl/KVarN。
 - 单页讲法建议保持“值得复现，但不能承诺线上加速”的审慎口径；把 0.18% 明确称为 normalization overhead，不写成 TPOT/TTFT 收益。
