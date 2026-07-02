@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="engineering-whiteprint">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Source Understanding Review · HITL Agent Approval</title>
+<link rel="stylesheet" href="../../../../skills/hw-ppt-gen-html/html-ppt-skill/assets/fonts.css">
+<link rel="stylesheet" href="../../../../skills/hw-ppt-gen-html/html-ppt-skill/assets/base.css">
+<link rel="stylesheet" id="theme-link" href="../../../../skills/hw-ppt-gen-html/html-ppt-skill/assets/themes/engineering-whiteprint.css">
+<link rel="stylesheet" href="../../../../skills/hw-ppt-gen-html/html-ppt-skill/assets/animations/animations.css">
+<style>
+  :root { --deck-pad-x: 76px; --deck-pad-y: 56px; }
+  body { letter-spacing: 0; }
+  .slide { padding: var(--deck-pad-y) var(--deck-pad-x) 86px; justify-content: flex-start; }
+  .deck-title { display: grid; grid-template-columns: 1.1fr .9fr; gap: 38px; align-items: stretch; height: 100%; }
+  .h1 { font-size: 58px; line-height: 1.12; letter-spacing: 0; }
+  .h2 { font-size: 38px; line-height: 1.18; letter-spacing: 0; margin-bottom: 10px; }
+  .h3 { font-size: 24px; letter-spacing: 0; }
+  .lede { font-size: 20px; max-width: 70ch; }
+  .kicker { margin: 0 0 10px; }
+  .small { font-size: 12px; line-height: 1.45; }
+  .body { font-size: 16px; line-height: 1.52; }
+  .tight { line-height: 1.35; }
+  .footnote { position: absolute; left: 76px; right: 76px; bottom: 48px; font-size: 10.5px; line-height: 1.28; color: var(--text-3); border-top: 1px solid var(--border); padding-top: 6px; background: color-mix(in srgb, var(--bg) 92%, transparent); }
+  .deck-footer { bottom: 14px; }
+  .page-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 28px; align-items: stretch; margin-top: 18px; min-height: 520px; }
+  .page-grid.short-grid { min-height: auto; }
+  .page-grid.wide-left { grid-template-columns: 1.22fr .78fr; }
+  .page-grid.wide-right { grid-template-columns: .82fr 1.18fr; }
+  .card { border-radius: 0; padding: 22px 24px; }
+  .page-grid > .card, .page-grid > .diagram { min-height: 380px; }
+  .page-grid.short-grid > .card, .page-grid.short-grid > .diagram { min-height: auto; }
+  .mini-card { border: 1px solid var(--border-strong); background: color-mix(in srgb, var(--surface) 90%, transparent); padding: 12px 14px; }
+  .muted-box { border: 1px solid var(--border); background: color-mix(in srgb, var(--surface-2) 76%, transparent); padding: 12px 14px; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border-strong); padding: 3px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text-2); background: var(--surface); }
+  .tag.good { border-color: color-mix(in srgb, var(--good) 70%, var(--border)); color: var(--good); }
+  .tag.warn { border-color: color-mix(in srgb, var(--warn) 70%, var(--border)); color: var(--warn); }
+  .tag.bad { border-color: color-mix(in srgb, var(--bad) 70%, var(--border)); color: var(--bad); }
+  .diagram { border: 1px solid var(--border-strong); background: color-mix(in srgb, var(--surface) 92%, transparent); padding: 22px; }
+  .flow-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 12px 0; }
+  .flow-row.three { grid-template-columns: repeat(3, 1fr); }
+  .flow-row.four { grid-template-columns: repeat(4, 1fr); }
+  .node { border: 1px solid var(--border-strong); padding: 12px 12px; min-height: 94px; background: var(--surface); }
+  .node h4 { font-size: 14px; margin: 0 0 4px; letter-spacing: 0; }
+  .node p { font-size: 11px; line-height: 1.35; margin: 0; color: var(--text-2); }
+  .node.accent { border-width: 2px; background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+  .arrow { height: 26px; display: flex; align-items: center; justify-content: center; color: var(--text-2); font-family: var(--font-mono); }
+  .arrow::before { content: "↓"; font-size: 22px; }
+  .matrix { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.38; }
+  .matrix th, .matrix td { border: 1px solid var(--border-strong); padding: 13px 12px; vertical-align: top; }
+  .matrix.tall-table { height: 560px; }
+  .matrix.tall-table th, .matrix.tall-table td { padding-top: 15px; padding-bottom: 15px; }
+  .matrix th { background: var(--surface-2); font-weight: 700; text-align: left; }
+  .matrix td strong { color: var(--text-1); }
+  .quote-chain { display: grid; grid-template-columns: 1fr 32px 1fr 32px 1fr; align-items: stretch; gap: 8px; margin-top: 18px; }
+  .quote-chain .q { border: 1px solid var(--border-strong); background: var(--surface); padding: 16px; font-size: 13px; line-height: 1.45; min-height: 190px; }
+  .quote-chain .connector { display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); color: var(--text-3); }
+  .risk-bars { display: grid; gap: 18px; margin-top: 18px; }
+  .risk { display: grid; grid-template-columns: 120px 1fr 54px; gap: 12px; align-items: center; font-size: 13px; }
+  .bar { height: 26px; border: 1px solid var(--border-strong); position: relative; background: var(--surface); }
+  .bar span { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--accent-2) 70%, var(--surface)); }
+  .timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 18px; }
+  .step { border: 1px solid var(--border-strong); min-height: 300px; padding: 16px; background: var(--surface); position: relative; }
+  .step .n { font-family: var(--font-mono); color: var(--accent-2); font-size: 12px; margin-bottom: 8px; }
+  .step h4 { font-size: 15px; margin-bottom: 6px; }
+  .step p { font-size: 12px; line-height: 1.38; color: var(--text-2); margin: 0; }
+  .big-rule { display: grid; grid-template-columns: 170px 1fr; gap: 18px; align-items: center; border: 2px solid var(--border-strong); padding: 18px; background: var(--surface); margin-top: 18px; }
+  .rule-number { font-size: 82px; line-height: .9; font-family: var(--font-mono); color: var(--accent-2); }
+  .callout { border-left: 4px solid var(--accent-2); padding: 12px 16px; background: color-mix(in srgb, var(--surface-2) 82%, transparent); font-size: 15px; line-height: 1.48; }
+  .codebox { font-family: var(--font-mono); font-size: 12px; line-height: 1.42; border: 1px solid var(--border-strong); background: var(--surface); padding: 12px; white-space: pre-wrap; }
+  .source-shot { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; margin-top: 12px; }
+  .source-shot img.preview { width: 360px; height: 540px; object-fit: contain; border: 1px solid var(--border-strong); background: var(--surface); }
+  .crop-grid { display: grid; grid-template-columns: repeat(2, 300px); gap: 10px; margin-top: 12px; }
+  .crop-grid figure { margin: 0; border: 1px solid var(--border-strong); background: var(--surface); padding: 6px; }
+  .crop-grid img { width: 300px; height: 160px; object-fit: contain; }
+  .crop-grid figcaption { font-size: 10.5px; line-height: 1.25; color: var(--text-2); margin-top: 4px; }
+  .legend-list { display: grid; gap: 10px; }
+  .legend-list li { margin: 0 0 4px; }
+  ul.compact { margin: 8px 0 0 18px; padding: 0; }
+  ul.compact li { margin: 5px 0; font-size: 13px; line-height: 1.38; }
+  .source-list { display: grid; gap: 12px; margin-top: 16px; }
+  .source-item { border: 1px solid var(--border-strong); padding: 18px 18px; background: var(--surface); min-height: 94px; }
+  .source-item h4 { font-size: 15px; margin-bottom: 4px; }
+  .source-item p { margin: 0; font-size: 12px; line-height: 1.4; color: var(--text-2); word-break: break-all; }
+  .axis { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border-strong); margin-top: 14px; }
+  .axis > div { padding: 14px; border-right: 1px solid var(--border-strong); }
+  .axis > div:last-child { border-right: 0; }
+  .axis h4 { font-size: 15px; }
+  .axis p { font-size: 12px; color: var(--text-2); margin: 0; line-height: 1.4; }
+  .slide-number { font-family: var(--font-mono); }
+  .deck-title > .card { min-height: 700px; display: flex; flex-direction: column; }
+  .deck-title .big-rule { flex: 1; }
+  .density-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+  .density-strip .mini-card { min-height: 96px; }
+</style>
+</head>
+<body data-themes="engineering-whiteprint,swiss-grid,academic-paper,minimal-white" data-theme-base="../../../../skills/hw-ppt-gen-html/html-ppt-skill/assets/themes/">
+<div class="deck">
+
+  <section class="slide" data-title="封面">
+    <div class="deck-title">
+      <div>
+        <p class="kicker">Source Understanding Deck · HITL Approval</p>
+        <h1 class="h1 anim-fade-up">Agent 的高风险操作，为什么要先“停一下”？</h1>
+        <p class="lede">面向技术小白的心智模型：HITL 不是给 Agent 加一个弹窗，而是在工具执行前插入可审计、可恢复、可拒绝的人工决策点。</p>
+        <div class="row wrap mt-l">
+          <span class="tag">白底工程化</span>
+          <span class="tag">机制图</span>
+          <span class="tag">三方来源对照</span>
+          <span class="tag">脚注可追溯</span>
+        </div>
+        <div class="density-strip">
+          <div class="mini-card"><strong>问题背景</strong><br><span class="small dim">资损、不可逆变更、合规审计让 Agent 不能直接执行所有工具。</span></div>
+          <div class="mini-card"><strong>关键机制</strong><br><span class="small dim">工具调用被标记、执行前中断、人工决策、从持久化状态恢复。</span></div>
+          <div class="mini-card"><strong>效果边界</strong><br><span class="small dim">HITL 控制工具层副作用，不替代权限、审计、规则覆盖和状态版本治理。</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="h3">结论先行</h3>
+        <div class="big-rule">
+          <div class="rule-number">1</div>
+          <div class="body"><strong>HITL 的本质是“工具调用闸门”。</strong><br>模型可以提出动作，但执行权被运行时/安全层拦截，直到人给出决策。</div>
+        </div>
+        <div class="big-rule">
+          <div class="rule-number">2</div>
+          <div class="body"><strong>落地质量取决于三件事。</strong><br>触发策略是否准、暂停状态是否可恢复、审批决策是否不可伪造且有审计。</div>
+        </div>
+      </div>
+    </div>
+    <div class="deck-footer"><span>HITL source understanding</span><span class="slide-number" data-current="1" data-total="13"></span></div>
+    <div class="footnote">[S1] 掘金 Harness HITL 设计；[S2] LangChain Human-in-the-loop；[S3] OpenAI Agents SDK Human-in-the-loop。</div>
+    <div class="notes">开场先把抽象概念压成一句话：HITL 是工具调用前的闸门，不是聊天框里问一句“你确定吗”。强调本 deck 的对象是不了解该技术的技术小白，因此后续每页都先讲判断，再讲证据和边界。</div>
+  </section>
+
+  <section class="slide" data-title="技术心智模型">
+    <p class="kicker">01 · Mental model</p>
+    <h2 class="h2">把 Agent 想成“会申请操作的实习生”，HITL 是主管签字台</h2>
+    <div class="page-grid wide-left">
+      <div class="diagram">
+        <div class="flow-row four">
+          <div class="node"><h4>模型推理</h4><p>决定下一步要调用哪个工具</p></div>
+          <div class="node"><h4>工具申请</h4><p>例如删除数据、执行 SQL、发邮件</p></div>
+          <div class="node accent"><h4>HITL 闸门</h4><p>检查风险策略，必要时暂停</p></div>
+          <div class="node"><h4>执行 / 不执行</h4><p>取决于人工决策与恢复状态</p></div>
+        </div>
+        <div class="arrow"></div>
+        <div class="flow-row three">
+          <div class="node"><h4>Approve</h4><p>按原参数执行工具</p></div>
+          <div class="node"><h4>Edit / Reject</h4><p>改参数或拒绝执行</p></div>
+          <div class="node"><h4>Respond</h4><p>人作为 ask_user 类工具的回答源</p></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="h3">读图方法</h3>
+        <ul class="compact body">
+          <li><strong>先看中间闸门：</strong>HITL 发生在工具真正执行之前。</li>
+          <li><strong>再看下面决策：</strong>不同框架支持的人工回复语义不同，不应混用。</li>
+          <li><strong>最后看恢复：</strong>暂停不是崩溃，必须保存运行状态，之后从同一上下文继续。</li>
+        </ul>
+        <div class="callout mt-m">边界：HITL 只能控制“被工具层捕获的动作”。如果危险行为绕过工具系统或审批策略没有覆盖，它不会自动变安全。</div>
+      </div>
+    </div>
+    <div class="deck-footer"><span>mental model</span><span class="slide-number" data-current="2" data-total="13"></span></div>
+    <div class="footnote">LangChain 描述 middleware 在工具调用需要 review 时发出 interrupt 并依赖 persistence 保存图状态 [S2]；OpenAI Agents SDK 描述工具声明 approval，RunState 序列化并恢复 [S3]。</div>
+    <div class="notes">这里用一个生活化比喻建立模型：Agent 不是直接操作生产系统，而是先提交操作申请。HITL 闸门既看风险，也负责把暂停和恢复做成工程机制。</div>
+  </section>
+
+  <section class="slide" data-title="为什么需要">
+    <p class="kicker">02 · Problem background</p>
+    <h2 class="h2">问题不是“模型会不会犯错”，而是“模型的动作会不会造成不可逆后果”</h2>
+    <div class="page-grid">
+      <div class="card">
+        <h3 class="h3">三类风险推动 HITL</h3>
+        <table class="matrix mt-m">
+          <tr><th>风险类型</th><th>小白解释</th><th>典型动作</th></tr>
+          <tr><td><strong>资损 / 数据损坏</strong></td><td>一旦执行，损失难以回滚</td><td>批量删除、退款、取消订单</td></tr>
+          <tr><td><strong>权限 / 合规</strong></td><td>系统需要留下谁批准了什么</td><td>生产变更、敏感数据访问</td></tr>
+          <tr><td><strong>中间地带</strong></td><td>不该硬拦，也不能直接放行</td><td>写文件、执行非 SELECT SQL</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3 class="h3">二态安全不够用</h3>
+        <div class="axis">
+          <div>
+            <h4>只 PASS / BLOCK</h4>
+            <p>低风险自动放行，高风险硬拦截；但合理的高影响动作会被卡死。</p>
+          </div>
+          <div>
+            <h4>加入 HITL</h4>
+            <p>把“合理但需确认”的动作转成暂停、通知、人工决策、恢复。</p>
+          </div>
+        </div>
+        <div class="callout mt-m">结论：HITL 是为“高影响但不一定错误”的操作提供第三条路。</div>
+      </div>
+    </div>
+    <div class="deck-footer"><span>risk background</span><span class="slide-number" data-current="3" data-total="13"></span></div>
+    <div class="footnote">掘金来源明确指出资产和金额相关操作直接开放给 Agent 容易造成资损，并将 HITL 定义为“暂停 → 通知 → 等待人工决策 → 恢复/终止” [S1]。</div>
+    <div class="notes">这页解释为什么不是所有东西都自动化。对小白来说，关键是理解 HITL 不是怀疑模型，而是对不可逆副作用做治理。</div>
+  </section>
+
+  <section class="slide" data-title="统一机制">
+    <p class="kicker">03 · Common mechanism</p>
+    <h2 class="h2">三套资料共同指向同一个四段式机制：标记 → 中断 → 决策 → 恢复</h2>
+    <div class="diagram mt-m">
+      <div class="flow-row four">
+        <div class="node accent"><h4>1. 标记风险动作</h4><p>needs_approval / interrupt_on / OperationGuard 规则</p></div>
+        <div class="node"><h4>2. 执行前中断</h4><p>工具调用被拦截，返回 pending approval</p></div>
+        <div class="node"><h4>3. 人给出决策</h4><p>approve / edit / reject / respond 或批准/拒绝</p></div>
+        <div class="node"><h4>4. 从状态恢复</h4><p>RunState / checkpoint / worker 恢复上下文</p></div>
+      </div>
+    </div>
+    <div class="quote-chain">
+      <div class="q"><strong>S1 Harness</strong><br>OperationGuard 把 HITL 作为 PASS/WARN/HITL/BLOCK 之一；流程包含 Token、WS/IM、超时和审计。</div>
+      <div class="connector">→</div>
+      <div class="q"><strong>S2 LangChain</strong><br>middleware 检查工具调用策略，触发 interrupt；Graph state 由 checkpointer 保存，resume 时提交 decisions。</div>
+      <div class="connector">→</div>
+      <div class="q"><strong>S3 OpenAI Agents</strong><br>工具通过 needs_approval 标记；RunResult.interruptions 暴露待审批项；RunState approve/reject 后继续。</div>
+    </div>
+    <div class="deck-footer"><span>unified mechanism</span><span class="slide-number" data-current="4" data-total="13"></span></div>
+    <div class="footnote">机制归纳来自三方资料共同模式：S1 的 Harness 安全层、S2 的 middleware/interrupt/checkpointer、S3 的 needs_approval/interruption/RunState。</div>
+    <div class="notes">这页是全 deck 的核心。要告诉听众：虽然各家名词不同，但四段式是一样的。读图时从左到右看，任何少一段都会出问题。</div>
+  </section>
+
+  <section class="slide" data-title="三方对照">
+    <p class="kicker">04 · Source comparison</p>
+    <h2 class="h2">同一件事，三套资料站在不同层级描述</h2>
+    <table class="matrix mt-m tall-table">
+      <tr><th>维度</th><th>S1 Harness 业务安全层</th><th>S2 LangChain 框架中间件</th><th>S3 OpenAI Agents SDK</th></tr>
+      <tr><td><strong>触发入口</strong></td><td>风险评分、前端敏感操作、沙箱命令、规则引擎、多工具聚合</td><td><code>interrupt_on</code> 按工具名/条件谓词触发</td><td><code>needs_approval</code> / <code>require_approval</code> 按工具声明触发</td></tr>
+      <tr><td><strong>暂停对象</strong></td><td>Harness 中的高风险操作请求和一次性 HITL Token</td><td>LangGraph 执行图和 action_requests</td><td>RunResult / StreamingResult 中的 ToolApprovalItem</td></tr>
+      <tr><td><strong>恢复载体</strong></td><td>存档 Agent 状态、Worker 通知/恢复、Token CAS 消费</td><td>checkpointer 保存 graph state；同 thread_id resume</td><td>RunState 序列化/反序列化后 approve/reject 并 Runner.run</td></tr>
+      <tr><td><strong>适用视角</strong></td><td>企业业务系统如何防资损和留审计</td><td>应用开发者如何配置中间件策略</td><td>SDK 用户如何处理 nested agent/tool 审批</td></tr>
+    </table>
+    <div class="callout mt-m">判断：S1 更像“参考架构蓝图”，S2/S3 更像“可编程 API 模型”。学习时应先用 S1 建业务脑图，再用 S2/S3 落代码概念。</div>
+    <div class="deck-footer"><span>comparison matrix</span><span class="slide-number" data-current="5" data-total="13"></span></div>
+    <div class="footnote">S1 列出五类触发场景和安全设计；S2 列出 interrupt_on、allowed_decisions、when、checkpointer；S3 列出 needs_approval、RunState、nested Agent.as_tool 审批传播。</div>
+    <div class="notes">这页避免把三份材料混成一锅粥。告诉听众：Harness 文章讲系统设计，两个官方文档讲开发接口。它们互补，不是互相替代。</div>
+  </section>
+
+  <section class="slide" data-title="触发策略">
+    <p class="kicker">05 · Trigger policy</p>
+    <h2 class="h2">HITL 的第一道难题：什么时候该打断 Agent？</h2>
+    <div class="page-grid wide-left">
+      <div class="card">
+        <h3 class="h3">风险评分示例：把“危险感”变成可配置口径</h3>
+        <div class="risk-bars">
+          <div class="risk"><span>操作类型</span><div class="bar"><span style="width:40%"></span></div><strong>40%</strong></div>
+          <div class="risk"><span>影响范围</span><div class="bar"><span style="width:30%"></span></div><strong>30%</strong></div>
+          <div class="risk"><span>可逆性</span><div class="bar"><span style="width:20%"></span></div><strong>20%</strong></div>
+          <div class="risk"><span>数据敏感度</span><div class="bar"><span style="width:10%"></span></div><strong>10%</strong></div>
+        </div>
+        <div class="muted-box mt-m small">证据条件：这是 S1 提供的 Harness 业务设计口径，不是 LangChain/OpenAI SDK 的内置评分模型；HIGH 等级 Skill 可降低触发阈值到 40 分。</div>
+      </div>
+      <div class="card">
+        <h3 class="h3">开发框架常用写法</h3>
+        <div class="codebox">interrupt_on = {
+  "write_file": {
+    "allowed_decisions": ["approve","edit","reject"],
+    "when": writes_outside_workspace
+  },
+  "execute_sql": {
+    "allowed_decisions": ["approve","reject"],
+    "when": is_write_query
+  }
+}</div>
+        <ul class="compact">
+          <li>业务层：用多维评分和规则引擎覆盖复杂场景。</li>
+          <li>框架层：用工具名、参数谓词、工具声明做触发。</li>
+          <li>边界：评分不是通用标准，必须由业务风险校准。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="deck-footer"><span>trigger policy</span><span class="slide-number" data-current="6" data-total="13"></span></div>
+    <div class="footnote">风险权重与 HIGH Skill 40 分阈值来自 S1；条件中断的 when 谓词和 interrupt_on 配置来自 S2。</div>
+    <div class="notes">读图方法：左边先看风险权重，理解业务方如何量化风险；右边看框架层把规则落实为可执行配置。强调这不是唯一标准。</div>
+  </section>
+
+  <section class="slide" data-title="生命周期">
+    <p class="kicker">06 · Lifecycle</p>
+    <h2 class="h2">一次审批从“喊停”到“恢复”，至少有 5 个状态</h2>
+    <div class="timeline">
+      <div class="step"><div class="n">STATE 01</div><h4>拦截</h4><p>Agent 产生工具调用；安全层或 middleware 判定需要审批。</p></div>
+      <div class="step"><div class="n">STATE 02</div><h4>挂起</h4><p>生成 interrupt / pending approval；工具还没有真正执行。</p></div>
+      <div class="step"><div class="n">STATE 03</div><h4>持久化</h4><p>保存 graph state / RunState / Agent 工作现场，等待稍后恢复。</p></div>
+      <div class="step"><div class="n">STATE 04</div><h4>决策</h4><p>人在线弹窗、IM 卡片、控制台或业务审批页给出决定。</p></div>
+      <div class="step"><div class="n">STATE 05</div><h4>恢复</h4><p>批准则执行；拒绝则返回反馈；超时通常自动拒绝。</p></div>
+    </div>
+    <div class="page-grid short-grid mt-l">
+      <div class="callout">小白关键点：暂停的是“运行状态”，不是“聊天记忆”。没有可恢复状态，审批回来后 Agent 可能不知道自己停在哪里。</div>
+      <div class="muted-box small">边界：S1 描述在线、离线、30 分钟超时与数据库兜底扫描；S2/S3 主要给出框架级中断和恢复 API，并不内置同一套企业通知/超时策略。</div>
+    </div>
+    <div class="deck-footer"><span>approval lifecycle</span><span class="slide-number" data-current="7" data-total="13"></span></div>
+    <div class="footnote">S1 完整生命周期包括在线批准/拒绝、离线 IM 审批、30 分钟超时自动拒绝；S2 要求 checkpointer 和同一 thread ID；S3 使用 RunState 序列化并恢复。</div>
+    <div class="notes">强调“暂停不是失败”。这个概念对初学者很关键：运行时要能把当前堆栈/图状态/上下文保存下来，之后同一条任务继续。</div>
+  </section>
+
+  <section class="slide" data-title="决策语义">
+    <p class="kicker">07 · Decision semantics</p>
+    <h2 class="h2">“同意/拒绝”不够精细：不同决策会改变 Agent 看到的世界</h2>
+    <table class="matrix mt-m tall-table">
+      <tr><th>决策</th><th>工具是否执行</th><th>Agent 收到什么</th><th>容易踩坑</th></tr>
+      <tr><td><strong>approve</strong></td><td>是，按原参数执行</td><td>真实工具结果</td><td>审批人要确认参数没有被提示注入或误判</td></tr>
+      <tr><td><strong>edit</strong></td><td>是，但使用人工修改后的参数</td><td>修改后工具结果</td><td>大幅修改可能导致模型重新规划甚至重复调用</td></tr>
+      <tr><td><strong>reject</strong></td><td>否</td><td>拒绝反馈 / 合成 ToolMessage</td><td>应明确是否禁止重试、改走安全方案或追问</td></tr>
+      <tr><td><strong>respond</strong></td><td>否，人就是工具结果</td><td>人类回复被当作成功结果</td><td>不能用它拒绝有副作用工具，否则模型会以为执行成功</td></tr>
+    </table>
+    <div class="callout mt-m">判断：面向业务高风险动作时，默认只给 approve/reject；把 edit/respond 开给谁、开到什么工具上，需要额外治理。</div>
+    <div class="deck-footer"><span>decision semantics</span><span class="slide-number" data-current="8" data-total="13"></span></div>
+    <div class="footnote">四种决策语义来自 S2；S2 明确提醒 respond 只适合 ask_user 风格工具，不应用于拒绝 side-effecting tools；S3 主要聚焦 approve/reject 并支持自定义 rejection message。</div>
+    <div class="notes">这页讲“看似只是按钮，其实会改变执行语义”。尤其提醒 respond 的坑：它会被当成成功工具结果。</div>
+  </section>
+
+  <section class="slide" data-title="证据图重绘">
+    <p class="kicker">08 · Evidence reconstruction</p>
+    <h2 class="h2">S1 的原始流程图可以重绘为横向 Harness 数据流</h2>
+    <div class="diagram mt-m">
+      <div class="flow-row">
+        <div class="node"><h4>L3 风险评分</h4><p>DELETE、影响范围、不可逆、敏感数据</p></div>
+        <div class="node"><h4>前端敏感操作</h4><p>danger / soft_confirm</p></div>
+        <div class="node"><h4>沙箱危险命令</h4><p>WarnCommandError 转入审批</p></div>
+        <div class="node"><h4>规则引擎</h4><p>generic 规则 action=HITL</p></div>
+        <div class="node"><h4>多工具聚合</h4><p>多个工具合并成一次确认</p></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node accent" style="min-height:86px">
+        <h4>HITLInterceptor.createHITL()</h4>
+        <p>生成一次性 Token · 原子写入数据库 · 推送 hitl_request · 注册超时定时器</p>
+      </div>
+      <div class="arrow"></div>
+      <div class="flow-row three">
+        <div class="node"><h4>在线确认</h4><p>WebSocket 弹框，用户批准或拒绝</p></div>
+        <div class="node"><h4>离线审批</h4><p>IM 卡片，状态存档后等待唤醒</p></div>
+        <div class="node"><h4>超时</h4><p>默认 30 分钟自动拒绝，扫描任务兜底</p></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node accent"><h4>HitlCoreService.confirmAndResolve()</h4><p>CAS 消费 Token · 通知/恢复 Worker · 写审计日志</p></div>
+    </div>
+    <div class="muted-box mt-m small">读图方法：先看最上方五个触发源，再看中间拦截器生成审批凭证，最后看三种等待路径如何汇入恢复服务。边界：该图是 S1 的业务架构摘要，不代表 S2/S3 官方框架内置了 WS、IM 或 CAS Token。</div>
+    <div class="deck-footer"><span>reconstructed harness flow</span><span class="slide-number" data-current="9" data-total="13"></span></div>
+    <div class="footnote">重绘依据为 S1 正文“核心数据流”图片及其后续生命周期、安全设计、多工具聚合说明。原图尺寸 1024×1536，竖图缩入 16:9 会降低可读性，因此本页重建摘要。</div>
+    <div class="notes">这页是主机制图。解释为什么重绘：原图竖向很长，在幻灯片里不能既符合尺寸又读得清。所以保留证据链并重建可读图。</div>
+  </section>
+
+  <section class="slide" data-title="原图证据">
+    <p class="kicker">09 · Original evidence audit</p>
+    <h2 class="h2">原图用于追溯，不直接承担整页判断</h2>
+    <div class="source-shot">
+      <img class="preview" src="assets/s1-flow-preview.webp" alt="S1 HITL 核心数据流图预览衍生图">
+      <div class="card">
+        <h3 class="h3">为什么不把原图压进机制页？</h3>
+        <ul class="compact body">
+          <li><strong>原始尺寸：</strong>1024×1536，竖向流程图。</li>
+          <li><strong>80% 尺寸要求：</strong>高度 1229px，超过 1080p 幻灯片高度。</li>
+          <li><strong>证据条件：</strong>来自掘金文章正文图片，不是官方框架文档截图。</li>
+          <li><strong>使用方式：</strong>本页保留低分辨率预览衍生图；上一页用文字与结构重绘承载判断。</li>
+        </ul>
+        <div class="callout mt-m">结论边界：原图支持“一个业务 Harness 方案将触发源、拦截器、审批通道和恢复服务串成数据流”；不能外推为所有 Agent 框架的标准实现。</div>
+        <div class="crop-grid">
+          <figure><img src="assets/s1-crop-trigger.webp" alt="触发源局部裁切"><figcaption>触发源：风险评分、前端敏感操作、沙箱命令、规则引擎、多工具聚合。</figcaption></figure>
+          <figure><img src="assets/s1-crop-interceptor.webp" alt="HITLInterceptor 局部裁切"><figcaption>拦截器：生成 Token、写库、推送请求、注册超时。</figcaption></figure>
+          <figure><img src="assets/s1-crop-approval.webp" alt="审批通道局部裁切"><figcaption>审批通道：在线确认、离线 IM 卡片、超时自动拒绝。</figcaption></figure>
+          <figure><img src="assets/s1-crop-service.webp" alt="HitlCoreService 局部裁切"><figcaption>恢复服务：CAS 消费 Token、Worker 通知/恢复、审计日志。</figcaption></figure>
+        </div>
+      </div>
+    </div>
+    <div class="deck-footer"><span>source image audit</span><span class="slide-number" data-current="10" data-total="13"></span></div>
+    <div class="footnote">原始图片资产：S1 source package 的 images/image-01.webp；本页显示 assets/s1-flow-preview.webp 作为版面预览衍生图，主证据判断由上一页重绘图承担。</div>
+    <div class="notes">这页回应用户对主证据图片的要求：图片要能读懂。我们明确说明原图由于比例问题，不承担独立判断，而是作为追溯证据。</div>
+  </section>
+
+  <section class="slide" data-title="高级边界">
+    <p class="kicker">10 · Advanced boundaries</p>
+    <h2 class="h2">真正落地时，最容易被低估的是“多工具、嵌套、长等待”</h2>
+    <div class="page-grid">
+      <div class="card">
+        <h3 class="h3">多工具并发</h3>
+        <div class="flow-row three">
+          <div class="node"><h4>工具 A</h4><p>需要审批</p></div>
+          <div class="node"><h4>工具 B</h4><p>需要审批</p></div>
+          <div class="node"><h4>工具 C</h4><p>已完成</p></div>
+        </div>
+        <div class="callout mt-m">S1 倾向聚合成一个 hitl_request；S2 要求每个 action 以相同顺序提供 decision。</div>
+      </div>
+      <div class="card">
+        <h3 class="h3">嵌套 Agent / Agent-as-tool</h3>
+        <div class="flow-row three">
+          <div class="node"><h4>Top agent</h4><p>发起任务</p></div>
+          <div class="node"><h4>Nested agent</h4><p>作为工具执行</p></div>
+          <div class="node accent"><h4>Outer RunState</h4><p>审批仍浮到外层 run</p></div>
+        </div>
+        <div class="callout mt-m">S3 明确：嵌套 Agent.as_tool 内部审批也 surface 到 outer run，并在原 top-level run 上恢复。</div>
+      </div>
+    </div>
+    <div class="page-grid short-grid mt-m">
+      <div class="muted-box small"><strong>长等待：</strong>S3 建议为 pending approvals 存版本标记，避免模型、提示词或工具定义更新后无法反序列化或语义漂移。</div>
+      <div class="muted-box small"><strong>安全边界：</strong>S1 的 Token CAS、超时扫描和审计日志属于业务系统级安全设计；框架 API 本身不等于完整审批系统。</div>
+    </div>
+    <div class="deck-footer"><span>edge cases</span><span class="slide-number" data-current="11" data-total="13"></span></div>
+    <div class="footnote">S1 描述多工具聚合与一次 Token；S2 描述 multiple decisions 必须按 interrupt action 顺序提供；S3 描述 nested Agent.as_tool 审批、RunState 持久化和 pending task versioning。</div>
+    <div class="notes">这页讲高级但很重要的边界。对小白不需要讲很深代码，但要知道复杂 Agent 不是单工具单弹窗。</div>
+  </section>
+
+  <section class="slide" data-title="落地检查表">
+    <p class="kicker">11 · Implementation checklist</p>
+    <h2 class="h2">如果明天要设计一个 HITL 系统，先回答这 8 个问题</h2>
+    <table class="matrix mt-m tall-table">
+      <tr><th>检查项</th><th>应该明确什么</th><th>来源依据</th></tr>
+      <tr><td>风险分级</td><td>哪些工具永远放行、哪些警告、哪些人工确认、哪些硬拦截</td><td>S1 PASS/WARN/HITL/BLOCK</td></tr>
+      <tr><td>触发条件</td><td>按工具名、参数、业务规则、前端元素、沙箱命令还是评分触发</td><td>S1 + S2 + S3</td></tr>
+      <tr><td>允许决策</td><td>每个工具是否允许 edit/respond，还是只允许 approve/reject</td><td>S2 allowed_decisions</td></tr>
+      <tr><td>状态保存</td><td>暂停后如何保存 run/graph/agent 状态，如何用同一 thread 或 RunState 恢复</td><td>S2 checkpointer；S3 RunState</td></tr>
+      <tr><td>审批通道</td><td>在线弹窗、离线 IM、审批页、控制台，审批人是谁</td><td>S1 simple/standard</td></tr>
+      <tr><td>安全凭证</td><td>Token 是否一次性、是否原子消费、是否可防重复点击和伪造</td><td>S1 Token CAS</td></tr>
+      <tr><td>超时策略</td><td>等多久、默认拒绝还是升级、服务重启后如何兜底</td><td>S1 30 分钟 + 扫描</td></tr>
+      <tr><td>审计与版本</td><td>记录谁批准了什么；长等待任务如何处理代码/模型版本变化</td><td>S1 审计；S3 versioning</td></tr>
+    </table>
+    <div class="deck-footer"><span>checklist</span><span class="slide-number" data-current="12" data-total="13"></span></div>
+    <div class="footnote">该检查表是对三方来源的工程归纳，用于建立心智模型；不是任何单一框架的完整官方 checklist。</div>
+    <div class="notes">这页把前面的知识转成行动清单。它让听众知道实现 HITL 不是只加 middleware，还要处理通知、安全、审计、超时。</div>
+  </section>
+
+  <section class="slide" data-title="来源与边界">
+    <p class="kicker">12 · Sources and limits</p>
+    <h2 class="h2">本 deck 的证据来源与外推边界</h2>
+    <div class="source-list">
+      <div class="source-item">
+        <h4>[S1] 掘金：简单聊一下 Harness 层中的人机协同（HITL）</h4>
+        <p>URL: https://juejin.cn/post/7653305987720052782 · 发布：2026-06-21 · 捕获：2026-07-02 · 用途：业务 Harness 架构、风险评分、Token/WS/IM/超时/审计设计。</p>
+      </div>
+      <div class="source-item">
+        <h4>[S2] LangChain Docs：Human-in-the-loop</h4>
+        <p>URL: https://docs.langchain.com/oss/python/langchain/human-in-the-loop · 捕获：2026-07-02 · 用途：middleware、interrupt_on、allowed_decisions、when、checkpointer、resume decisions。</p>
+      </div>
+      <div class="source-item">
+        <h4>[S3] OpenAI Agents SDK：Human-in-the-loop</h4>
+        <p>URL: https://openai.github.io/openai-agents-python/human_in_the_loop/ · 捕获：2026-07-02 · 用途：needs_approval、RunResult.interruptions、RunState、nested Agent.as_tool、long-running approvals。</p>
+      </div>
+    </div>
+    <div class="page-grid short-grid mt-m">
+      <div class="callout">最终判断：HITL 是 Agent 工具执行治理的关键机制；学习路线应从“为什么暂停”开始，再看“如何恢复”和“如何证明审批可信”。</div>
+      <div class="muted-box small">边界声明：S1 是中文技术文章，不是官方标准；S2/S3 是各自框架文档，API 细节可能随版本变化。本文不比较产品优劣，只抽取共同心智模型。</div>
+    </div>
+    <div class="deck-footer"><span>sources</span><span class="slide-number" data-current="13" data-total="13"></span></div>
+    <div class="footnote">所有正文判断均回链到 S1/S2/S3；若用于正式培训，建议在讲授当天重新校验官方文档版本。</div>
+    <div class="notes">最后落在来源和边界，避免听众把一个参考架构当成标准答案。也提醒官方文档可能更新。</div>
+  </section>
+
+</div>
+<script src="assets/runtime.js"></script>
+</body>
+</html>
