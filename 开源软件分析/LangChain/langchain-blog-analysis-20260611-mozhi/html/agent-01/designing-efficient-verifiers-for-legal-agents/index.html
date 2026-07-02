@@ -36,7 +36,7 @@
       padding: 56px 6vw 40px;
       background:
         linear-gradient(135deg, rgba(7, 17, 31, 0.96), rgba(18, 36, 63, 0.92)),
-        url("assets/score-modes-dark.png") center / cover no-repeat;
+        url("assets/score-modes-dark.webp") center / cover no-repeat;
       color: #f8fbff;
     }
 
@@ -293,7 +293,7 @@
           </div>
         </div>
         <figure>
-          <img src="assets/lab-verification-dark.png" alt="LAB verification checks one agent output against many rubric criteria through repeated judge calls">
+          <img src="assets/lab-verification-dark.webp" alt="LAB verification checks one agent output against many rubric criteria through repeated judge calls">
           <figcaption>这张图说明成本来源：同一个 agent output 会被重复送入 judge call，每条 criteria 得到一个 verdict。</figcaption>
         </figure>
       </div>
@@ -304,7 +304,7 @@
       <p class="lead">Batch scoring 用一次调用处理整份 rubric，节省重复输入 token；代价是 judge 要在更大的上下文里同时跟踪多条 criteria，因此文章观察到 batch 的 match rate 通常低于 per-criterion。</p>
       <div class="grid">
         <figure>
-          <img src="assets/score-modes-dark.png" alt="Per-criterion scoring uses about 50 judge calls while batch scoring uses one judge call">
+          <img src="assets/score-modes-dark.webp" alt="Per-criterion scoring uses about 50 judge calls while batch scoring uses one judge call">
           <figcaption>同一份 agent output 和 rubric，per-criterion 约 50 次 judge call，batch 只需 1 次。</figcaption>
         </figure>
         <div class="panel">
@@ -324,7 +324,7 @@
       <h2>更便宜 token 的关键，是找接近 frontier 标签的 open verifier。</h2>
       <p class="lead">研究以 Opus 4.7 per-criterion 标签为参考，比较 GPT-5.5、Sonnet 4.6、DeepSeek v4 Flash、Claude Haiku 4.5。结论不是“最便宜就最好”，而是要同时看 cost、label drift 和 false pass。</p>
       <figure>
-        <img src="assets/cost-drift-dark.png" alt="Verifier cost versus Opus label drift chart showing DeepSeek batch and per-criterion as low-cost options">
+        <img src="assets/cost-drift-dark.webp" alt="Verifier cost versus Opus label drift chart showing DeepSeek batch and per-criterion as low-cost options">
         <figcaption>左下角才是理想区域；DeepSeek per-criterion label drift 为 4.3%、成本为 $1.62/1k criteria，DeepSeek batch 成本降到 $0.09/1k criteria 但 drift 升到 6.2%。</figcaption>
       </figure>
       <div class="cards">
@@ -358,7 +358,7 @@
           </div>
         </div>
         <figure>
-          <img src="assets/rl-cost-dark.png" alt="Projected verifier cost during RL training showing Opus at 18k dollars and DeepSeek batch at 18 dollars">
+          <img src="assets/rl-cost-dark.webp" alt="Projected verifier cost during RL training showing Opus at 18k dollars and DeepSeek batch at 18 dollars">
           <figcaption>RL 场景下差距被放大：同一轮 reward labeling，模型和评分方式会决定实验是否经济可行。</figcaption>
         </figure>
       </div>

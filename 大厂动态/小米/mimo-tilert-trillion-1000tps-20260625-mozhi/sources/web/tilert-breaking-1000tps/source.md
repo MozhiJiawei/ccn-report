@@ -7,7 +7,7 @@
 
 ## Article / Main Content
 
-![TileRT Logo](images/image-01.png)
+![TileRT Logo](images/image-01.webp)
 
 Original image URL: https://www.tilert.ai/tilert-logo.png
 
@@ -37,7 +37,7 @@ In traditional inference frameworks, a model is decomposed into a vast collectio
 
 TileRT was architected from day one to eliminate these execution gaps born from operator boundaries.
 
-![Execution Gap — the boundaries of the traditional execution model.](images/image-02.png)
+![Execution Gap — the boundaries of the traditional execution model.](images/image-02.webp)
 
 Original image URL: https://www.tilert.ai/blog/figures/execution_gap_boundary_en.png
 
@@ -65,7 +65,7 @@ But the real engineering cliff lies here: When a system is already sitting on to
 
 In this extreme performance regime, execution bottlenecks expose themselves in entirely new ways.
 
-![The Microsecond War — bottleneck triage at 1000 TPS.](images/image-03.png)
+![The Microsecond War — bottleneck triage at 1000 TPS.](images/image-03.webp)
 
 Original image URL: https://www.tilert.ai/blog/figures/microsecond_war_1000tps_en.png
 
@@ -85,7 +85,7 @@ The common denominator of these issues is that they continuously generate execut
 
 In many scenarios, while the inference system has pushed the hardware to its absolute limit, intrinsic properties of the model architecture continue to inject redundant execution overhead. At this stage, Hardware-Software Co-design (System-Model Co-design) becomes the only viable path to transcend the hardware ceiling.
 
-![Model × System deep co-design.](images/image-04.png)
+![Model × System deep co-design.](images/image-04.webp)
 
 Original image URL: https://www.tilert.ai/blog/figures/model_system_codesign_en.png
 

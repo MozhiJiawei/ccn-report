@@ -63,14 +63,14 @@ GKE Inference Gateway enhances the existing [GKE Gateway](https://docs.cloud.goo
 
 The following diagram illustrates GKE Inference Gateway and its integration with AI safety, observability, and model serving within a GKE cluster.
 
-![Figure: GKE Inference Gateway resource model](images/image-01.png)
+![Figure: GKE Inference Gateway resource model](images/image-01.webp)
 
 Image source: https://docs.cloud.google.com/static/kubernetes-engine/images/inference-pool-objective.png
 Caption: Figure: GKE Inference Gateway resource model
 
 The following diagram illustrates the resource model that focuses on two new [inference-focused personas](https://gateway-api-inference-extension.sigs.k8s.io/concepts/roles-and-personas) and the resources they manage.
 
-![Figure: GKE Inference Gateway resource model with inference-focused personas](images/image-02.png)
+![Figure: GKE Inference Gateway resource model with inference-focused personas](images/image-02.webp)
 
 Image source: https://docs.cloud.google.com/static/kubernetes-engine/images/resource-objective.png
 Caption: Figure: GKE Inference Gateway resource model with inference-focused personas
@@ -114,7 +114,7 @@ GKE Inference Gateway routes client requests from the initial request to a model
 
 The following diagram illustrates the request flow from a client to a model instance through GKE Inference Gateway.
 
-![Figure: GKE Inference Gateway request flow](images/image-03.png)
+![Figure: GKE Inference Gateway request flow](images/image-03.webp)
 
 Image source: https://docs.cloud.google.com/static/kubernetes-engine/images/GKE-Inference-Gateway-request-flow.png
 Caption: Figure: GKE Inference Gateway request flow
@@ -145,7 +145,7 @@ Using GKE Inference Gateway, you can deploy these LLMs on your GKE cluster with 
 
 The following diagram illustrates how GKE Inference Gateway routes requests to different models based on the model name and `Priority`.
 
-![Figure: Serving multiple generative AI models on a GKE cluster using GKE Inference Gateway](images/image-04.png)
+![Figure: Serving multiple generative AI models on a GKE cluster using GKE Inference Gateway](images/image-04.webp)
 
 Image source: https://docs.cloud.google.com/static/kubernetes-engine/images/example-1-multiple-objectives.png
 Caption: Figure: Serving multiple generative AI models on a GKE cluster using GKE Inference Gateway
@@ -158,7 +158,7 @@ A company wants to serve LLMs for document analysis and focuses on audiences in 
 
 The following diagram illustrates how GKE Inference Gateway serves multiple LoRA adapters on a shared accelerator.
 
-![Figure: Serving LoRA adapters on a shared accelerator](images/image-05.png)
+![Figure: Serving LoRA adapters on a shared accelerator](images/image-05.webp)
 
 Image source: https://docs.cloud.google.com/static/kubernetes-engine/images/example2-lora-objective.png
 Caption: Figure: Serving LoRA adapters on a shared accelerator

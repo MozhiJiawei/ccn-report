@@ -9,7 +9,7 @@
 - `review/assets/`：review deck 与最终 slide 使用的论文图表证据。
 - `review/visual-qa.md`：Source Understanding 渲染校验与独立视觉 QA 记录。
 - `final-slide/rtpurbo-summary-slide.html`：一页高密度 HTML PPT。
-- `final-slide/rtpurbo-summary-slide.png`：一页 HTML PPT 的渲染预览。
+- `final-slide/rtpurbo-summary-slide.webp`：一页 HTML PPT 的渲染预览。
 - `final-slide/rtpurbo-summary-slide.pptx`：可编辑 PowerPoint 版本。
 - `final-slide/rtpurbo-summary-slide.pptx.inspect.ndjson`：PPTX 检查快照。
 - `baselines/ppt_content_brief.md`：生成一页 PPT 的内容 brief。

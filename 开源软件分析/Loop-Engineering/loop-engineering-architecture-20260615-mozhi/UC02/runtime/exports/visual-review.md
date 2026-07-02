@@ -2,13 +2,13 @@
 
 ## Claude `-loop` 周期运行
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Claude `-loop` 周期运行.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Claude `-loop` 周期运行.webp`
 - Reference: not found
 - Metrics: `1909x751`, non-white pixel ratio `0.0910`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Claude `-loop` 周期运行.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Claude `-loop` 周期运行.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 1909x751, non-white pixel ratio 0.0910.
 4. State explicitly that you reviewed both the export and the reference before judging quality.
@@ -20,13 +20,13 @@ AI visual review task:
 
 ## Codex Automations 周期运行
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Codex Automations 周期运行.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Codex Automations 周期运行.webp`
 - Reference: not found
 - Metrics: `1909x751`, non-white pixel ratio `0.0914`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Codex Automations 周期运行.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Codex Automations 周期运行.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 1909x751, non-white pixel ratio 0.0914.
 4. State explicitly that you reviewed both the export and the reference before judging quality.
@@ -38,13 +38,13 @@ AI visual review task:
 
 ## Codex PR Babysitter tick
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Codex PR Babysitter tick.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Codex PR Babysitter tick.webp`
 - Reference: not found
 - Metrics: `2361x1411`, non-white pixel ratio `0.0597`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Codex PR Babysitter tick.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Codex PR Babysitter tick.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 2361x1411, non-white pixel ratio 0.0597.
 4. State explicitly that you reviewed both the export and the reference before judging quality.
@@ -56,13 +56,13 @@ AI visual review task:
 
 ## GitHub Actions 事件 - 定时运行
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\GitHub Actions 事件 - 定时运行.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\GitHub Actions 事件 - 定时运行.webp`
 - Reference: not found
 - Metrics: `2135x995`, non-white pixel ratio `0.0750`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\GitHub Actions 事件 - 定时运行.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\GitHub Actions 事件 - 定时运行.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 2135x995, non-white pixel ratio 0.0750.
 4. State explicitly that you reviewed both the export and the reference before judging quality.
@@ -74,13 +74,13 @@ AI visual review task:
 
 ## Grok `-loop` 周期运行
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Grok `-loop` 周期运行.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Grok `-loop` 周期运行.webp`
 - Reference: not found
 - Metrics: `1909x751`, non-white pixel ratio `0.0900`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Grok `-loop` 周期运行.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\UC02\runtime\exports\Grok `-loop` 周期运行.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 1909x751, non-white pixel ratio 0.0900.
 4. State explicitly that you reviewed both the export and the reference before judging quality.

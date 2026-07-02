@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>隐式思维链：Token 成本下降的证明边界</title>
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/fonts.css">
+  <link rel="stylesheet" id="theme-link" href="assets/css/engineering-whiteprint.css">
+  <style>
+    :root {
+      --su-accent: #155eef;
+      --su-green: #0f766e;
+      --su-amber: #b54708;
+      --su-red: #b42318;
+      --su-ink: #111827;
+      --su-muted: #475467;
+      --su-line: rgba(20, 32, 51, .14);
+      --su-soft: rgba(21, 94, 239, .08);
+      --su-green-soft: rgba(15, 118, 110, .09);
+      --su-amber-soft: rgba(181, 71, 8, .10);
+      --su-red-soft: rgba(180, 35, 24, .10);
+    }
+    html, body { margin: 0; overflow: hidden; }
+    body { letter-spacing: 0; }
+    .deck { background: #f7f9fc; height: 100vh; overflow: hidden; }
+    .slide {
+      padding: 48px 58px 42px;
+      height: 100vh;
+      overflow: hidden;
+      justify-content: flex-start;
+      background:
+        linear-gradient(rgba(20,32,51,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20,32,51,.035) 1px, transparent 1px),
+        #fbfcff;
+      background-size: 36px 36px;
+      color: var(--su-ink);
+    }
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 22px;
+      border: 1px solid rgba(21, 94, 239, .13);
+      pointer-events: none;
+    }
+    .kicker {
+      color: var(--su-accent);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    h1, h2 {
+      letter-spacing: 0;
+      margin: 0;
+      color: #101828;
+      line-height: 1.08;
+    }
+    h1 { font-size: 58px; max-width: 1260px; }
+    h2 { font-size: 42px; max-width: 1200px; }
+    .subtitle {
+      margin-top: 18px;
+      max-width: 1080px;
+      color: var(--su-muted);
+      font-size: 22px;
+      line-height: 1.55;
+    }
+    .slide.compact .subtitle { font-size: 20px; line-height: 1.42; margin-top: 12px; }
+    .grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 26px; margin-top: 32px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-top: 30px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 28px; }
+    .panel {
+      border: 1px solid var(--su-line);
+      background: rgba(255,255,255,.82);
+      border-radius: 8px;
+      padding: 22px;
+      box-shadow: 0 14px 38px rgba(16,24,40,.055);
+    }
+    .panel h3 { margin: 0 0 10px; font-size: 22px; color: #101828; }
+    .panel p, .panel li { color: #344054; font-size: 18px; line-height: 1.5; }
+    .panel p { margin: 0; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--su-accent);
+      background: var(--su-soft);
+      border: 1px solid rgba(21,94,239,.16);
+      margin-bottom: 12px;
+    }
+    .metric-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 34px; }
+    .metric {
+      min-height: 142px;
+      border: 1px solid var(--su-line);
+      border-radius: 8px;
+      padding: 18px;
+      background: #fff;
+    }
+    .metric .label { color: #667085; font-size: 14px; }
+    .metric .value { margin: 8px 0 6px; font-size: 33px; font-weight: 800; color: #101828; font-variant-numeric: tabular-nums; }
+    .metric .note { color: #475467; font-size: 15px; line-height: 1.35; }
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr 70px 1fr 70px 1fr;
+      align-items: center;
+      gap: 12px;
+      margin-top: 36px;
+    }
+    .node {
+      border: 1px solid rgba(21,94,239,.24);
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px 18px;
+      min-height: 150px;
+    }
+    .node strong { display: block; color: #101828; font-size: 22px; margin-bottom: 10px; }
+    .node span { display: block; color: #475467; font-size: 17px; line-height: 1.45; }
+    .arrow { height: 2px; background: var(--su-accent); position: relative; }
+    .arrow::after {
+      content: "";
+      position: absolute;
+      right: -2px;
+      top: -5px;
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid var(--su-accent);
+    }
+    .matrix { width: 100%; border-collapse: collapse; margin-top: 28px; background: #fff; border: 1px solid var(--su-line); }
+    .matrix th, .matrix td { border-bottom: 1px solid rgba(20,32,51,.10); padding: 14px 16px; text-align: left; vertical-align: top; }
+    .matrix th { color: #667085; font-size: 15px; font-weight: 700; }
+    .matrix td { color: #344054; font-size: 17px; line-height: 1.42; }
+    .matrix tr:last-child td { border-bottom: 0; }
+    .term-map {
+      display: grid;
+      grid-template-columns: 1.05fr .9fr 1.05fr;
+      gap: 24px;
+      margin-top: 34px;
+      align-items: stretch;
+    }
+    .term-card {
+      border: 1px solid var(--su-line);
+      border-radius: 8px;
+      padding: 22px;
+      background: #fff;
+    }
+    .term-card h3 { margin: 0 0 10px; font-size: 24px; }
+    .term-card ul { margin: 14px 0 0; padding-left: 20px; }
+    .term-card li { margin: 8px 0; font-size: 17px; color: #344054; }
+    .bridge {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+    }
+    .bridge-line {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+      color: #475467;
+      font-size: 14px;
+    }
+    .bridge-line::before, .bridge-line::after { content: ""; height: 1px; background: rgba(21,94,239,.25); }
+    .tree {
+      display: grid;
+      grid-template-rows: repeat(4, 64px);
+      gap: 12px;
+      margin-top: 28px;
+      max-width: 760px;
+    }
+    .tree-row { display: flex; justify-content: center; gap: 16px; }
+    .tree-cell {
+      min-width: 74px;
+      border: 1px solid rgba(21,94,239,.25);
+      background: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #101828;
+      font-weight: 800;
+    }
+    .tree-cell.dim { color: #98a2b3; border-style: dashed; background: rgba(255,255,255,.60); }
+    .stage-list { margin-top: 28px; display: grid; gap: 12px; }
+    .stage {
+      display: grid;
+      grid-template-columns: 110px 1fr 130px;
+      gap: 16px;
+      align-items: center;
+      border: 1px solid var(--su-line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .stage b { font-size: 18px; color: #101828; }
+    .stage span { color: #475467; font-size: 17px; }
+    .stage em { font-style: normal; color: var(--su-green); font-weight: 800; text-align: right; }
+    .risk { background: var(--su-amber-soft); border-color: rgba(181,71,8,.22); }
+    .risk .badge { color: var(--su-amber); background: #fff7ed; border-color: rgba(181,71,8,.20); }
+    .positive { background: var(--su-green-soft); border-color: rgba(15,118,110,.22); }
+    .positive .badge { color: var(--su-green); background: #ecfdf3; border-color: rgba(15,118,110,.20); }
+    .negative { background: var(--su-red-soft); border-color: rgba(180,35,24,.22); }
+    .negative .badge { color: var(--su-red); background: #fff1f3; border-color: rgba(180,35,24,.20); }
+    .quote {
+      border-left: 4px solid var(--su-accent);
+      padding: 16px 20px;
+      background: rgba(255,255,255,.82);
+      margin-top: 26px;
+      color: #344054;
+      font-size: 20px;
+      line-height: 1.55;
+    }
+    .refs { margin-top: 24px; display: grid; gap: 8px; color: #475467; font-size: 14px; line-height: 1.38; }
+    .refs a { color: #155eef; text-decoration: none; }
+    .figure-panel {
+      border: 1px solid var(--su-line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 14px 38px rgba(16,24,40,.055);
+    }
+    .figure-panel img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid rgba(20,32,51,.12);
+      background: #fff;
+    }
+    .figure-panel figcaption {
+      margin-top: 10px;
+      color: #475467;
+      font-size: 14px;
+      line-height: 1.36;
+    }
+    .figure-panel.large { padding: 14px; }
+    .figure-panel.large img { max-height: 735px; object-fit: contain; }
+    .evidence-stack { display: grid; gap: 18px; margin-top: 28px; }
+    .evidence-stack .figure-panel img { width: auto; max-width: 100%; }
+    .two-figures {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, .95fr);
+      gap: 22px;
+      align-items: start;
+      margin-top: 28px;
+    }
+    .slide.compact .two-figures { margin-top: 20px; }
+    .two-figures .figure-panel:first-child img { width: 100%; }
+    .two-figures .figure-panel:nth-child(2) img { width: 100%; }
+    .slide.compact .panel { padding: 18px 20px; }
+    .slide.compact .panel h3 { font-size: 21px; margin-bottom: 8px; }
+    .slide.compact .panel li { font-size: 17px; line-height: 1.38; margin: 4px 0; }
+    .takeaway-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 20px;
+    }
+    .takeaway-strip div {
+      border: 1px solid var(--su-line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.86);
+      padding: 15px 18px;
+      color: #344054;
+      font-size: 17px;
+      line-height: 1.36;
+    }
+    .takeaway-strip strong { color: #101828; }
+    .slide-number { color: #667085; }
+  </style>
+</head>
+<body>
+<main class="deck" data-themes="engineering-whiteprint,academic-paper,swiss-grid,minimal-white">
+  <section class="slide is-active" data-title="结论">
+    <div class="kicker">Source Understanding / 2026-06-25</div>
+    <h1>隐式思维链有了理论支点，但还不是通用降本方案</h1>
+    <p class="subtitle">Berkeley 与 Princeton 的新论文证明：在 k-parity 这类可树形分解任务上，Transformer 可以通过 Log-ICoT 把显式 CoT 逐步内化进隐藏状态，并在推理时省掉中间 reasoning token。关键边界是：证明发生在简化理论模型与合成任务上，不等于现实大模型的数学、代码、Agent 推理成本已经可直接大幅下降。</p>
+    <div class="metric-strip">
+      <div class="metric">
+        <div class="label">主论文时间</div>
+        <div class="value">2026.05.27</div>
+        <div class="note">arXiv:2605.28600v1；UC Berkeley + Princeton。</div>
+      </div>
+      <div class="metric">
+        <div class="label">训练阶段</div>
+        <div class="value">k-1 -> log₂k</div>
+        <div class="note">Log-ICoT 按树层级成批隐藏 CoT token。</div>
+      </div>
+      <div class="metric">
+        <div class="label">实验设定</div>
+        <div class="value">k=16</div>
+        <div class="note">n=30、4 层 Transformer、4 个训练阶段。</div>
+      </div>
+      <div class="metric">
+        <div class="label">传播口径</div>
+        <div class="value">100%</div>
+        <div class="note">验证集准确率；不是开放域推理 benchmark。</div>
+      </div>
+    </div>
+    <div class="refs">
+      <span>[1] <a href="https://arxiv.org/html/2605.28600v1">Transformers Provably Learn to Internalize Chain-of-Thought</a></span>
+      <span>[2] <a href="https://eu.36kr.com/en/p/3842559523850504">36Kr / MachineHeart hotspot article</a></span>
+    </div>
+  </section>
+
+  <section class="slide" data-title="问题">
+    <div class="kicker">Why It Matters</div>
+    <h2>显式 CoT 的成本来自串行输出，不只是“多几个字”</h2>
+    <p class="subtitle">推理模型把中间步骤作为 token 一个个生成；每个 token 都要经历下一步采样、KV cache 读写和调度等待。隐式 CoT 的目标是把这些步骤变成模型内部计算，只在最后输出答案。</p>
+    <div class="flow">
+      <div class="node">
+        <strong>显式 CoT</strong>
+        <span>中间步骤可读、可审计，但必须逐 token 生成；长推理链直接抬高延迟和费用。</span>
+      </div>
+      <div class="arrow"></div>
+      <div class="node">
+        <strong>ICoT 设想</strong>
+        <span>训练时逐步移除中间 token，让模型在 hidden states 中承接中间计算。</span>
+      </div>
+      <div class="arrow"></div>
+      <div class="node">
+        <strong>推理收益</strong>
+        <span>答案通过一次前向路径得到，理论上避开显式 reasoning token 的输出开销。</span>
+      </div>
+    </div>
+    <div class="quote">需要谨慎：这不代表模型“不思考”，也不代表隐藏推理一定等价于自然语言 CoT；它只是把监督和计算位置从输出序列转移到模型内部表示。</div>
+    <div class="refs">
+      <span>[1] 主论文 Introduction：CoT tokens increase inference latency and computational overhead.</span>
+      <span>[2] Deng et al. 2023：将 horizontal token reasoning 蒸馏为 vertical hidden-state reasoning。</span>
+    </div>
+  </section>
+
+  <section class="slide" data-title="术语边界">
+    <div class="kicker">Terminology</div>
+    <h2>“隐式思维链”和“latent reasoning”相邻，但机制并不相同</h2>
+    <p class="subtitle">热点里常把 hidden reasoning、latent reasoning、abstract CoT 混在一起。做 PPT 时要按“训练信号在哪里、推理时生成什么、是否仍输出中间 token”区分。</p>
+    <div class="term-map">
+      <div class="term-card positive">
+        <span class="badge">ICoT / hidden-state internalization</span>
+        <h3>把 CoT 步骤内化到隐藏状态</h3>
+        <ul>
+          <li>训练来自完整 CoT，再逐步移除中间步骤。</li>
+          <li>推理时直接输出答案，不输出中间 reasoning token。</li>
+          <li>Log-ICoT 是本次论文提出的结构化 curriculum。</li>
+        </ul>
+      </div>
+      <div class="bridge">
+        <div class="bridge-line">共同目标：减少自然语言推理开销</div>
+        <div class="bridge-line">分歧点：是否仍生成中间符号</div>
+        <div class="bridge-line">风险点：可解释性与稳健性下降</div>
+      </div>
+      <div class="term-card">
+        <span class="badge">Latent / abstract token reasoning</span>
+        <h3>用非自然语言 token 做中间轨迹</h3>
+        <ul>
+          <li>Abstract-CoT 会生成 reserved abstract tokens。</li>
+          <li>仍存在中间序列，只是短、更不可读、受 codebook 约束。</li>
+          <li>目标是 token-efficient，但不等于完全无中间 token。</li>
+        </ul>
+      </div>
+    </div>
+    <table class="matrix">
+      <thead><tr><th>术语</th><th>推理时是否输出中间 token</th><th>核心证据</th><th>PPT 中的表达建议</th></tr></thead>
+      <tbody>
+        <tr><td>显式 CoT</td><td>是，自然语言 token</td><td>Wei et al. 2022 之后的大量经验路线</td><td>高准确率但高延迟、高 token 成本</td></tr>
+        <tr><td>ICoT / Log-ICoT</td><td>否，中间计算在 hidden states / padding positions</td><td>2605.28600v1 的 parity 理论保证</td><td>有理论支点，但边界很窄</td></tr>
+        <tr><td>Abstract-CoT</td><td>是，reserved abstract token</td><td>2604.22709v2 的 Qwen3-8B 实验</td><td>相关但不是同一机制</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide compact" data-title="方法">
+    <div class="kicker">Mechanism</div>
+    <h2>Log-ICoT 的核心是按推理树层级隐藏 token</h2>
+    <p class="subtitle">标准 ICoT 一次隐藏一个中间 token，训练阶段随 CoT 长度线性增长；Log-ICoT 利用 parity tree 的层级结构，一次隐藏一整层，把阶段数压到 log₂k。</p>
+    <div class="grid-2">
+      <figure class="figure-panel large">
+        <img src="assets/images/picture_001.webp" alt="Figure 1 comparison of Explicit CoT, ICoT, and Log-ICoT">
+        <figcaption>Figure 1 原图：Explicit CoT、standard ICoT 与 Log-ICoT 的训练范式对比。它是本 deck 的主机制图。</figcaption>
+      </figure>
+      <div class="panel">
+        <span class="badge">Curriculum</span>
+        <h3>从完整 CoT 到只看输入</h3>
+        <div class="stage-list">
+          <div class="stage"><b>Stage 0</b><span>完整 CoT 全部可见</span><em>监督最强</em></div>
+          <div class="stage"><b>Stage 1</b><span>隐藏一层树节点，用 0 padding 占位</span><em>几何移除</em></div>
+          <div class="stage"><b>Stage t</b><span>继续按层隐藏，而不是逐 token 移除</span><em>log₂k</em></div>
+          <div class="stage"><b>Test</b><span>中间位置为 0，只输入原始 bits</span><em>无显式 CoT</em></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="证明">
+    <div class="kicker">What Is Actually Proven</div>
+    <h2>证明的是“样本效率可保留、推理 token 可省掉”的理论命题</h2>
+    <p class="subtitle">主定理表明：在特定多层 Transformer 构造和 k-parity 设定下，Log-ICoT 可以匹配显式 CoT 的样本效率，同时测试时不需要顺序生成中间步骤。</p>
+    <div class="grid-3">
+      <div class="panel positive">
+        <span class="badge">样本效率</span>
+        <h3>保留 CoT 的学习优势</h3>
+        <p>无中间监督的 parity 学习对有限精度梯度方法很难；显式 CoT 可把问题拆成可学子步。Log-ICoT 证明内化后仍能保留这一优势。</p>
+      </div>
+      <div class="panel positive">
+        <span class="badge">推理开销</span>
+        <h3>测试时单次输出答案</h3>
+        <p>最终阶段中间位置只放 padding，模型仍可直接预测 parity 结果；避免了显式 CoT 的顺序 token 生成。</p>
+      </div>
+      <div class="panel positive">
+        <span class="badge">训练阶段</span>
+        <h3>线性阶段降到对数阶段</h3>
+        <p>标准 ICoT 逐步移除 token，需要随链长线性增长；Log-ICoT 按树层移除，阶段数与树高一致。</p>
+      </div>
+    </div>
+    <table class="matrix">
+      <thead><tr><th>证明对象</th><th>证明口径</th><th>不应外推为</th></tr></thead>
+      <tbody>
+        <tr><td>k-parity</td><td>经典理论任务，可用二叉树层级分解</td><td>所有数学/代码/多轮 Agent 任务都天然有清晰层级</td></tr>
+        <tr><td>简化多层 Transformer</td><td>固定 value matrix、定制 causal mask、预设 gated connections、量化锁定权重</td><td>现成商用 LLM 不改结构也自动满足条件</td></tr>
+        <tr><td>单次前向答案</td><td>中间 CoT 不作为输出 token 生成</td><td>总计算量为零，或所有推理成本都按同等比例下降</td></tr>
+      </tbody>
+    </table>
+    <div class="refs">
+      <span>[1] 主论文 Abstract / Theorem 1 / Limitations.</span>
+    </div>
+  </section>
+
+  <section class="slide compact" data-title="实验">
+    <div class="kicker">Experiment Signal</div>
+    <h2>实验验证了理论动态，不是通用 benchmark 胜利</h2>
+    <p class="subtitle">论文实验用 n=30、k=16、4 层 Transformer 和 4 个训练阶段展示 Log-ICoT 的学习过程：每次隐藏新层级时 loss 短暂上升，然后下降；最终所有中间 CoT 被 padding 后验证准确率达到 100%。</p>
+    <div class="two-figures">
+      <figure class="figure-panel">
+        <img src="assets/images/picture_002.webp" alt="Figure 2 attention mask and validation loss under Log-ICoT">
+        <figcaption>Figure 2：左侧为定制 attention mask，右侧为 n=30、k=16、4 层 Transformer 在四个训练阶段下的 validation loss。</figcaption>
+      </figure>
+      <figure class="figure-panel">
+        <img src="assets/images/picture_003.webp" alt="Figure 3 layer-wise attention maps">
+        <figcaption>Figure 3：最终阶段的 layer-wise attention maps；每层注意力集中在其负责的 parity-tree level。</figcaption>
+      </figure>
+    </div>
+    <div class="takeaway-strip">
+      <div><strong>支持什么：</strong>训练动态与 stage-wise curriculum 对齐，attention 可视化显示不同层关注对应 tree level。</div>
+      <div><strong>不覆盖什么：</strong>开放域数学、代码、工具调用、长上下文任务，以及商用推理系统的端到端 latency / cost。</div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="收益">
+    <div class="kicker">Cost Implication</div>
+    <h2>Token 成本下降的逻辑成立，但“大幅降低”仍是工程假设</h2>
+    <p class="subtitle">如果一个任务原本必须输出数百到上千个 reasoning token，ICoT 的长期价值很清楚：把中间推理从可见 token 序列迁入模型内部，减少 billed/output token 与串行等待。但这篇论文没有给出真实 API 费用或生产吞吐量数据。</p>
+    <div class="grid-3">
+      <div class="panel positive">
+        <span class="badge">成本来源</span>
+        <h3>显式 token 是可计费、可等待的</h3>
+        <p>CoT 越长，输出 token 越多，串行 decoding 越慢；这正是 reasoning models 的成本痛点。</p>
+      </div>
+      <div class="panel positive">
+        <span class="badge">节省机制</span>
+        <h3>中间步骤不再显式输出</h3>
+        <p>Log-ICoT 的最终推理形态不输出中间 CoT；理论上省掉了这部分输出序列。</p>
+      </div>
+      <div class="panel risk">
+        <span class="badge">工程缺口</span>
+        <h3>内部计算不等于免费</h3>
+        <p>隐藏状态计算、训练 curriculum、模型结构约束和质量回归都可能吃掉一部分收益。</p>
+      </div>
+    </div>
+    <table class="matrix">
+      <thead><tr><th>可以写成强判断</th><th>只能写成弱判断</th><th>不能写成标题级断言</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Log-ICoT 把标准 ICoT 的训练阶段从线性降到对数。</td>
+          <td>它为减少 reasoning token 成本提供理论路径。</td>
+          <td>所有推理模型的 token 成本将很快大幅降低。</td>
+        </tr>
+        <tr>
+          <td>在 k-parity 上，实验显示 4 阶段后可无显式 CoT 达到 100% 验证准确率。</td>
+          <td>它可能启发真实 LLM 的 structured internalization 训练。</td>
+          <td>隐藏推理已可替代显式 CoT 的可解释性和稳健性。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide" data-title="边界">
+    <div class="kicker">Evidence Boundary</div>
+    <h2>真正的风险在稳健性、监督成本和可审计性</h2>
+    <p class="subtitle">相邻研究提醒：隐式推理并非天然稳定。缺少有效监督时，latent / implicit token 可能语义不足、训练成本上升；输入格式变化也可能让隐式路径明显退化。</p>
+    <div class="grid-3">
+      <div class="panel negative">
+        <span class="badge">稳健性</span>
+        <h3>格式变化会破坏隐式路径</h3>
+        <p>有研究在算术任务上发现，隐式 CoT 对反转顺序、缩放格式更敏感；显式 CoT 仍更稳。</p>
+      </div>
+      <div class="panel risk">
+        <span class="badge">监督成本</span>
+        <h3>压缩越狠越需要引导</h3>
+        <p>OpenReview 论文指出，缺乏有效监督的 latent tokens 可能导致学习效率和稳定性下降。</p>
+      </div>
+      <div class="panel risk">
+        <span class="badge">可审计性</span>
+        <h3>省 token 会牺牲可见推理轨迹</h3>
+        <p>企业场景往往需要审计、纠错和安全监控；隐藏推理降低了中间过程可观察性。</p>
+      </div>
+    </div>
+    <div class="evidence-stack">
+      <figure class="figure-panel">
+        <img src="assets/images/picture_004.webp" alt="Figure 4 appendix example of parity learning and ICoT curriculum">
+        <figcaption>Appendix Figure 4：用 n=8、k=4 的小例子展示 parity 层级分解，以及 CoT/ICoT curriculum 如何从完整 thinking trace 过渡到 padding tokens。</figcaption>
+      </figure>
+    </div>
+    <div class="quote">更稳妥的叙事：这不是“CoT 过时了”，而是“显式 CoT 的训练价值可能被保留，推理时的可见 token 负担有机会被压缩”。</div>
+    <div class="refs">
+      <span>[1] <a href="https://arxiv.org/html/2411.15862v3">Do LLMs Really Think Step-by-step In Implicit Reasoning?</a></span>
+      <span>[2] <a href="https://openreview.net/forum?id=loP9q6E5kQ">Dissecting Implicit Chain of Thought</a></span>
+    </div>
+  </section>
+
+  <section class="slide" data-title="后续">
+    <div class="kicker">Baseline For PPT Brief</div>
+    <h2>后续 PPT 应以“理论突破 + 工程未兑现”为主线</h2>
+    <p class="subtitle">如果你批准这份 source understanding，下一阶段 brief 会围绕一条主结论展开：Log-ICoT 第一次给 ICoT 的有效性提供清晰理论支点，但面向真实 reasoning token 成本，还需要任务结构、训练成本、稳健性和审计机制四重验证。</p>
+    <div class="grid-4">
+      <div class="panel positive">
+        <span class="badge">可讲清</span>
+        <h3>为什么热点重要</h3>
+        <p>显式思维链昂贵，ICoT 试图保留能力、去掉输出 token。</p>
+      </div>
+      <div class="panel positive">
+        <span class="badge">可证明</span>
+        <h3>论文证明了什么</h3>
+        <p>在 k-parity 与简化 Transformer 上，Log-ICoT 匹配 CoT 样本效率。</p>
+      </div>
+      <div class="panel risk">
+        <span class="badge">需降温</span>
+        <h3>媒体标题如何改写</h3>
+        <p>“有望降低”可以保留；“已经大幅降低”证据不足。</p>
+      </div>
+      <div class="panel risk">
+        <span class="badge">需验证</span>
+        <h3>落地还缺什么</h3>
+        <p>真实任务 benchmark、端到端成本、鲁棒性、可解释与审计。</p>
+      </div>
+    </div>
+    <table class="matrix">
+      <thead><tr><th>建议批准后的 brief 方向</th><th>候选页面判断</th></tr></thead>
+      <tbody>
+        <tr><td>背景页</td><td>显式 CoT 把推理能力买成了串行 token 账单。</td></tr>
+        <tr><td>机制页</td><td>Log-ICoT 用树形 curriculum 把训练阶段从 k-1 压到 log₂k。</td></tr>
+        <tr><td>证据页</td><td>证明发生在 k-parity，不应直接外推到通用 reasoning models。</td></tr>
+        <tr><td>判断页</td><td>它是 token 降本的理论路线图，不是已经兑现的工程账单。</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+<script src="assets/js/runtime.js"></script>
+</body>
+</html>

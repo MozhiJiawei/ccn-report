@@ -1,0 +1,429 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN" data-theme="engineering-whiteprint">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SlidingServe 优化vLLM调度，提升30%+</title>
+<link rel="stylesheet" href="../html-ppt-skill/assets/fonts.css">
+<link rel="stylesheet" href="../html-ppt-skill/assets/base.css">
+<link rel="stylesheet" id="theme-link" href="../html-ppt-skill/assets/themes/engineering-whiteprint.css">
+<link rel="stylesheet" href="../html-ppt-skill/assets/animations/animations.css">
+<style>
+  .slide{
+    justify-content:flex-start;
+    padding:34px 44px 26px;
+    overflow:hidden;
+  }
+  .topline{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:22px;
+    align-items:start;
+    border-bottom:2px solid var(--border-strong);
+    padding-bottom:14px;
+  }
+  .kicker{font-size:12px;margin-bottom:8px}
+  .title-row{
+    display:flex;
+    align-items:baseline;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .h1{
+    font-size:39px;
+    line-height:1.08;
+    margin:0;
+    letter-spacing:0;
+  }
+  .subtitle{
+    margin:8px 0 0;
+    max-width:900px;
+    color:var(--text-2);
+    font-size:16px;
+    line-height:1.45;
+  }
+  .metric{
+    width:210px;
+    border:2px solid var(--border-strong);
+    background:rgba(255,255,255,.94);
+    padding:12px 14px;
+    text-align:right;
+  }
+  .metric .num{
+    font-family:var(--font-display);
+    font-size:54px;
+    line-height:.95;
+    color:var(--accent-3);
+    font-weight:700;
+  }
+  .metric .cap{
+    margin-top:8px;
+    color:var(--text-2);
+    font-size:12px;
+    line-height:1.35;
+  }
+  .content{
+    display:grid;
+    grid-template-columns:1.02fr 1.28fr;
+    gap:18px;
+    margin-top:16px;
+    min-height:0;
+  }
+  .panel{
+    border:1.5px solid var(--border-strong);
+    background:rgba(255,255,255,.91);
+    padding:14px;
+    min-height:0;
+  }
+  .panel h2{
+    font-family:var(--font-display);
+    font-size:19px;
+    line-height:1.25;
+    margin:0 0 9px;
+    letter-spacing:0;
+    color:var(--text-1);
+  }
+  .summary-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .summary-card{
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    padding:10px;
+    min-height:96px;
+  }
+  .summary-card strong{
+    display:block;
+    font-size:14px;
+    margin-bottom:6px;
+    color:var(--accent-2);
+  }
+  .summary-card p{
+    margin:0;
+    font-size:13px;
+    line-height:1.48;
+    color:var(--text-2);
+  }
+  .flow{
+    display:grid;
+    grid-template-columns:1fr 26px 1fr;
+    gap:8px;
+    align-items:stretch;
+    margin-bottom:12px;
+  }
+  .flowbox{
+    border:1px solid var(--border-strong);
+    padding:10px;
+    background:#fff;
+  }
+  .flowbox h3{
+    font-size:14px;
+    line-height:1.2;
+    margin:0 0 5px;
+    color:var(--text-1);
+  }
+  .flowbox p{
+    margin:0;
+    font-size:12px;
+    line-height:1.4;
+    color:var(--text-2);
+  }
+  .arrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--font-display);
+    color:var(--accent-3);
+    font-size:24px;
+  }
+  .figure-frame{
+    border:1px solid var(--border-strong);
+    background:#fff;
+    padding:8px;
+  }
+  .figure-frame img{
+    width:100%;
+    height:182px;
+    object-fit:contain;
+    background:#fff;
+  }
+  .caption{
+    margin:6px 0 0;
+    font-size:11px;
+    line-height:1.35;
+    color:var(--text-3);
+  }
+  .right-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+    align-items:start;
+  }
+  .main-figure img{
+    height:auto;
+    min-height:178px;
+    max-height:220px;
+  }
+  .evidence{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+  }
+  .fact{
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    padding:10px;
+  }
+  .fact .label{
+    font-family:var(--font-mono);
+    color:var(--accent-2);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+  }
+  .fact .value{
+    margin:5px 0 3px;
+    font-size:22px;
+    line-height:1.05;
+    font-family:var(--font-display);
+    color:var(--text-1);
+  }
+  .fact p{
+    margin:0;
+    color:var(--text-2);
+    font-size:12px;
+    line-height:1.38;
+  }
+  .mini-figs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:12px;
+  }
+  .mini-fig img{
+    width:100%;
+    height:94px;
+    object-fit:contain;
+    background:#fff;
+    border:1px solid var(--border);
+  }
+  .evidence-table{
+    margin-top:10px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    padding:8px 10px;
+  }
+  .evidence-table h3{
+    margin:0 0 5px;
+    font-size:13px;
+    line-height:1.2;
+    color:var(--text-1);
+  }
+  .evidence-table table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:11.5px;
+    color:var(--text-2);
+  }
+  .evidence-table th,
+  .evidence-table td{
+    border-bottom:1px solid var(--border);
+    padding:4px 5px;
+    text-align:left;
+  }
+  .evidence-table th:nth-child(n+2),
+  .evidence-table td:nth-child(n+2){text-align:right}
+  .evidence-table .best{color:var(--accent-3);font-weight:800}
+  .bottom{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:12px;
+  }
+  .boundary{
+    border-left:5px solid var(--accent-3);
+    background:rgba(244,247,251,.92);
+    padding:10px 12px;
+  }
+  .boundary h3{
+    font-size:14px;
+    line-height:1.25;
+    margin:0 0 5px;
+    color:var(--text-1);
+  }
+  .boundary p{
+    margin:0;
+    font-size:12.5px;
+    line-height:1.45;
+    color:var(--text-2);
+  }
+  .deck-footer{
+    position:absolute;
+    left:44px;
+    right:44px;
+    bottom:14px;
+    border-top:1px solid var(--border);
+    padding-top:7px;
+    font-size:11px;
+  }
+  .notes{display:none}
+  @media (max-width:900px){
+    .slide{padding:24px}
+    .topline,.content,.right-grid,.bottom{grid-template-columns:1fr}
+    .metric{text-align:left;width:auto}
+    .main-figure img,.figure-frame img{height:180px}
+    .deck-footer{left:24px;right:24px}
+  }
+  @media (max-height:800px){
+    .slide{padding:25px 36px 18px}
+    .topline{gap:16px;padding-bottom:11px}
+    .kicker{font-size:11px;margin-bottom:6px}
+    .h1{font-size:32px}
+    .subtitle{font-size:14px;line-height:1.35;margin-top:6px;max-width:760px}
+    .metric{width:168px;padding:9px 10px}
+    .metric .num{font-size:42px}
+    .metric .cap{font-size:10.5px;line-height:1.25;margin-top:6px}
+    .content{gap:14px;margin-top:13px}
+    .panel{padding:11px}
+    .panel h2{font-size:16px;margin-bottom:8px}
+    .summary-grid{gap:8px;margin-bottom:10px}
+    .summary-card{padding:8px;min-height:78px}
+    .summary-card strong{font-size:12.5px;margin-bottom:4px}
+    .summary-card p{font-size:11.5px;line-height:1.38}
+    .flow{gap:7px;margin-bottom:10px;grid-template-columns:1fr 22px 1fr}
+    .flowbox{padding:8px}
+    .flowbox h3{font-size:12.5px;margin-bottom:4px}
+    .flowbox p{font-size:11px;line-height:1.32}
+    .arrow{font-size:20px}
+    .figure-frame{padding:7px}
+    .figure-frame img{height:152px}
+    .main-figure img{max-height:190px;min-height:160px}
+    .caption{font-size:10px;line-height:1.25;margin-top:5px}
+    .right-grid{gap:10px}
+    .evidence{gap:8px}
+    .fact{padding:8px}
+    .fact .label{font-size:10px}
+    .fact .value{font-size:20px;margin:4px 0 2px}
+    .fact p{font-size:10.8px;line-height:1.28}
+    .mini-figs{gap:8px;margin-top:10px}
+    .mini-fig img{height:62px}
+    .evidence-table{margin-top:8px;padding:7px 8px}
+    .evidence-table h3{font-size:11.5px;margin-bottom:4px}
+    .evidence-table table{font-size:9.8px}
+    .evidence-table th,.evidence-table td{padding:3px 4px}
+    .bottom{gap:10px;margin-top:10px}
+    .boundary{padding:8px 10px;border-left-width:4px}
+    .boundary h3{font-size:12.5px;margin-bottom:4px}
+    .boundary p{font-size:10.8px;line-height:1.32}
+    .deck-footer{left:36px;right:36px;bottom:7px;padding-top:5px;font-size:9.5px}
+  }
+</style>
+</head>
+<body data-themes="engineering-whiteprint,corporate-clean,academic-paper" data-theme-base="../html-ppt-skill/assets/themes/">
+<div class="deck">
+  <section class="slide is-active" data-title="SlidingServe Summary">
+    <div class="topline">
+      <div>
+        <p class="kicker">LLM Serving · SLO-aware Scheduling · vLLM</p>
+        <div class="title-row">
+          <h1 class="h1">SlidingServe 优化vLLM调度，提升30%+</h1>
+        </div>
+        <p class="subtitle">它不改模型和算子，而是在推理服务调度层优化请求排队、批次预算和超时风险控制；论文报告在 SLO 约束下，相对先进基线最高约 30% 的合格服务量提升。</p>
+      </div>
+      <div class="metric" aria-label="30 percent plus goodput uplift">
+        <div class="num">30%+</div>
+        <div class="cap">相对 QoServe 的最高 goodput 提升口径；不是单请求推理速度提升。</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="panel">
+        <h2>方法：把“每轮塞满”改成“跨轮算账 + 批内取舍”</h2>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <strong>跨轮预算分配</strong>
+            <p>SlidingChunker 同时看当前轮和下一轮 slack，用轻量 latency predictor 搜索更合适的 chunk budget。</p>
+          </div>
+          <div class="summary-card">
+            <strong>批内请求选择</strong>
+            <p>BatchConstructor 在违约风险出现时，保护 anchor request，再用动态规划选择额外请求集合。</p>
+          </div>
+        </div>
+        <div class="flow">
+          <div class="flowbox">
+            <h3>vLLM 连续批处理的痛点</h3>
+            <p>长 prompt prefill 容易堵住 decode；prefill 切太小又拉低 GPU 利用率。</p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="flowbox">
+            <h3>SlidingServe 的调度抓手</h3>
+            <p>排序、候选 batch、跨轮预算、风险请求选择一起优化 SLO 合格率。</p>
+          </div>
+        </div>
+        <div class="figure-frame">
+          <img src="../pdf_xml_final/images/picture_003.webp" alt="Figure 3 SlidingServe architecture">
+          <p class="caption">Figure 3：调度器在 waiting / prefill / decode 队列之间插入 Multi-Level Priority Sorter、SlidingChunker 和 BatchConstructor。</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>效果：SLO 约束下提高 goodput，高负载下少违约</h2>
+        <div class="right-grid">
+          <div class="figure-frame main-figure">
+            <img src="../pdf_xml_final/images/picture_004.webp" alt="Figure 4 maximum goodput across models and datasets">
+            <p class="caption">Figure 4：Qwen2.5-7B / Llama3-8B、TP2 RTX 3090、五类负载；相对 Sarathi-EDF 提升 25%-111%，相对 QoServe 提升 9.7%-30%。</p>
+          </div>
+          <div class="evidence">
+            <div class="fact">
+              <div class="label">Metric</div>
+              <div class="value">goodput</div>
+              <p>SLO violation ≤ 1% 时，每秒可服务的合格请求数。</p>
+            </div>
+            <div class="fact">
+              <div class="label">Overload</div>
+              <div class="value">-53%</div>
+              <p>相对 QoServe，违约率最多下降 53%；并非所有请求都更快。</p>
+            </div>
+            <div class="fact">
+              <div class="label">Transient</div>
+              <div class="value">27.56%</div>
+              <p>20 分钟波动负载下，整体 violation rate 更低。</p>
+            </div>
+          </div>
+        </div>
+        <div class="evidence-table">
+          <h3>高负载与突发负载证据重建</h3>
+          <table>
+            <tr><th>证据</th><th>Sarathi-EDF</th><th>QoServe</th><th>SlidingServe</th></tr>
+            <tr><td>Figure 5 最高负载点</td><td>高违约</td><td>高违约</td><td class="best">最低或显著更低</td></tr>
+            <tr><td>Figure 6 20分钟波动</td><td>57.78%</td><td>51.30%</td><td class="best">27.56%</td></tr>
+          </table>
+        </div>
+        </div>
+        <div class="bottom">
+          <div class="boundary">
+            <h3>数字口径</h3>
+            <p>“30%+”应解读为相对先进 SLO-aware baseline 的最高 goodput 提升，不代表所有数据集、模型、负载都固定提升 30%。</p>
+          </div>
+          <div class="boundary">
+            <h3>落地复测边界</h3>
+            <p>优先在长 prompt 占比高、prefill/decode 干扰明显、峰值容量紧张且 SLO 明确的服务上复测；短请求或宽松 SLO 场景收益可能收缩。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="deck-footer">
+      <span class="dim2">Source: arXiv 2606.05933 · Beyond Greedy Chunking: SLO-Aware Sliding-Window Scheduling for LLM Inference</span>
+      <span class="slide-number" data-current="1" data-total="1"></span>
+    </div>
+    <div class="notes">这是一页技术评估 summary。讲述顺序建议：先定义层级，不是新模型而是 vLLM 调度层；再解释两个机制，跨轮预算和批内取舍；最后强调 30%+ 是 goodput 口径，并要求本地 bounded evaluation。</div>
+  </section>
+</div>
+<script src="../html-ppt-skill/assets/runtime.js"></script>
+</body>
+</html>
+

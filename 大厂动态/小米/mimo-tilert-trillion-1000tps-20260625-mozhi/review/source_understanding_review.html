@@ -157,7 +157,7 @@
       <p>图表显示 FP4 与 FP8 在 agent/code benchmark 上接近；适合表达为“接近 FP8 基线”，不宜写成“无损”。</p>
     </div>
   </div>
-  <img class="img-wide" src="../sources/web/mimo-blog-1000tps/images/image-02.png" alt="FP4 量化能力对比">
+  <img class="img-wide" src="../sources/web/mimo-blog-1000tps/images/image-02.webp" alt="FP4 量化能力对比">
   <div class="source">图源：MiMo 官方博客 / HF 模型卡，FP4 experts-only 与 FP8 benchmark 对比；HF 还点名每层 attention o_proj 排除在 FP4 外。</div>
 </section>
 
@@ -166,7 +166,7 @@
   <h2 class="h2">DFlash 用 target hidden states 引导 block diffusion draft</h2>
   <div class="two-pane">
     <div>
-      <img class="img-dflash" src="../sources/web/dflash-paper/images/image-02-inference-design.png" alt="DFlash Inference Design">
+      <img class="img-dflash" src="../sources/web/dflash-paper/images/image-02-inference-design.webp" alt="DFlash Inference Design">
       <div class="source">图源：DFlash 论文 Figure 2。蓝色为 fused target context feature，黄色为 target decode token，绿色为 mask token。</div>
     </div>
     <div>
@@ -205,7 +205,7 @@
       </div>
     </div>
     <div>
-      <img class="img-dflash" src="../sources/web/dflash-paper/images/image-04-training-attention.png" alt="DFlash training attention">
+      <img class="img-dflash" src="../sources/web/dflash-paper/images/image-04-training-attention.webp" alt="DFlash training attention">
       <div class="source">图源：DFlash 论文 Figure 4。蓝色 target context feature，黄色 clean token，绿色 mask token，白色 invisible token。</div>
     </div>
   </div>
@@ -216,11 +216,11 @@
   <h2 class="h2">DFlash 的优势来自“draft latency 不随 token 数线性增长”</h2>
   <div class="grid g2" style="margin-top:14px">
     <div>
-      <img class="img-dflash" src="../sources/web/dflash-paper/images/image-01-speedup.png" alt="DFlash speedup comparison">
+      <img class="img-dflash" src="../sources/web/dflash-paper/images/image-01-speedup.webp" alt="DFlash speedup comparison">
       <div class="source">图源：DFlash 论文 Figure 1，Qwen3-8B / Transformers backend；不是 MiMo 8-GPU 1000+ TPS benchmark。</div>
     </div>
     <div>
-      <img class="img-dflash" style="width:640px" src="../sources/web/dflash-paper/images/image-03-draft-cost.png" alt="DFlash draft cost">
+      <img class="img-dflash" style="width:640px" src="../sources/web/dflash-paper/images/image-03-draft-cost.webp" alt="DFlash draft cost">
       <div class="source">图源：DFlash 论文 Figure 3，展示不同 draft token 数下的 draft latency。</div>
     </div>
   </div>
@@ -259,7 +259,7 @@
 <section class="slide" data-title="TileRT">
   <p class="kicker">System Side · TileRT</p>
   <h2 class="h2">TileRT 的关键是消除微秒级 operator boundary</h2>
-  <img class="img-medium" src="../sources/web/tilert-breaking-1000tps/images/image-02.png" alt="Execution Gap">
+  <img class="img-medium" src="../sources/web/tilert-breaking-1000tps/images/image-02.webp" alt="Execution Gap">
   <div class="source">图源：TileRT 官方博客，传统执行模型的 operator boundary / execution gap。</div>
   <div class="grid g2" style="margin-top:18px">
     <div class="card">

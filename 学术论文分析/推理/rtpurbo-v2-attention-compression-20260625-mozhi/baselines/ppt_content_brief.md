@@ -29,10 +29,10 @@ AI Infra 视角下，RTPurboV2 最重要的回答不是“又提出一个稀疏�
 
 这页的决策含义是：RTPurboV2 有足够证据进入下一阶段验证，但验证目标应被写清楚。第一阶段验证机制闭环：head 校准是否稳定、16 维 indexer 是否能保住 attention mass、top-p 是否明显优于 top-k。第二阶段验证收益闭环：在本地目标模型、目标上下文长度、目标硬件上分别测 prefill latency、decode latency、端到端 tokens/s 和精度回归。第三阶段验证泛化边界：Qwen3-Coder-30B-A3B、Qwen3-30B-A3B-Think 之外的模型是否仍有同样的 retrieval head 分布和动态 token 预算收益。只有这三层跑通，发布数字才有资格转成容量规划或产品 SLA 假设。
 参考图片：
-- ![Figure 4: RTPurbo overall architecture](assets/fig4-architecture.png)
-- ![Figure 6: Ultra-long multi-hop accuracy and sparsity](assets/fig6-ultralong.png)
-- ![Figure 7: Sparse decoding speedup](assets/fig7-speedup.png)
-- ![Table 4: RULER accuracy comparison](assets/table4-ruler.png)
-- ![Table 5: Reasoning benchmark accuracy](assets/table5-reasoning.png)
+- ![Figure 4: RTPurbo overall architecture](assets/fig4-architecture.webp)
+- ![Figure 6: Ultra-long multi-hop accuracy and sparsity](assets/fig6-ultralong.webp)
+- ![Figure 7: Sparse decoding speedup](assets/fig7-speedup.webp)
+- ![Table 4: RULER accuracy comparison](assets/table4-ruler.webp)
+- ![Table 5: Reasoning benchmark accuracy](assets/table5-reasoning.webp)
 备注：
 - 这页是单页 summary，建议视觉上突出“迁移路径”和“收益信号”两块。主视觉材料要配解释：Figure 4 用来说明迁移路径，Figure 6 / Figure 7 / Table 4 / Table 5 用来支撑精度与速度口径。不要把 9.36× prefill、2.01× decode 和端到端收益合并表达。

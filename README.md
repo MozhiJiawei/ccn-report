@@ -71,6 +71,27 @@ AI 生成报告交付件归档仓库。
 - 优先拆出内嵌图片或大资产，让二进制资产走 LFS。
 - 如果确实需要归档单个超大文本文件，在 `.gitattributes` 为该具体路径添加 Git LFS 例外。
 
+## HTML Asset Compression
+
+报告图片资产默认以 q70 WebP 入库，避免离线 HTML 包快速膨胀。提交前运行：
+
+```powershell
+python scripts/compress_report_assets.py --quality 70
+python scripts/pre_commit_gate.py
+```
+
+门禁会拒绝报告目录下未转换的 `.png`、`.jpg`、`.jpeg` 和 `.gif`。
+
+## Latest Release Package
+
+GitHub Release 只维护最新离线下载包。PR 合入 `main` 后运行：
+
+```powershell
+python scripts/release_compressed_archive.py --quality 70
+```
+
+默认会更新 `latest-compressed-archive` 这个滚动 Release，并覆盖 zip、`manifest.json` 和 `SHA256SUMS.txt`。只有需要长期保留里程碑时才使用 `--snapshot` 创建独立 Release。
+
 ## Validation
 
 提交前运行：

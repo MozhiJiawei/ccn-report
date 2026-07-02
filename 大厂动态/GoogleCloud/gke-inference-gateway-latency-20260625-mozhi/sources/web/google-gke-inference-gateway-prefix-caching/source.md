@@ -111,7 +111,7 @@ Three critical metrics reported in the article:
 - Faster time to first token (TTFT): 92.8% shorter wait times, producing quicker perceived response starts for interactive scenarios.
 - Lower inter-token latency (ITL): 62.6% reduction, resulting in smoother and faster token streaming after the first token.
 
-![Figure 3: Mean latency benchmark chart for GKE with GKE Inference Gateway vs. third-party managed Kubernetes service](images/image-01.jpg)
+![Figure 3: Mean latency benchmark chart for GKE with GKE Inference Gateway vs. third-party managed Kubernetes service](images/image-01.webp)
 
 Image source: https://storage.googleapis.com/gweb-cloudblog-publish/images/1_-_Updated_Doc_chart.max-2200x2200.jpg
 

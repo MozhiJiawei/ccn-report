@@ -2,13 +2,13 @@
 
 ## logic-view
 
-- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\logic\exports\logic-view.png`
+- Export: `.tmp\generate-3plus1-diagrams\loop-engineering-analysis\logic\exports\logic-view.webp`
 - Reference: not found
 - Metrics: `1681x1001`, non-white pixel ratio `0.2941`
 
 ```text
 AI visual review task:
-1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\logic\exports\logic-view.png
+1. You must load the exported preview image: .tmp\generate-3plus1-diagrams\loop-engineering-analysis\logic\exports\logic-view.webp
 2. No matching reference image was found; compare against references/style-profiles.md and references/ref-usage.md instead.
 3. Current preview metrics: size 1681x1001, non-white pixel ratio 0.2941.
 4. State explicitly that you reviewed both the export and the reference before judging quality.

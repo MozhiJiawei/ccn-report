@@ -9,7 +9,7 @@
     * { box-sizing: border-box; }
     body { margin:0; background:var(--paper); color:var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; line-height:1.62; }
     a { color:var(--blue); }
-    .hero { min-height:88vh; display:grid; align-items:start; padding:36px 6vw 28px; color:#f8fbff; background:linear-gradient(120deg, rgba(7,17,31,.97), rgba(14,36,57,.9) 55%, rgba(12,65,72,.78)), url("assets/source-02.png") center / cover no-repeat; }
+    .hero { min-height:88vh; display:grid; align-items:start; padding:36px 6vw 28px; color:#f8fbff; background:linear-gradient(120deg, rgba(7,17,31,.97), rgba(14,36,57,.9) 55%, rgba(12,65,72,.78)), url("assets/source-02.webp") center / cover no-repeat; }
     .hero-inner { width:min(1180px,100%); margin:0 auto; }
     .meta { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; color:#d3e8ff; font-size:14px; }
     .pill { border:1px solid rgba(167,213,255,.34); border-radius:999px; padding:5px 10px; background:rgba(255,255,255,.07); }
@@ -62,7 +62,7 @@
       <div class="grid">
         <div class="panel"><p class="lead">meta agent 先分类请求，再把控制权交给 rider、driver 或更专门的 damage claim 等 subagent。若对话中意图变化，subagent 可把控制权交回 parent graph 重新路由。</p></div>
         <figure>
-          <img src="assets/source-02.png" alt="How Lyft Built a Self-Serve AI Agent Platform for Customer Support with LangGraph and LangSmith source image">
+          <img src="assets/source-02.webp" alt="How Lyft Built a Self-Serve AI Agent Platform for Customer Support with LangGraph and LangSmith source image">
           <figcaption>这张架构图支撑平台拆分：router、specialized/configurable subagents、state 和安全检查共同组成客服 agent 系统。</figcaption>
         </figure>
       </div>

@@ -1,0 +1,40 @@
+{
+  "topic": "KVarN: Variance-Normalized KV-Cache Quantization",
+  "source_set": [
+    "ccn-report/学术论文分析/推理/kvarn-variance-normalized-kv-cache-20260625-mozhi/review/source_understanding_review.html",
+    "ccn-report/学术论文分析/推理/kvarn-variance-normalized-kv-cache-20260625-mozhi/sources/paper/source-summary.md",
+    ".tmp/pdf_xml/kvarn-2606.03458/final/kvarn-2606.03458.xml",
+    ".tmp/pdf_xml/kvarn-2606.03458/final/images/"
+  ],
+  "audience": {
+    "target_reader": "推理系统/LLM Serving 工程负责人",
+    "use_case": "判断 KVarN 是否值得进入内部复现和 serving 性能验证排期",
+    "current_judgment": "KVarN 看起来精度不错，但不确定是否真能带来线上 TPOT/TTFT 收益",
+    "desired_judgment": "看完后能区分“论文已证明的 2-bit 精度保持”和“仍需本地验证的整网性能收益”"
+  },
+  "scqa": {
+    "situation": "长链推理、代码生成和复杂指令会拉长 decoding，KV-cache 逐 token 增长，serving 侧越来越受显存和带宽约束。",
+    "complication": "KVarN 在 2-bit KV-cache 上给出强精度证据和低局部 overhead，但论文没有报告整网 TPOT、TTFT、tokens/s 或端到端 latency。",
+    "question": "推理系统负责人应如何判断 KVarN 是值得复现的压缩方法，还是已经能承诺线上加速的方案？",
+    "answer": "KVarN 值得进入复现和 serving 性能验证，但当前证据只能支持 2-bit 精度保真与局部开销低，不能直接支持线上 TPOT/TTFT 收益。"
+  },
+  "page_count": {
+    "total_pages": 1,
+    "counting_rule": "单页输出；只生成 Summary Page，不包含 cover、contents 或额外内容页。",
+    "page_structure": [
+      "Page 1 Summary Page"
+    ]
+  },
+  "summary_page": {
+    "page_number": "Page 1",
+    "title": "华为发布了KVarN双轴KV量化",
+    "subtitle": "KVarN 在 2-bit KV-cache 上保住推理、代码和指令任务质量，但论文尚未给出整网 TPOT/TTFT 收益",
+    "analysis": [
+      "机制：新产生的 KV 分块写回前做旋转和双轴方差归一化，减少 token magnitude 漂移",
+      "收益：AIME24、MATH500、HumanEval、IFEval 上 2-bit 精度保持强，性能证据限于局部 overhead"
+    ],
+    "notes": "论文首页作者均标注 Huawei，代码仓库为 huawei-csl/KVarN。Summary Page 应同时强调精度证据和端到端 serving 性能证据缺口。"
+  },
+  "table_of_contents": [],
+  "content_pages": []
+}

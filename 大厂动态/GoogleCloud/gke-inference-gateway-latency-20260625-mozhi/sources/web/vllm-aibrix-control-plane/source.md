@@ -19,7 +19,7 @@ Today, we are excited to announce vllm-project/aibrix: a battery-included vLLM K
 
 While vLLM makes deploying a single serving instance easy, deploying vLLM at scale presents unique challenges in routing, autoscaling, and fault tolerance. AIBrix is an open-source initiative designed to provide the essential building blocks to construct scalable inference infrastructure. It delivers a cloud-native solution optimized for deploying, managing, and scaling large language model (LLM) inference, tailored specifically to enterprise needs.
 
-![AIBrix architecture/control-plane diagram](images/image-01.png)
+![AIBrix architecture/control-plane diagram](images/image-01.webp)
 
 Image source: https://vllm.ai/blog-assets/figures/aibrix/aibrix-diagram.png
 Caption: No explicit caption in the rendered article. Nearby text introduces AIBrix as a cloud-native vLLM Kubernetes serving stack for deploying, managing, and scaling LLM inference.

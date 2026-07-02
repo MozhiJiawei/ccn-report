@@ -290,7 +290,7 @@
     <h2 class="h2">BPE 只是 tokenizer 流水线的一段，但它决定最终 token 边界</h2>
     <div class="evidence">
       <figure>
-        <img class="source-img" src="assets/picture_001.png" alt="modern LLM tokenization pipeline">
+        <img class="source-img" src="assets/picture_001.webp" alt="modern LLM tokenization pipeline">
         <figcaption>Figure 1: 论文展示现代 LLM tokenization pipeline，BPE 位于预处理后的 chunk 内部。<sup>2</sup></figcaption>
       </figure>
       <div>
@@ -352,7 +352,7 @@
       </div>
     </div>
     <figure class="mt-m">
-      <img class="source-img" src="assets/picture_002.png" alt="source figure for successor forest" style="max-width:790px">
+      <img class="source-img" src="assets/picture_002.webp" alt="source figure for successor forest" style="max-width:790px">
       <figcaption>原始 Figure 2 作为证据来源；上方重构图只保留小白需要读懂的“唯一有效路径”关系。<sup>4</sup></figcaption>
     </figure>
     <div class="callout">这就是复杂度下降的源头：搜索空间从“所有可能 suffix”变成“一棵小树里找最深有效路径”。</div>
@@ -405,7 +405,7 @@
         </table>
       </div>
       <figure>
-        <img class="source-img" src="assets/table_010.png" alt="overall complexity and feature comparison">
+        <img class="source-img" src="assets/table_010.webp" alt="overall complexity and feature comparison">
         <figcaption>Table 6: 论文将本方法与 table/backtracking 增量实现比较，给出 worst-case <span class="mono">O(n log²t)</span> 且支持 eager output。<sup>5</sup></figcaption>
       </figure>
     </div>
@@ -446,7 +446,7 @@
     <h2 class="h2">“最高 3x”成立，但它是分场景的最高值，不是平均承诺</h2>
     <div class="evidence">
       <figure>
-        <img class="source-img" src="assets/table_002.png" alt="end-to-end throughput speedup">
+        <img class="source-img" src="assets/table_002.webp" alt="end-to-end throughput speedup">
         <figcaption>Table 1: end-to-end throughput speedup；CodeLlama 在 Code 数据上达到 2.88x，English 上 3.13x。<sup>7</sup></figcaption>
       </figure>
       <div>
@@ -469,7 +469,7 @@
     <h2 class="h2">更硬的价值在鲁棒性：重复字符输入会让部分 baseline 接近平方退化</h2>
     <div class="evidence">
       <figure>
-        <img class="source-img" src="assets/picture_003.png" alt="pathological input throughput">
+        <img class="source-img" src="assets/picture_003.webp" alt="pathological input throughput">
         <figcaption>Figure 3: pathological repeated `a` inputs；baseline 吞吐随长度增长显著下降，O200K 还出现 regex error 标记。<sup>8</sup></figcaption>
       </figure>
       <div class="grid">
@@ -508,7 +508,7 @@
         <p class="mini mt-m">Figure 6 的读法：在该配置下，regex guardrail 的开销超过核心 BPE merge 约 12 倍。</p>
       </div>
     </div>
-    <p class="mini mt-m">原始 flame graph 对应 `assets/picture_005.png` 和 `assets/picture_006.png`；本页重构为条形图以保留关键口径并提升可读性。<sup>9</sup><sup>10</sup></p>
+    <p class="mini mt-m">原始 flame graph 对应 `assets/picture_005.webp` 和 `assets/picture_006.webp`；本页重构为条形图以保留关键口径并提升可读性。<sup>9</sup><sup>10</sup></p>
     <div class="callout">所以这项技术更像“把 BPE 这段变成可增量、可证明、可流式的底座”，不是单独解决整个 tokenizer pipeline 的所有 latency。</div>
     <div class="foot"><span>Evidence: Appendix I profiling; Future Work</span><span class="slide-number" data-current="11" data-total="13"></span></div>
   </section>
@@ -545,15 +545,15 @@
     <h2 class="h2">编号引用映射到论文段落、图表和本地素材</h2>
     <ol class="ref-list">
       <li>Abstract; Section 5 Complexity Analysis; Table 1 and Table 6. Local XML: `final/incremental-bpe-tokenization.xml`.</li>
-      <li>Figure 1: modern LLM tokenization pipeline. Local image: `review/assets/picture_001.png`.</li>
+      <li>Figure 1: modern LLM tokenization pipeline. Local image: `review/assets/picture_001.webp`.</li>
       <li>Problem Formulation / Incremental Objective: maintain <span class="mono">θ(sc)</span> after appending one byte.</li>
-      <li>Figure 2 and Theorem 4.2: Successor Forest, Suffix-Successor Tree, Monotonic Path Property. Local image: `review/assets/picture_002.png`.</li>
-      <li>Table 6: worst-case complexity and eager-output feature comparison. Local image: `review/assets/table_010.png`.</li>
+      <li>Figure 2 and Theorem 4.2: Successor Forest, Suffix-Successor Tree, Monotonic Path Property. Local image: `review/assets/picture_002.webp`.</li>
+      <li>Table 6: worst-case complexity and eager-output feature comparison. Local image: `review/assets/table_010.webp`.</li>
       <li>Section 6 and Appendix G: eager output; benchmark note reports roughly 10% overhead.</li>
-      <li>Table 1: end-to-end throughput speedup over Hugging Face tokenizers and tiktoken. Local image: `review/assets/table_002.png`.</li>
+      <li>Table 1: end-to-end throughput speedup over Hugging Face tokenizers and tiktoken. Local image: `review/assets/table_002.webp`.</li>
       <li>Figure 3 and Figure 7: pathological repeated-character inputs, throughput decay, and regex errors. Local images: `picture_003.png`, `picture_007.png`.</li>
-      <li>Figure 5: Qwen-3 tokenizers profile; BPE merge phase accounts for 13.11%. Local image: `review/assets/picture_005.png`.</li>
-      <li>Figure 6: tiktoken O200K profile; regex matching 80.25%, BPE merge 6.45%. Local image: `review/assets/picture_006.png`.</li>
+      <li>Figure 5: Qwen-3 tokenizers profile; BPE merge phase accounts for 13.11%. Local image: `review/assets/picture_005.webp`.</li>
+      <li>Figure 6: tiktoken O200K profile; regex matching 80.25%, BPE merge 6.45%. Local image: `review/assets/picture_006.webp`.</li>
     </ol>
     <div class="callout">完整 source selection 和 claim map 已写入 `sources/source-selection.md` 与 `sources/source-map.md`，供后续 PPT Content Brief 复用。</div>
     <div class="foot"><span>Evidence map for this Source Understanding review</span><span class="slide-number" data-current="13" data-total="13"></span></div>

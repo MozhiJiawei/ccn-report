@@ -29,7 +29,7 @@ The mechanism section states that llm-d builds on the vLLM inference engine and 
 
 The article also says llm-d works across frameworks, with PyTorch supported at publication time and JAX planned later in 2025, and across GPU and TPU accelerators.
 
-![llm-d stack architecture diagram](images/image-01.jpg)
+![llm-d stack architecture diagram](images/image-01.webp)
 
 Image source: https://storage.googleapis.com/gweb-cloudblog-publish/images/llm-d_stack_v1.max-2200x2200.jpg
 

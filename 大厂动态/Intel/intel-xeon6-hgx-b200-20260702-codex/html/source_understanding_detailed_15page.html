@@ -1,0 +1,802 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN" data-theme="engineering-whiteprint">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source Understanding Review - Intel Xeon 6 + AMX on HGX B200</title>
+<link rel="stylesheet" href="../assets/fonts.css">
+<link rel="stylesheet" href="../assets/base.css">
+<link rel="stylesheet" id="theme-link" href="../assets/themes/engineering-whiteprint.css">
+<link rel="stylesheet" href="../assets/animations/animations.css">
+<style>
+  :root {
+    --ink: #0f2537;
+    --ink-2: #415467;
+    --line: rgba(15, 37, 55, .18);
+    --line-strong: rgba(15, 37, 55, .42);
+    --paper: rgba(255,255,255,.82);
+    --blue: #1167a8;
+    --cyan: #0ea5c6;
+    --green: #14885f;
+    --amber: #b7791f;
+    --red: #b42318;
+  }
+  body {
+    data-render: source-understanding-review;
+  }
+  .slide {
+    padding: 58px 76px 64px;
+    background:
+      linear-gradient(rgba(255,255,255,.82), rgba(255,255,255,.88)),
+      repeating-linear-gradient(0deg, transparent 0 47px, rgba(17,103,168,.08) 48px),
+      repeating-linear-gradient(90deg, transparent 0 47px, rgba(17,103,168,.08) 48px);
+  }
+  .deck-header, .deck-footer { color: var(--ink-2); }
+  .deck-header { left: 76px; right: 76px; top: 24px; }
+  .deck-footer { left: 76px; right: 76px; bottom: 22px; }
+  .kicker { color: var(--blue); font-family: var(--font-mono); letter-spacing: .06em; }
+  .h1 { font-size: 64px; letter-spacing: 0; max-width: 1380px; }
+  .h2 { font-size: 42px; letter-spacing: 0; max-width: 1480px; }
+  .lede { font-size: 24px; max-width: 1200px; color: var(--ink-2); }
+  .tiny { font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+  .small { font-size: 17px; line-height: 1.48; color: var(--ink-2); }
+  .bodycopy { font-size: 20px; line-height: 1.48; color: var(--ink-2); }
+  .claim {
+    font-size: 27px;
+    line-height: 1.28;
+    color: var(--ink);
+    font-weight: 760;
+    max-width: 1500px;
+    margin: 0 0 24px;
+  }
+  .frame {
+    border: 1.5px solid var(--line-strong);
+    background: var(--paper);
+    box-shadow: none;
+    border-radius: 4px;
+  }
+  .plain-grid { display: grid; gap: 20px; }
+  .cols-2 { grid-template-columns: 1.05fr .95fr; }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: #fff;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .metric {
+    border-left: 4px solid var(--blue);
+    padding: 14px 16px;
+    background: rgba(255,255,255,.74);
+  }
+  .metric strong {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 38px;
+    line-height: 1.05;
+    color: var(--ink);
+  }
+  .metric span { color: var(--ink-2); font-size: 15px; }
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 17px;
+    background: #fff;
+  }
+  .matrix th, .matrix td {
+    border: 1px solid var(--line);
+    padding: 12px 14px;
+    vertical-align: top;
+    text-align: left;
+  }
+  .matrix th {
+    color: var(--ink);
+    background: rgba(17,103,168,.07);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 0;
+  }
+  .matrix td:first-child { font-weight: 700; color: var(--ink); }
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+  .node {
+    border: 1.5px solid var(--line-strong);
+    border-radius: 4px;
+    background: #fff;
+    padding: 18px;
+    min-height: 138px;
+    position: relative;
+  }
+  .node h3 { font-size: 24px; margin: 0 0 8px; }
+  .node p { margin: 0; color: var(--ink-2); font-size: 17px; line-height: 1.42; }
+  .node.cpu { border-top: 6px solid var(--green); }
+  .node.gpu { border-top: 6px solid var(--blue); }
+  .arrow {
+    font-family: var(--font-mono);
+    color: var(--blue);
+    font-weight: 800;
+    font-size: 26px;
+    align-self: center;
+    text-align: center;
+  }
+  .swimlane {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 18px;
+  }
+  .lane {
+    border: 1.5px solid var(--line-strong);
+    background: rgba(255,255,255,.8);
+    padding: 18px;
+    border-radius: 4px;
+  }
+  .lane-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    font-family: var(--font-mono);
+    color: var(--ink);
+    font-weight: 800;
+    margin-bottom: 14px;
+  }
+  .step-row {
+    display: grid;
+    grid-template-columns: 1fr 64px 1fr 64px 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+  .step {
+    border: 1px solid var(--line-strong);
+    background: #fff;
+    padding: 14px;
+    border-radius: 4px;
+    min-height: 86px;
+  }
+  .step b { display: block; color: var(--ink); font-size: 18px; margin-bottom: 4px; }
+  .step span { color: var(--ink-2); font-size: 14px; line-height: 1.35; display: block; }
+  .barbox {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 28px;
+    align-items: center;
+  }
+  .bars {
+    height: 430px;
+    border-left: 2px solid var(--line-strong);
+    border-bottom: 2px solid var(--line-strong);
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    gap: 120px;
+    padding: 28px 60px 0;
+    background: #fff;
+  }
+  .bar-group { width: 210px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .bar {
+    width: 164px;
+    height: 296px;
+    display: flex;
+    flex-direction: column-reverse;
+    border: 1px solid rgba(0,0,0,.06);
+  }
+  .bar .gpu-part { height: 69.4%; background: #13a3e8; display: grid; place-items: center; color: white; font-size: 30px; font-weight: 800; }
+  .bar .cpu-part { height: 30.6%; background: #0c66a4; display: grid; place-items: center; color: white; font-size: 30px; font-weight: 800; }
+  .bar.baseline { height: 205px; }
+  .bar.baseline .gpu-part { height: 100%; }
+  .bar-label { text-align: center; font-weight: 800; color: var(--ink); }
+  .formula {
+    font-family: var(--font-mono);
+    background: #fff;
+    border: 1.5px solid var(--line-strong);
+    padding: 16px 18px;
+    font-size: 22px;
+    line-height: 1.4;
+    border-radius: 4px;
+  }
+  .evidence-img {
+    border: 1px solid var(--line-strong);
+    background: #fff;
+    object-fit: contain;
+  }
+  .img-chart { width: 700px; height: auto; }
+  .img-pipeline { width: 820px; height: auto; }
+  .img-table { width: 650px; height: auto; }
+  .callout {
+    border-left: 5px solid var(--blue);
+    padding: 13px 16px;
+    background: rgba(17,103,168,.07);
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.42;
+  }
+  .warn {
+    border-left-color: var(--amber);
+    background: rgba(183,121,31,.08);
+  }
+  .source-list {
+    display: grid;
+    grid-template-columns: 120px 1fr 1fr;
+    gap: 0;
+    border: 1.5px solid var(--line-strong);
+    background: #fff;
+  }
+  .source-list div {
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 14px;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+  .source-list div:nth-child(3n) { border-right: 0; }
+  .source-list .head { font-family: var(--font-mono); font-weight: 800; color: var(--ink); background: rgba(17,103,168,.07); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; }
+  .compute-grid {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 22px;
+    align-items: stretch;
+  }
+  .calc-card {
+    border: 1.5px solid var(--line-strong);
+    background: #fff;
+    border-radius: 4px;
+    padding: 18px;
+  }
+  .calc-card b {
+    display: block;
+    font-family: var(--font-mono);
+    color: var(--ink);
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .calc-card code {
+    display: block;
+    white-space: normal;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+  .scale-bars {
+    display: grid;
+    grid-template-columns: 180px 1fr 120px;
+    gap: 12px;
+    align-items: center;
+    font-family: var(--font-mono);
+  }
+  .scale-track {
+    height: 28px;
+    background: rgba(17,103,168,.08);
+    border: 1px solid var(--line);
+    position: relative;
+  }
+  .scale-fill {
+    height: 100%;
+    background: var(--blue);
+    display: block;
+  }
+  .scale-fill.cpu { background: var(--green); }
+  .scale-fill.warnbar { background: var(--amber); }
+  .redline {
+    border: 1.5px solid rgba(180,35,24,.45);
+    background: rgba(180,35,24,.06);
+    border-radius: 4px;
+    padding: 14px 16px;
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.42;
+  }
+  .mini-equation {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+    gap: 10px;
+    align-items: center;
+    max-width: 980px;
+    margin-top: 28px;
+    font-family: var(--font-mono);
+  }
+  .eq-box {
+    border: 1.5px solid var(--line-strong);
+    background: #fff;
+    border-radius: 4px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .eq-box b { display: block; font-size: 26px; color: var(--ink); }
+  .eq-box span { display: block; font-size: 12px; color: var(--ink-2); line-height: 1.25; }
+  .eq-sign { font-weight: 900; font-size: 24px; color: var(--blue); text-align: center; }
+  .router-diagram {
+    display: grid;
+    grid-template-columns: 1fr 72px 1.05fr 72px 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+  .branch {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 14px;
+  }
+  .branch-arrow {
+    font-family: var(--font-mono);
+    font-size: 34px;
+    color: var(--blue);
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.1;
+  }
+  .foot {
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.35;
+    max-width: 1480px;
+  }
+  .refs sup { color: var(--blue); font-weight: 800; }
+</style>
+</head>
+<body data-themes="engineering-whiteprint,swiss-grid,academic-paper,minimal-white" data-theme-base="../../../../skills/hw-ppt-gen-html/html-ppt-skill/assets/themes/">
+<div class="deck">
+
+  <section class="slide" data-title="结论先行">
+    <div class="deck-header"><span>Source Understanding Review</span><span>Intel Xeon 6 + AMX + HGX B200</span></div>
+    <p class="kicker">Mental model first</p>
+    <h1 class="h1">这不是“CPU 替代 GPU”，而是让 GPU 服务器里的 CPU 也参与 LLM 服务</h1>
+      <p class="lede">在一台 HGX B200 系统中，GPU 负责 405B 大模型生成；Xeon 6 + AMX 承接 8B 小模型的检索、摘要、校验和短推理。Intel/Supermicro 材料声称，在该口径下总并发从 127 提升到 183，即 up to 1.44x；新增 CPU users 必须按 SLA 搜索口径理解。</p>
+    <div class="plain-grid cols-4 mt-l">
+      <div class="metric"><strong>127</strong><span>GPU-only concurrent users</span></div>
+      <div class="metric"><strong>+56</strong><span>CPU 8B endpoint users</span></div>
+      <div class="metric"><strong>183</strong><span>CPU-GPU co-serving total</span></div>
+      <div class="metric"><strong>1.44x</strong><span>reported concurrency uplift</span></div>
+    </div>
+    <div class="mini-equation">
+      <div class="eq-box"><b>127</b><span>GPU-only baseline</span></div>
+      <div class="eq-sign">+</div>
+      <div class="eq-box"><b>56</b><span>CPU 8B endpoint</span></div>
+      <div class="eq-sign">=</div>
+      <div class="eq-box"><b>183</b><span>co-serving total</span></div>
+      <div class="eq-sign">÷</div>
+      <div class="eq-box"><b>127 = 1.44x</b><span>endpoint benchmark mouth</span></div>
+    </div>
+    <p class="foot mt-l refs"><sup>[1]</sup> Intel blog, posted 2026-06-25. <sup>[2]</sup> Supermicro whitepaper XML, benchmark section and endnote configuration.</p>
+    <div class="deck-footer"><span>Audience: technical beginners</span><span class="slide-number" data-current="1" data-total="15"></span></div>
+    <div class="notes">开场只讲一个判断：CPU-GPU co-serving 是资源利用率故事，不是 CPU 和 GPU 的单项性能比较。</div>
+  </section>
+
+  <section class="slide" data-title="问题背景">
+    <div class="deck-header"><span>01 / Problem</span><span>Why this exists</span></div>
+    <p class="kicker">Background</p>
+    <h2 class="h2">传统 GPU 推理系统里，主机 CPU 常在“调度完成后”变成未充分利用资源</h2>
+    <p class="claim">如果所有请求都排队等最大 GPU 模型，轻量任务也会消耗昂贵 GPU 服务窗口；同时 GPU 服务器里的 CPU 只做调度、tokenization、数据搬运，剩余核心没有直接创造并发。</p>
+    <div class="plain-grid cols-2">
+      <div class="frame" style="padding:22px">
+        <h3>单一路径心智模型</h3>
+        <div class="step-row mt-m" style="grid-template-columns:1fr 64px 1fr 64px 1fr">
+          <div class="step"><b>User request</b><span>所有任务先进入同一个生成服务</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><b>GPU 405B</b><span>重生成、轻摘要、校验都可能排队</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><b>Response</b><span>吞吐受单一路径容量约束</span></div>
+        </div>
+      </div>
+      <div class="frame" style="padding:22px">
+        <h3>材料中的问题定义</h3>
+        <table class="matrix mt-m">
+          <tr><th>现象</th><th>影响</th></tr>
+          <tr><td>GPU 承担大多数推理</td><td>轻任务也占用大模型服务能力</td></tr>
+          <tr><td>CPU 在调度后空闲</td><td>同一台服务器的已购算力没有转成用户并发</td></tr>
+          <tr><td>端到端流水线串行</td><td>Research + Write + Review 延迟累加</td></tr>
+        </table>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[1]</sup> Intel blog: LLM serving systems often allocate most inference to GPUs while CPU resources are underutilized. <sup>[2]</sup> Whitepaper executive summary: CPUs in GPU systems often remain idle after scheduling, tokenization, and data movement.</p>
+    <div class="deck-footer"><span>Read this slide as: resource waste, not model-quality problem</span><span class="slide-number" data-current="2" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="机制总览">
+    <div class="deck-header"><span>02 / Mechanism</span><span>Two endpoints, one application</span></div>
+    <p class="kicker">Mechanism map</p>
+    <h2 class="h2">核心机制：把 LLM 服务拆成 CPU 小模型端点 + GPU 大模型端点</h2>
+    <p class="claim">应用层做路由或多 agent 编排：CPU 端点处理“足够小、可快速验证”的任务，GPU 端点处理“需要大模型能力”的生成任务。</p>
+    <div class="router-diagram">
+      <div class="node">
+        <h3>User request</h3>
+        <p>输入可能是检索、摘要、校验、短响应，也可能是长文生成和复杂推理。</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node">
+        <h3>Application router</h3>
+        <p>多 agent 或 vLLM semantic routing 根据任务复杂度、输出长度和质量要求分流。</p>
+      </div>
+      <div class="branch-arrow">↗<br>↘</div>
+      <div class="branch">
+        <div class="node cpu">
+          <h3>CPU endpoint</h3>
+          <p>Llama-3.1-8B-Instruct, BF16, Xeon 6 AMX。轻量研究、摘要、批改和校验。</p>
+        </div>
+        <div class="node gpu">
+          <h3>GPU endpoint</h3>
+          <p>Llama-3.1-405B-Instruct, HGX B200。长文生成、深推理和多步综合。</p>
+        </div>
+      </div>
+    </div>
+    <div class="plain-grid cols-3 mt-l">
+      <div class="callout"><b>关键字</b><br>vLLM server: 一个模型服务端点；endpoint: 可独立接请求的 API 服务。</div>
+      <div class="callout"><b>读图方法</b><br>先看任务类型，再看它被路由到 CPU 8B 还是 GPU 405B。</div>
+      <div class="callout warn"><b>结论边界</b><br>该机制依赖任务混合中存在 CPU-suitable 工作。</div>
+    </div>
+    <p class="foot mt-m refs"><sup>[1]</sup> Intel blog describes CPU pathway Llama-3.1-8B and GPU pathway Llama-3.1-405B. <sup>[2]</sup> Whitepaper maps Researcher/Reviewer to CPU endpoint and Writer to GPU endpoint.</p>
+    <div class="deck-footer"><span>Mechanism, not marketing slogan</span><span class="slide-number" data-current="3" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="多 Agent 流水线证据图">
+    <div class="deck-header"><span>03 / Evidence visual</span><span>Pipeline architecture</span></div>
+    <p class="kicker">Primary evidence figure</p>
+    <h2 class="h2">多 agent 版本：CPU 做 Researcher/Reviewer，GPU 做 Writer</h2>
+    <div class="plain-grid cols-2" style="align-items:start">
+      <div>
+        <img class="evidence-img img-pipeline" src="../sources/web/intel-xeon6-amx-hgx-b200-blog/images/image-03.webp" alt="Intel heterogeneous multi-agent serving pipeline">
+        <p class="tiny mt-s">原图按接近原尺寸展示，来源为 Intel blog Picture2 / Figure 2。</p>
+      </div>
+      <div>
+        <p class="claim">这张图只证明一种可行分工：Researcher 和 Reviewer 放在 CPU LLM，Writer 放在 GPU large model。它不能证明所有 agent 流程都会获得同等收益。</p>
+        <table class="matrix">
+          <tr><th>图中关键字</th><th>解释</th></tr>
+          <tr><td>Researcher agent</td><td>事实查找和研究，CPU 8B 端点</td></tr>
+          <tr><td>Writer agent</td><td>草稿生成，GPU 405B 端点</td></tr>
+          <tr><td>Reviewer agent</td><td>编辑、反馈和验证，CPU 8B 端点</td></tr>
+          <tr><td>Research notes / Draft</td><td>中间产物，允许流水线重叠执行</td></tr>
+        </table>
+        <div class="callout mt-m">读图方法：沿箭头看数据从 user task input 到 final reviewed output；再看蓝色 CPU 区域和上方 GPU 区域如何并行。</div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[1]</sup> Intel blog Figure 2 / Picture2. <sup>[2]</sup> Whitepaper: Researcher starts first, Writer starts once partial context is available, Reviewer starts once partial draft is produced.</p>
+    <div class="deck-footer"><span>Main visual rule: one dense visual, explained on page</span><span class="slide-number" data-current="4" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="AMX 入门">
+    <div class="deck-header"><span>04 / CPU capability</span><span>Why Xeon 6 can host the small model</span></div>
+    <p class="kicker">AMX in one slide</p>
+    <h2 class="h2">AMX 的作用：让 CPU 核心更擅长矩阵乘法，支撑 BF16/INT8 AI 推理</h2>
+    <div class="plain-grid cols-2">
+      <div class="frame" style="padding:24px">
+        <div class="swimlane">
+          <div class="lane">
+            <div class="lane-title"><span>CPU core + AMX</span><span class="tag">near memory</span></div>
+            <div class="step-row">
+              <div class="step"><b>Tiles</b><span>8 个二维寄存器，每个 1KB，用来装较大的矩阵块</span></div>
+              <div class="arrow">→</div>
+              <div class="step"><b>TMUL</b><span>Tile Matrix Multiplication，执行矩阵乘</span></div>
+              <div class="arrow">→</div>
+              <div class="step"><b>BF16 / INT8</b><span>服务训练/推理或推理数据类型</span></div>
+            </div>
+          </div>
+          <div class="lane">
+            <div class="lane-title"><span>Serving consequence</span><span class="tag">CPU-suitable tasks</span></div>
+            <p class="bodycopy">CPU 不是拿来跑所有大模型请求；材料中的用法是让 Xeon 6 AMX 跑 8B 小模型，吸收摘要、校验、短响应这类任务。</p>
+          </div>
+        </div>
+      </div>
+      <div class="frame" style="padding:24px">
+        <h3>不要混淆的 3 个概念</h3>
+        <table class="matrix mt-m">
+          <tr><th>概念</th><th>本 deck 里的含义</th></tr>
+          <tr><td>AMX</td><td>CPU 内建矩阵加速能力，不是独立 GPU</td></tr>
+          <tr><td>vLLM CPU endpoint</td><td>运行 8B 模型的独立服务，面向轻任务</td></tr>
+          <tr><td>HGX B200 GPU endpoint</td><td>运行 405B 模型的独立服务，面向重生成</td></tr>
+        </table>
+        <div class="callout warn mt-m">边界：AMX 解释“CPU 为什么能跑一部分推理”，不等于证明 CPU 可替代 B200 运行 405B 大模型。</div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[2]</sup> Whitepaper sections “What is Intel AMX” and “How Intel AMX Works”: AMX has Tiles and TMUL, supports BF16 and INT8.</p>
+    <div class="deck-footer"><span>Beginner model: matrix engine inside CPU cores</span><span class="slide-number" data-current="5" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="AMX 理论峰值">
+    <div class="deck-header"><span>05 / Compute scale</span><span>AMX matrix vs AVX-512 vector</span></div>
+    <p class="kicker">Theoretical peak, not vLLM throughput</p>
+    <h2 class="h2">双路 Xeon 6776P 的 AMX BF16/FP16 理论峰值约 302-472 TFLOPS；AVX-512 向量估计约 18.8-29.5 TFLOPS</h2>
+    <p class="claim">这一页只解释“矩阵引擎比向量引擎大一个数量级”的硬件心智模型；base 到 all-core turbo 是理论峰值区间，不是 vLLM 实测吞吐。</p>
+    <div class="compute-grid">
+      <div class="frame" style="padding:22px">
+        <table class="matrix">
+          <tr><th>项目</th><th>公开/派生口径</th><th>结果</th><th>边界</th></tr>
+          <tr><td>AMX BF16/FP16</td><td>1024 ops/cycle/core x 128 cores x 2.3-3.6GHz</td><td>约 302-472 TFLOPS</td><td>理论峰值区间</td></tr>
+          <tr><td>AMX INT8</td><td>2048 ops/cycle/core x 128 cores x 2.3-3.6GHz</td><td>约 603-944 TOPS</td><td>理论峰值区间</td></tr>
+          <tr><td>AVX-512 BF16/FP16</td><td>Intel 称 AMX BF16/FP16 MAC up to 16x AVX-512，故 AMX/16</td><td>约 18.8-29.5 TFLOPS</td><td>派生估计</td></tr>
+        </table>
+        <div class="redline mt-m">不要把 302-472 TFLOPS / 603-944 TOPS 写成“CPU 8B endpoint 实测吞吐”。它们是基于官方 ops/cycle/core、核心数、base clock 和 all-core turbo 上界的理论峰值。</div>
+      </div>
+      <div class="frame" style="padding:22px">
+        <h3>读图方法：同一双路 CPU 内部的数量级</h3>
+        <div class="scale-bars mt-m">
+          <div>AMX BF16/FP16</div><div class="scale-track"><span class="scale-fill cpu" style="width:50%"></span></div><div>302-472 TF</div>
+          <div>AMX INT8</div><div class="scale-track"><span class="scale-fill" style="width:100%"></span></div><div>603-944 TOPS</div>
+          <div>AVX-512 BF16/FP16</div><div class="scale-track"><span class="scale-fill warnbar" style="width:3.1%"></span></div><div>18.8-29.5 TF</div>
+        </div>
+        <div class="callout mt-m">关键字：BF16/FP16 是 LLM 常见低精度浮点；INT8 是量化推理常见整数口径；ops/cycle/core 是每核心每周期理论操作数。</div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[4]</sup> Intel Xeon 6776P specs: 64 cores/socket, 2.3GHz base, 3.6GHz all-core turbo, 350W TDP. <sup>[5]</sup> Intel Xeon 6 product brief: AMX provides 1024 BF16/FP16 ops/cycle/core and 2048 INT8 ops/cycle/core. <sup>[6]</sup> Intel AVX-512 explainer / product brief framing: AMX provides up to 16x more BF16/FP16 MAC operations than AVX-512.</p>
+    <div class="deck-footer"><span>Compute peak is a scale model, not an observed benchmark</span><span class="slide-number" data-current="6" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="任务口径矩阵">
+    <div class="deck-header"><span>05 / Workload split</span><span>What ran where</span></div>
+    <p class="kicker">Benchmark conditions</p>
+    <h2 class="h2">性能数字成立的口径：CPU 8B 是短输入短输出，GPU 405B 是长输入长输出</h2>
+    <p class="claim">两个端点不是同一模型、同一上下文、同一任务的横向对比；它们是同一系统里不同服务角色的并行叠加。</p>
+    <table class="matrix">
+      <tr><th>维度</th><th>CPU pathway</th><th>GPU pathway</th><th>读图边界</th></tr>
+      <tr><td>Model</td><td>Llama-3.1-8B-Instruct</td><td>Llama-3.1-405B-Instruct</td><td>不是同模型加速对比</td></tr>
+      <tr><td>Token shape</td><td>128 input / 128 output</td><td>2048 input / 2048 output</td><td>不是同上下文长度对比</td></tr>
+      <tr><td>Hardware</td><td>2 x Intel Xeon 6776P, AMX BF16</td><td>8 x NVIDIA HGX B200</td><td>同一系统的异构资源</td></tr>
+      <tr><td>Role</td><td>research, extraction, summarization, critique, validation</td><td>long-form generation, deep reasoning, multi-step synthesis</td><td>收益取决于任务混合</td></tr>
+      <tr><td>Service form</td><td>independent vLLM server</td><td>independent vLLM server</td><td>由应用或 router 编排</td></tr>
+    </table>
+    <div class="plain-grid cols-3 mt-l">
+      <div class="callout"><b>先看模型大小</b><br>8B 与 405B 承担不同角色。</div>
+      <div class="callout"><b>再看 token 口径</b><br>128/128 与 2048/2048 不能混成同一吞吐数字。</div>
+      <div class="callout warn"><b>最后看方法</b><br>这是 endpoint-level serving benchmark，不是完整应用体验测试。</div>
+    </div>
+    <p class="foot mt-m refs"><sup>[1]</sup> Intel blog Performance section. <sup>[2]</sup> Whitepaper endnote: workload and method details, including adaptive concurrency search.</p>
+    <div class="deck-footer"><span>Do not mix benchmark mouths</span><span class="slide-number" data-current="7" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="GB200 横向对比">
+    <div class="deck-header"><span>07 / GPU scale comparison</span><span>Xeon AMX is not GB200 tensor compute</span></div>
+    <p class="kicker">Positioning boundary</p>
+    <h2 class="h2">与 GB200 Superchip 相比，双 Xeon AMX BF16 理论峰值约低 10.6-16.6x（dense），或 21.2-33.1x（sparse）</h2>
+    <p class="claim">因此本方案的正确定位不是“CPU 替代 GB200/B200 GPU”，而是让闲置 host CPU 承接小模型、校验、路由和短任务。</p>
+    <div class="plain-grid cols-2">
+      <div class="frame" style="padding:22px">
+        <table class="matrix">
+          <tr><th>口径</th><th>2 x Xeon 6776P AMX</th><th>GB200 Grace Blackwell Superchip</th><th>读法</th></tr>
+          <tr><td>BF16/FP16 dense</td><td>约 0.302-0.472 PFLOPS 理论峰值</td><td>5 PFLOPS Tensor Core dense</td><td>GB200 约 10.6-16.6x</td></tr>
+          <tr><td>BF16/FP16 sparse</td><td>约 0.302-0.472 PFLOPS（未按 sparse 放大）</td><td>10 PFLOPS Tensor Core sparse</td><td>GB200 约 21.2-33.1x</td></tr>
+          <tr><td>FP32</td><td>本页不比较</td><td>160 TFLOPS</td><td>避免混合精度口径</td></tr>
+          <tr><td>GPU memory</td><td>系统内存，非 HBM</td><td>372GB HBM3E / 16TB/s</td><td>大模型生成仍依赖 GPU 内存带宽</td></tr>
+        </table>
+      </div>
+      <div class="frame" style="padding:22px">
+        <h3>读图方法：看“角色”，不要看“谁替代谁”</h3>
+        <div class="scale-bars mt-m">
+          <div>Xeon AMX BF16</div><div class="scale-track"><span class="scale-fill cpu" style="width:9.4%"></span></div><div>0.302-0.472 PF</div>
+          <div>GB200 dense BF16</div><div class="scale-track"><span class="scale-fill" style="width:100%"></span></div><div>5 PF</div>
+          <div>GB200 sparse BF16</div><div class="scale-track"><span class="scale-fill" style="width:100%"></span></div><div>10 PF</div>
+        </div>
+        <div class="callout mt-m">证据条件：GB200 数据来自 NVIDIA 官方 GB200 NVL72 specs 的 Grace Blackwell Superchip 参数；Xeon 数据是上一页的双路 base 到 all-core turbo 理论峰值。</div>
+        <div class="redline mt-m">结论边界：CPU AMX 可以成为小模型服务层，但不应被描述为 B200/GB200 级 Tensor Core compute 的替代品。</div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[7]</sup> NVIDIA GB200 NVL72 specs: GB200 Superchip BF16/FP16 Tensor Core 10 PFLOPS sparse / 5 PFLOPS dense, FP32 160 TFLOPS, HBM3E 372GB / 16TB/s. <sup>[4][5]</sup> Dual Xeon AMX BF16/FP16 derived theoretical peak: 0.302-0.472 PFLOPS.</p>
+    <div class="deck-footer"><span>GPU-class tensor compute remains GPU territory</span><span class="slide-number" data-current="8" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="并发证据">
+    <div class="deck-header"><span>06 / Evidence number</span><span>127 + 56 = 183</span></div>
+    <p class="kicker">Primary evidence figure</p>
+    <h2 class="h2">并发提升来自“复用剩余 CPU 核心”，不是 GPU 405B 本身变快</h2>
+    <div class="barbox" style="grid-template-columns:320px 1fr">
+      <div>
+        <div class="metric"><strong>1.44x</strong><span>183 / 127, reported up to uplift</span></div>
+        <div class="callout mt-m">读图方法：左柱是 GPU-only 的 127；右柱底部仍是 GPU 的 127，上方新增 CPU 端点的 56。</div>
+        <div class="callout warn mt-m">边界：这支持“同一系统承载更多 endpoint users”，不支持“单个请求延迟必然降低”。</div>
+        <table class="matrix mt-m" style="font-size:15px">
+          <tr><th>condition</th><th>mouth</th></tr>
+          <tr><td>CPU</td><td>8B, 128/128 tokens</td></tr>
+          <tr><td>GPU</td><td>405B, 2048/2048 tokens</td></tr>
+          <tr><td>method</td><td>endpoint-level serving benchmark</td></tr>
+        </table>
+      </div>
+      <div class="frame" style="padding:18px">
+        <div class="bars">
+          <div class="bar-group">
+            <div class="bar baseline"><div class="gpu-part">127</div></div>
+            <div class="bar-label">GPU-only<br><span class="tiny">B200 GPU service + 12 CPU cores</span></div>
+          </div>
+          <div class="bar-group">
+            <div class="bar"><div class="gpu-part">127</div><div class="cpu-part">56</div></div>
+            <div class="bar-label">CPU-GPU co-serving<br><span class="tiny">GPU service + CPU 8B endpoint</span></div>
+          </div>
+        </div>
+        <div class="legend mt-s">
+          <span class="tag">light blue = B200 GPU users</span>
+          <span class="tag">dark blue = Xeon 6 CPU users</span>
+        </div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[1]</sup> Intel blog Figure 1 / Picture1 and Performance section. <sup>[2]</sup> Whitepaper benchmark section: GPU-only workload used 12 CPU cores and supported 127 users; remaining cores added 56 CPU users, total 183. Original source figure is shown on the next slide at readable scale.</p>
+    <div class="deck-footer"><span>Main number with conditions attached</span><span class="slide-number" data-current="9" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="原始并发证据图">
+    <div class="deck-header"><span>06B / Source figure</span><span>Raw evidence kept readable</span></div>
+    <p class="kicker">Original evidence figure</p>
+    <h2 class="h2">原始图支持的关系：GPU-only 127，对同一系统叠加 CPU endpoint 后为 127 + 56</h2>
+    <div class="plain-grid cols-2" style="align-items:start">
+      <div>
+        <img class="evidence-img img-chart" src="../sources/web/intel-xeon6-amx-hgx-b200-blog/images/image-02.webp" alt="Intel performance comparison of max concurrent users">
+      </div>
+      <div>
+        <table class="matrix">
+          <tr><th>图中关键字</th><th>读法</th></tr>
+          <tr><td>Max concurrent users</td><td>在 benchmark SLA 阈值下可支持的最大并发用户数</td></tr>
+          <tr><td>GPU-only</td><td>B200 GPU 服务基线，标注 127</td></tr>
+          <tr><td>CPU-GPU co-serving</td><td>保留 GPU 127，同时新增 Xeon 6 CPU 端点 56</td></tr>
+          <tr><td>Up to 1.44x</td><td>183 / 127，来自两个 endpoint 的总并发口径</td></tr>
+        </table>
+        <div class="callout mt-m">证据条件：Supermicro HGX B200 system, 2 x Intel Xeon 6776P, CPU Llama-3.1-8B with 128 input / 128 output tokens, GPU Llama-3.1-405B with 2048 input / 2048 output tokens。</div>
+        <div class="callout warn mt-m">结论边界：原图不是端到端多 agent 应用 benchmark，也不是同模型同 token 长度的 CPU vs GPU 性能比较。</div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[1]</sup> Intel blog Picture1 / Figure 1. <sup>[2]</sup> Supermicro whitepaper endnote confirms workload and endpoint-level benchmark limitation.</p>
+    <div class="deck-footer"><span>Raw source visual separated for readability</span><span class="slide-number" data-current="10" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="TTFT TPOT 证据缺口">
+    <div class="deck-header"><span>10 / Latency evidence gap</span><span>Do not invent CPU 8B latency</span></div>
+    <p class="kicker">Critical correction</p>
+    <h2 class="h2">公开材料没有披露 CPU 8B endpoint 的最终 TTFT/TPOT 实测值</h2>
+    <p class="claim">“新增 56 个 CPU users”必须理解为 benchmark 在 SLA 口径下搜索出的并发结果；不能写成 CPU 8B 延迟已经被证明是多少 ms。</p>
+    <div class="plain-grid cols-2">
+      <div class="frame" style="padding:22px">
+        <table class="matrix">
+          <tr><th>证据项</th><th>公开材料实际披露</th><th>不能推出</th></tr>
+          <tr><td>benchmark_results.md/json</td><td>白皮书说流程会生成并用于比较 concurrency、TTFT、TPOT</td><td>没有给出 CPU 8B p99/mean 数值</td></tr>
+          <tr><td>并发结果</td><td>GPU-only 127；CPU-GPU co-serving 新增 56 CPU users，总计 183</td><td>不能等同于 CPU 8B 延迟 X ms</td></tr>
+          <tr><td>Demo SLA defaults</td><td>SLA_TTFT_MS=10000；SLA_TPOT_MS=100</td><td>这是阈值/默认值，不是实测结果</td></tr>
+        </table>
+      </div>
+      <div class="frame" style="padding:22px">
+        <h3>给小白的读法</h3>
+        <div class="calc-card mt-m"><b>TTFT</b><code>Time To First Token：从请求发出到第一个 token 出来的时间，影响“有没有卡住”的体感。</code></div>
+        <div class="calc-card mt-m"><b>TPOT</b><code>Time Per Output Token：生成每个后续 token 的平均耗时，影响输出流畅度。</code></div>
+        <div class="redline mt-m">正确写法：公开材料支持“CPU endpoint 在 benchmark SLA 搜索口径下增加 56 users”。错误写法：CPU 8B endpoint 已证明 TTFT=10000ms、TPOT=100ms，或实测延迟是多少。</div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[2]</sup> Whitepaper: benchmark flow generates benchmark_results.md/json for concurrency, TTFT, and TPOT criteria; visible text reports concurrency outcome only. <sup>[8]</sup> Intel AI TCE cpu_binding_demo script defaults: SLA_TTFT_MS=10000 and SLA_TPOT_MS=100, with extraction logic but no committed final measurements.</p>
+    <div class="deck-footer"><span>Latency quality remains an open evidence gap in public materials</span><span class="slide-number" data-current="11" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="系统配置证据">
+    <div class="deck-header"><span>12 / Evidence conditions</span><span>Hardware and software mouth</span></div>
+    <p class="kicker">Evidence conditions</p>
+    <h2 class="h2">这组结果依赖明确配置：硬件、软件、token、SLA 阈值都影响口径</h2>
+    <div class="plain-grid cols-2" style="align-items:start">
+      <div>
+        <img class="evidence-img img-table" src="../sources/papers/supermicro-x14-hgx-b200-xeon6-whitepaper/final/images/table_002.webp" alt="Supermicro system configuration table">
+        <p class="tiny mt-s">白皮书导出的系统表：SYS-822GS-NBRT, dual Xeon 6776P, 2048GB memory, NVIDIA HGX B200 8-GPU.</p>
+      </div>
+      <div>
+        <table class="matrix">
+          <tr><th>条件</th><th>材料中的口径</th></tr>
+          <tr><td>Test date</td><td>Intel tested as of 2026-03-21</td></tr>
+          <tr><td>OS / BIOS</td><td>Ubuntu 22.04.5 LTS, BIOS 1.5, microcode 0x1000405</td></tr>
+          <tr><td>Software</td><td>official vLLM Docker images, vLLM benchmark suite, vLLM 0.17.0 public release</td></tr>
+          <tr><td>Method</td><td>adaptive concurrency search under SLA thresholds from vLLM benchmark manual</td></tr>
+          <tr><td>Measurement</td><td>CPU and GPU endpoint measurements taken while both services were kept busy</td></tr>
+        </table>
+        <div class="callout warn mt-m">读图边界：不同 BIOS、kernel、vLLM 版本、token 长度、SLO 或 workload mix 都可能改变结果。</div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[2]</sup> Whitepaper endnote configuration and Docling table_002. <sup>[1]</sup> Intel blog Endnotes include similar configuration and variation disclaimer.</p>
+    <div class="deck-footer"><span>Evidence conditions before conclusions</span><span class="slide-number" data-current="12" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="功耗和能效口径">
+    <div class="deck-header"><span>13 / Power boundary</span><span>Package, system, rack are different mouths</span></div>
+    <p class="kicker">Power and efficiency framing</p>
+    <h2 class="h2">功耗不能把 700W CPU TDP 与 120kW GB200 rack power 当成同一边界硬比</h2>
+    <p class="claim">异构推理的收益来自复用 GPU 服务器内已供电、已部署的 host CPU 余量，而不是 CPU 替代 GPU 的能效曲线。</p>
+    <div class="plain-grid cols-2">
+      <div class="frame" style="padding:22px">
+        <table class="matrix">
+          <tr><th>对象</th><th>公开功耗口径</th><th>边界</th><th>读法</th></tr>
+          <tr><td>2 x Xeon 6776P</td><td>350W TDP/socket；双路 700W CPU TDP</td><td>CPU package-level</td><td>只覆盖 CPU 封装热设计，不含整机</td></tr>
+          <tr><td>NVIDIA DGX B200</td><td>约 14.3kW max</td><td>8 x B200 system-level</td><td>包含 GPU 系统组件，非单 GPU TDP</td></tr>
+          <tr><td>DGX GB200 / NVL72</td><td>约 120kW rack power</td><td>rack-level</td><td>包含 Grace、Blackwell、NVLink/NVSwitch、电力与冷却设计</td></tr>
+          <tr><td>HPE NVL72 QuickSpecs</td><td>132kW nominal TDP；192kW peak electrical design power</td><td>OEM rack planning</td><td>机柜规划可高于 NVIDIA 约值</td></tr>
+        </table>
+        <div class="redline mt-m">读图方法：先看“边界”列。package、system、rack 是三种不同容器，不能直接拿瓦数除并发数或宣称谁更省电。</div>
+      </div>
+      <div class="frame" style="padding:22px">
+        <h3>理论能效只作量级参考</h3>
+        <div class="scale-bars mt-m">
+          <div>Xeon AMX BF16</div><div class="scale-track"><span class="scale-fill cpu" style="width:45%"></span></div><div>431-674 TF/kW</div>
+          <div>GB200 NVL72 dense BF16</div><div class="scale-track"><span class="scale-fill" style="width:100%"></span></div><div>1500 TF/kW</div>
+          <div>GB200 NVL72 sparse BF16</div><div class="scale-track"><span class="scale-fill" style="width:100%"></span></div><div>3000 TF/kW</div>
+        </div>
+        <div class="callout mt-m">证据条件：Xeon 用双路 AMX BF16 理论峰值 302-472 TFLOPS / 0.7kW CPU TDP；GB200 NVL72 用 180 PFLOPS dense 或 360 PFLOPS sparse / 120kW rack power。</div>
+        <div class="callout warn mt-m">结论边界：这不是同一系统边界的精确能效 benchmark，只能帮助理解量级。实际 vLLM 能效还取决于模型、batch、token、内存带宽、利用率和散热策略。</div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[4]</sup> Intel Xeon 6776P specs: 350W TDP per socket. <sup>[9]</sup> NVIDIA DGX B200 product page: about 14.3kW max system power. <sup>[10]</sup> NVIDIA DGX GB200 / GB200 NVL72 hardware guide: approximately 120kW rack power. <sup>[11]</sup> HPE QuickSpecs: 132kW nominal rack TDP and 192kW peak electrical design power. <sup>[7]</sup> NVIDIA GB200 NVL72 specs: 180 PFLOPS dense BF16 and 360 PFLOPS sparse BF16 at rack scale.</p>
+    <div class="deck-footer"><span>Power mouth determines what the number can prove</span><span class="slide-number" data-current="13" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="CPU Binding 和延迟模型">
+    <div class="deck-header"><span>14 / Operational mechanism</span><span>Binding and pipeline</span></div>
+    <p class="kicker">Operational detail</p>
+    <h2 class="h2">要让 CPU 帮忙而不拖累 GPU，关键是 CPU binding 与流水线重叠</h2>
+    <div class="plain-grid cols-2">
+      <div class="frame" style="padding:24px">
+        <h3>CPU binding 的判断</h3>
+        <div class="plain-grid cols-2 mt-m">
+          <div class="metric"><strong>56</strong><span>CPU users with proper binding</span></div>
+          <div class="metric"><strong>51</strong><span>CPU users without binding across all CPUs</span></div>
+        </div>
+        <div class="callout mt-m">含义：GPU 服务需要 NUMA-local CPU 和可能的 PCT 核心保护；剩余 CPU 再给 CPU-only inference。</div>
+        <div class="callout warn mt-m">边界：binding 是部署策略，不是模型算法本身。配置不当会吞掉一部分 CPU 端收益。</div>
+      </div>
+      <div class="frame" style="padding:24px">
+        <h3>流水线延迟心智模型</h3>
+        <div class="formula">Sequential latency = Research + Write + Review</div>
+        <div class="formula mt-m">Pipelined latency ~= MAX(Research, Write, Review)</div>
+        <div class="step-row mt-m">
+          <div class="step"><b>Research</b><span>CPU 先产出 notes</span></div>
+          <div class="arrow">↘</div>
+          <div class="step"><b>Write</b><span>GPU 拿 partial context 先写</span></div>
+          <div class="arrow">↘</div>
+          <div class="step"><b>Review</b><span>CPU 拿 partial draft 反馈</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="foot mt-m refs"><sup>[2]</sup> Whitepaper: CPU binding generated Docker Compose override; GPU services run on NUMA-local CPUs; CPU-side supported users dropped from 56 to 51 without binding. <sup>[1]</sup> Intel blog latency formulas.</p>
+    <div class="deck-footer"><span>Make idle cores useful, but isolate contention</span><span class="slide-number" data-current="14" data-total="15"></span></div>
+  </section>
+
+  <section class="slide" data-title="引用链和边界">
+    <div class="deck-header"><span>15 / Source chain</span><span>What is supported</span></div>
+    <p class="kicker">Traceability and limits</p>
+    <h2 class="h2">这份 source understanding 可以支持什么，不能外推什么</h2>
+    <div class="plain-grid cols-2" style="align-items:start">
+      <div>
+        <div class="source-list">
+          <div class="head">ID</div><div class="head">Source</div><div class="head">Used for</div>
+          <div>[1]</div><div>Intel Community blog, “Intel Xeon 6 Processors and Intel AMX Deliver More Concurrent Users with NVIDIA HGX B200 Systems”, Louie Tsai, posted 2026-06-25, captured 2026-07-02.</div><div>Problem statement, multi-agent split, latency formulas, Figure 1/2, endnote configuration.</div>
+          <div>[2]</div><div>Supermicro X14 / HGX B200 / Xeon 6 whitepaper TEI XML and Docling images.</div><div>Executive summary, benchmark mouth, system configuration, AMX description, CPU binding details, endpoint-level limitation.</div>
+          <div>[3]</div><div>Docling extracted images directory.</div><div>System table and evidence visuals used only where readable at near-original size.</div>
+          <div>[4]</div><div>Intel Xeon 6776P processor specifications.</div><div>64 cores/socket and 3.6GHz all-core turbo used in dual-socket peak estimates.</div>
+          <div>[5]</div><div>Intel Xeon 6 product brief.</div><div>AMX 1024 BF16/FP16 ops/cycle/core and 2048 INT8 ops/cycle/core.</div>
+          <div>[6]</div><div>Intel AVX-512 explainer and AMX framing.</div><div>AVX-512 vector estimate derived from AMX up to 16x BF16/FP16 MAC operations.</div>
+          <div>[7]</div><div>NVIDIA GB200 NVL72 official specifications.</div><div>GB200 Superchip BF16/FP16 Tensor Core, FP32, HBM3E capacity and bandwidth.</div>
+          <div>[8]</div><div>Intel AI TCE cpu_binding_demo benchmark scripts, local clone.</div><div>SLA_TTFT_MS and SLA_TPOT_MS defaults; extraction logic but no published final CPU endpoint latency values.</div>
+          <div>[9]</div><div>NVIDIA DGX B200 product page.</div><div>8 x B200 system power, about 14.3kW max.</div>
+          <div>[10]</div><div>NVIDIA DGX GB200 / GB200 NVL72 hardware guide.</div><div>Rack power consumption, approximately 120kW.</div>
+          <div>[11]</div><div>HPE GB200 NVL72 QuickSpecs.</div><div>OEM rack planning power: 132kW nominal TDP and 192kW peak electrical design power.</div>
+        </div>
+      </div>
+      <div>
+        <table class="matrix">
+          <tr><th>Supported conclusion</th><th>Unsupported extrapolation</th></tr>
+          <tr><td>In the cited benchmark, co-serving adds CPU endpoint concurrency on the same HGX B200 system.</td><td>All LLM workloads will get 1.44x throughput.</td></tr>
+          <tr><td>CPU 8B endpoint can absorb lightweight reasoning, extraction, critique, validation tasks.</td><td>Xeon 6 AMX can replace B200 for 405B generation.</td></tr>
+          <tr><td>Dual Xeon AMX theoretical BF16/FP16 peak is about 0.302-0.472 PFLOPS under stated assumptions.</td><td>This is sustained vLLM throughput or observed endpoint performance.</td></tr>
+          <tr><td>GB200 Superchip dense BF16 Tensor Core peak is about 10.6-16.6x the dual-Xeon AMX BF16 theoretical peak.</td><td>Host CPU and GB200/B200 GPU are peers for large-model tensor compute.</td></tr>
+          <tr><td>Dual Xeon CPU TDP and GB200/NVL72 rack power are useful anchors when their boundaries are labeled.</td><td>700W CPU package TDP and 120kW rack power are a direct apples-to-apples energy comparison.</td></tr>
+          <tr><td>Public materials describe TTFT/TPOT comparison criteria and SLA defaults.</td><td>CPU 8B final measured TTFT/TPOT values are publicly disclosed.</td></tr>
+          <tr><td>Pipeline overlap can change latency from additive stages toward max-stage bound.</td><td>Every production multi-agent app will achieve that bound.</td></tr>
+          <tr><td>NUMA-aware CPU binding matters for preserving endpoint capacity.</td><td>Default deployment without tuning will reproduce the same result.</td></tr>
+        </table>
+        <div class="callout mt-m">一句话复述：它是一种“异构资源编排”心智模型，价值来自把不同任务放到合适硬件上。</div>
+      </div>
+    </div>
+    <p class="foot mt-m">Delivery note: HTML deck uses engineering-whiteprint theme, relative source paths, and near-original-size primary evidence images where raw images are used.</p>
+    <div class="deck-footer"><span>End of source-understanding review</span><span class="slide-number" data-current="15" data-total="15"></span></div>
+  </section>
+
+</div>
+<script src="../assets/runtime.js"></script>
+</body>
+</html>
+

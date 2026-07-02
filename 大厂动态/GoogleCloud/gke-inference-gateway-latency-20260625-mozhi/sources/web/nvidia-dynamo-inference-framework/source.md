@@ -60,7 +60,7 @@ NVIDIA says Dynamo addresses distributed and disaggregated inference serving thr
 - Grove: A modular Dynamo component for deploying hierarchical gang-scheduled and topology-aware AI workloads on Kubernetes.
 - AI Perf: A benchmarking tool for measuring performance of generative AI models served by SGLang, TensorRT LLM, and vLLM.
 
-![A flowchart of how NVIDIA Dynamo works](images/image-01.png)
+![A flowchart of how NVIDIA Dynamo works](images/image-01.webp)
 
 Image source: https://developer.download.nvidia.com/images/dynamo/dynamo-devzone-inference-diagram.png
 
@@ -70,7 +70,7 @@ Caption / nearby text: A flowchart of how NVIDIA Dynamo works.
 
 The page promotes live NVIDIA Dynamo Office Hours sessions where developers can ask questions, share feedback, and learn from the Dynamo team. It says each episode covers topics related to Dynamo and inference, helping developers build, optimize, and deploy AI models.
 
-![NVIDIA Dynamo Office Hours](images/image-02.jpg)
+![NVIDIA Dynamo Office Hours](images/image-02.webp)
 
 Image source: https://developer.download.nvidia.com/images/nvidia-dynamo-key-moments.jpg
 
@@ -146,7 +146,7 @@ The page includes a resource titled "NVIDIA Blackwell Ultra Delivers up to 50x B
 
 The page attributes the result to co-design across NVIDIA Blackwell, NVLink, NVLink Switch, NVFP4, NVIDIA Dynamo, and TensorRT LLM, with development through community frameworks including SGLang and vLLM.
 
-![Data center illustration showing multi-modal AI tokens for image, audio, visual and more as part of the NVIDIA Think SMART framework](images/image-03.jpg)
+![Data center illustration showing multi-modal AI tokens for image, audio, visual and more as part of the NVIDIA Think SMART framework](images/image-03.webp)
 
 Image source: https://developer.download.nvidia.com/images/dgx-press-gb300-1920x1080.jpg
 

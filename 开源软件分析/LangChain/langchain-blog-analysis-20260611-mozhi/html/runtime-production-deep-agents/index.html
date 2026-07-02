@@ -428,7 +428,7 @@
           <p>图中展示进程在中途失败后，runtime 从已保存的 checkpoint 继续执行。这个机制支撑后文的人类中断、并发运行和长期任务调度，因为它们都依赖“暂停后还能回到同一状态”。</p>
         </div>
         <figure class="source-shot">
-          <img src="assets/01_890274661f_69e64614ec8287bee98a7e88_diagram2_durable_execution_crash_recovery_dark_201.png" alt="原文图示：durable execution crash recovery">
+          <img src="assets/01_890274661f_69e64614ec8287bee98a7e88_diagram2_durable_execution_crash_recovery_dark_201.webp" alt="原文图示：durable execution crash recovery">
           <figcaption>Crash recovery：失败后从 checkpoint 恢复，而不是从头重跑。</figcaption>
         </figure>
       </div>
@@ -446,7 +446,7 @@
           <p>这张图支撑文章对 middleware 的描述：动态模型选择、PII 过滤、摘要压缩、工具调用包装和 guardrails 都不是散落的回调，而是围绕 agent run 的生命周期插入。</p>
         </div>
         <figure class="source-shot">
-          <img src="assets/06_69e9d28d1155428902746631_69e7b91f98343dd874c7d08d_diagram2_agent_lifecycle_dark_201.png" alt="原文图示：agent lifecycle">
+          <img src="assets/06_69e9d28d1155428902746631_69e7b91f98343dd874c7d08d_diagram2_agent_lifecycle_dark_201.webp" alt="原文图示：agent lifecycle">
           <figcaption>Agent lifecycle：模型调用和工具调用被 middleware 包裹，形成可插入控制点。</figcaption>
         </figure>
       </div>
@@ -464,7 +464,7 @@
           <p>图中把 short-term memory、long-term memory 和 recall 路径分开，支撑文章对 persistence 与 memory 的拆分：保存 run 状态只是第一步，跨 thread 的 store 才能让 agent 形成长期连续性。</p>
         </div>
         <figure class="source-shot">
-          <img src="assets/13_69e9d28d115542890274664f_69e666ea5bd7ae91146d6ae8_diagram6_memory_dark_201_20_1_.png" alt="原文图示：memory">
+          <img src="assets/13_69e9d28d115542890274664f_69e666ea5bd7ae91146d6ae8_diagram6_memory_dark_201_20_1_.webp" alt="原文图示：memory">
           <figcaption>Memory：短期 thread state 与长期 memory 分层，运行时可在后续任务中 recall。</figcaption>
         </figure>
       </div>
@@ -482,7 +482,7 @@
           <p>图中展示工具调用前的 interrupt 和 checkpoint，支撑文章对 human-in-the-loop 的定义：人类可以 approve、edit 或 reject，runtime 再从同一个状态继续执行。</p>
         </div>
         <figure class="source-shot">
-          <img src="assets/08_e9d28d1155428902746637_69e646bcd3a160827f8db9d9_diagram5_interrupt_checkpoint_dark_201.png" alt="原文图示：interrupt checkpoint">
+          <img src="assets/08_e9d28d1155428902746637_69e646bcd3a160827f8db9d9_diagram5_interrupt_checkpoint_dark_201.webp" alt="原文图示：interrupt checkpoint">
           <figcaption>Interrupt checkpoint：工具调用前暂停，人工处理后恢复同一个 run。</figcaption>
         </figure>
       </div>
