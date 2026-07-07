@@ -4,7 +4,7 @@
 
 ## Archive Scope
 
-- 只归档正式交付件、必要源材料、QA 记录和报告说明。
+- 只归档正式交付件和必要报告说明。
 - 不归档临时草稿、缓存、运行日志、未整理的中间导出。
 - 仓库根目录只保存说明、脚本和分类入口。
 
@@ -50,30 +50,28 @@
 
 ## Report Package Contents
 
-每个报告目录内部结构由交付件自身决定，不强制套用统一模板。
+每个报告目录内部只保留最终交付件和可选说明，不强制套用统一模板。
 
-允许归档的正式交付形态包括 HTML、PPTX、PDF、Markdown、图片包、源材料摘要和 QA 记录。无论采用哪种形态，都必须先创建符合命名规则的最终报告目录，不能把交付文件直接放在大类、对象或方向、自定义子类目录下。
+允许归档的正式交付形态只有：
 
-## Markdown / HTML Asset Rules
+- dependency-free HTML：必须是 SingleFile 单文件 HTML，离线打开不依赖旁路 CSS、JS、图片或字体文件。
+- PPTX：可编辑或可演示的幻灯片文件。
+- `README.md`：可选，用于补充报告说明、来源摘要或人工核验备注。
 
-- Markdown 和 HTML 是报告主体的主要形态，凡是正文可见内容依赖的本地图片，都必须随报告目录一起归档。
-- Markdown 的 `![...](...)`、HTML 的 `<img src="...">` / `srcset`、CSS `url(...)` 和 HTML 中静态声明的图片路径，必须使用相对路径指向本报告目录内或 `ccn-report` 仓库内已归档的文件。
-- 不要在正式报告中引用 `.tmp/`、本机绝对路径、仓库外路径或只存在于生成环境中的图片；外部打开报告时这些路径会失效。
-- 远程 `http(s)` 图片和 `data:` 内嵌图片不会被本地资产门禁强制要求归档，但正式交付优先使用随仓库归档的本地图片，避免外部网络或上游资源变化导致报告不可读。
-- `python scripts/pre_commit_gate.py` 会检查 Markdown / HTML 中的本地图片依赖是否存在、是否位于 `ccn-report` 仓库内；若发现缺失、根路径或仓库外路径，会失败。
+不归档 PDF、图片依赖包、源码材料、QA 中间记录或生成日志；如需说明，整理进 `README.md`。无论采用哪种形态，都必须先创建符合命名规则的最终报告目录，不能把交付文件直接放在大类、对象或方向、自定义子类目录下。
 
-## HTML Asset Compression
+## HTML SingleFile Export
 
-- 报告目录中的图片资产默认必须使用 q70 WebP 入库；不要直接归档 `.png`、`.jpg`、`.jpeg` 或 `.gif`。
-- 提交前若新增或修改报告资产，先运行：
+- HTML 报告必须先导出为 SingleFile 单文件，再进入归档。
+- 常规导出：
 
 ```powershell
-python scripts/compress_report_assets.py --quality 70
+python scripts/export_singlefile_archive.py --root <html-root> <entry.html> --output-dir <archive-output-dir>
 ```
 
-- 该脚本会在当前工作树内把报告图片转为 q70 WebP，并改写 HTML / Markdown / CSS / JS / JSON / SVG / XML 中的本地引用。
-- `python scripts/pre_commit_gate.py` 会拒绝未转换的 `.png`、`.jpg`、`.jpeg`、`.gif` 报告资产。
-- SVG、WebP、AVIF、PPTX、PDF 和 draw.io 等正式交付件不受该压缩规则影响。
+- 入口页会索引子报告时，追加 `--recursive-linked-html`。
+- 导出后报告目录只保留 HTML、PPTX 和 `README.md`。
+- 其他参数按需查看 `python scripts/export_singlefile_archive.py --help`。
 
 ## Release Package
 
@@ -89,16 +87,15 @@ python scripts/release_compressed_archive.py --quality 70
 
 ## Git LFS Rules
 
-三大归档目录下的文件默认走 Git LFS。
+三大归档目录下的交付件默认走 Git LFS。
 
-以下可读文本扩展名通过 `.gitattributes` 白名单保留普通 Git diff：
+只有报告说明 Markdown 保留普通 Git diff：
 
 ```text
-.md .markdown .html .htm .css .js .mjs .cjs .ts .tsx .jsx
-.json .jsonl .yaml .yml .toml .txt .csv .tsv .svg .xml
+.md .markdown
 ```
 
-白名单文本文件超过 5 MiB 时，`python scripts/pre_commit_gate.py` 会失败。归档前应优先拆出内嵌图片或大资产；若确实需要保留单个超大文本文件，应在 `.gitattributes` 为该具体路径添加 Git LFS 例外。
+HTML 和 PPTX 都是正式交付件，默认走 LFS；
 
 ## Pre-Commit Gates
 
@@ -108,4 +105,4 @@ python scripts/release_compressed_archive.py --quality 70
 python scripts/pre_commit_gate.py
 ```
 
-若门禁失败，先修复目录层级、命名问题、Markdown / HTML 本地图片依赖问题或未转换图片资产，再提交。
+若门禁失败，先修复目录层级、命名问题或报告目录内的非归档文件，再提交。

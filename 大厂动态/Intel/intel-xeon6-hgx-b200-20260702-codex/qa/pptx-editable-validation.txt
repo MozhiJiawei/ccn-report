@@ -1,6 +1,0 @@
-﻿QA / validation results
-- Built with @oai/artifact-tool from JavaScript ES modules; python-pptx not used.
-- Final PPTX rendered to PNG with Presentations render_slides.py.
-- slides_test.py: Test passed. No overflow detected.
-- Visual inspection: 4 rendered slides checked; no unintended overlap, clipping, or broken wrapping observed after fixes.
-- Editable reconstruction: no full-slide screenshots embedded; source PNGs used only as visual reference.
