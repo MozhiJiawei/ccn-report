@@ -47,7 +47,11 @@ AI 生成报告交付件归档仓库。
 - `<YYYYMMDD>`：8 位日期，例如 `20260611`。
 - `<creator>`：中文、英文字母、数字、短横线或下划线，例如 `mozhi`、`墨之`、`mozhi-jiawei`。
 
-每个报告目录内部结构由交付形态决定。HTML、PPTX、PDF、图片包、源材料和 QA 记录都可以按该报告自身需要组织。
+每个报告目录内部只归档最终交付件和必要说明。正式交付形态只允许：
+
+- dependency-free HTML：必须是可离线打开的 SingleFile 单文件 HTML。
+- PPTX：可编辑或可演示的幻灯片文件。
+- `README.md`：可选，用于补充报告说明、来源摘要或人工核验备注。
 
 ## Archive Rules
 
@@ -56,31 +60,26 @@ AI 生成报告交付件归档仓库。
 - 对象或方向目录及其自定义子类目录下不直接放单个交付文件。
 - 一个报告一个目录，不把多个主题混在同一目录。
 - 只有最终报告目录名必须满足 `<report-slug>-<YYYYMMDD>-<creator>`。
-- 报告目录内部可以按交付件需要继续创建任意子目录和文件。
+- 报告目录内部只保留 HTML、PPTX 和可选 `README.md`。
 - 大型中间文件、缓存、临时导出默认不归档。
-- 不强制使用统一模板；报告内容可以是 HTML、PPTX、PDF、Markdown 或其他正式交付形态。
+- 不归档 PDF、图片依赖包、源码材料、QA 中间记录或生成日志；如需说明，整理进 `README.md`。
 
 ## Git LFS
 
-三大归档目录下的文件默认使用 Git LFS，以避免 PPTX、PDF、图片、视频、压缩包等交付件撑大 Git 历史。
+三大归档目录下的交付件默认使用 Git LFS，以避免 SingleFile HTML 和 PPTX 撑大 Git 历史。
 
-可读文本文件通过 `.gitattributes` 白名单保留普通 Git diff，例如 Markdown、HTML、CSS、JavaScript、JSON、YAML、CSV、SVG、XML 和纯文本。
+只有报告说明 Markdown 保留普通 Git diff。HTML 和 PPTX 都是正式交付件，默认走 LFS。
 
-白名单文本文件如果超过 5 MiB，门禁会失败。处理方式：
+## HTML SingleFile Export
 
-- 优先拆出内嵌图片或大资产，让二进制资产走 LFS。
-- 如果确实需要归档单个超大文本文件，在 `.gitattributes` 为该具体路径添加 Git LFS 例外。
-
-## HTML Asset Compression
-
-报告图片资产默认以 q70 WebP 入库，避免离线 HTML 包快速膨胀。提交前运行：
+HTML 报告必须使用 SingleFile 单文件归档，不能依赖旁路 CSS、JS、图片或字体文件。常规导出：
 
 ```powershell
-python scripts/compress_report_assets.py --quality 70
+python scripts/export_singlefile_archive.py --root <html-root> <entry.html> --output-dir <archive-output-dir>
 python scripts/pre_commit_gate.py
 ```
 
-门禁会拒绝报告目录下未转换的 `.png`、`.jpg`、`.jpeg` 和 `.gif`。
+入口页会索引子报告时追加 `--recursive-linked-html`。导出后只归档 HTML、PPTX 和 `README.md`。
 
 ## Latest Release Package
 
