@@ -5,7 +5,7 @@
 - 来源目录：`D:\Agent Repo\Mozhi-s-AgentWorkspace\.tmp\langchain-blog-analysis`
 - 归档日期：2026-06-11
 - 创建人：mozhi
-- 归档路径：`开源软件分析/LangChain/langchain-blog-analysis-20260611-mozhi/`
+- 归档路径：`开源软件分析/LangChain/20260611-langchain-blog-analysis-mozhi/`
 
 ## 内容范围
 

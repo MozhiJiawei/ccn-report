@@ -29,22 +29,22 @@ AI 生成报告交付件归档仓库。
 报告必须归档到对象或方向目录之后的独立报告目录里，中间可以按需要增加自定义子类。
 
 ```text
-<大类>/<对象或方向>/.../.../<report-slug>-<YYYYMMDD>-<creator>/.../
+<大类>/<对象或方向>/.../.../<YYYYMMDD>-<report-slug>-<creator>/.../
 ```
 
 示例：
 
 ```text
-大厂动态/OpenAI/gpt-5-market-scan-20260611-mozhi/
-大厂动态/OpenAI/模型发布/gpt-5-market-scan-20260611-mozhi/
-开源软件分析/LangChain/Runtime/LangGraph/langgraph-runtime-review-20260611-mozhi/
-学术论文分析/Agent/多智能体规划/multi-agent-planning-survey-20260611-mozhi/
+大厂动态/OpenAI/20260611-gpt-5-market-scan-mozhi/
+大厂动态/OpenAI/模型发布/20260611-gpt-5-market-scan-mozhi/
+开源软件分析/LangChain/Runtime/LangGraph/20260611-langgraph-runtime-review-mozhi/
+学术论文分析/Agent/多智能体规划/20260611-multi-agent-planning-survey-mozhi/
 ```
 
 目录名规则：
 
+- `<YYYYMMDD>`：8 位合入日期，例如 `20260611`。
 - `<report-slug>`：小写字母、数字和短横线，例如 `gpt-5-market-scan`。
-- `<YYYYMMDD>`：8 位日期，例如 `20260611`。
 - `<creator>`：中文、英文字母、数字、短横线或下划线，例如 `mozhi`、`墨之`、`mozhi-jiawei`。
 
 每个报告目录内部只归档最终交付件和必要说明。正式交付形态只允许：
@@ -59,7 +59,7 @@ AI 生成报告交付件归档仓库。
 - 大类目录下不直接放报告文件。
 - 对象或方向目录及其自定义子类目录下不直接放单个交付文件。
 - 一个报告一个目录，不把多个主题混在同一目录。
-- 只有最终报告目录名必须满足 `<report-slug>-<YYYYMMDD>-<creator>`。
+- 只有最终报告目录名必须满足 `<YYYYMMDD>-<report-slug>-<creator>`。
 - 报告目录内部只保留 HTML、PPTX 和可选 `README.md`。
 - 大型中间文件、缓存、临时导出默认不归档。
 - 不归档 PDF、图片依赖包、源码材料、QA 中间记录或生成日志；如需说明，整理进 `README.md`。

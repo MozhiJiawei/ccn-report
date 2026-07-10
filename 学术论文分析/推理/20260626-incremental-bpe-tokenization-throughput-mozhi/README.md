@@ -17,7 +17,7 @@
 归档后已重新运行：
 
 ```powershell
-python skills/ppt-deep-search/scripts/validate_source_understanding_html.py ccn-report/学术论文分析/推理/incremental-bpe-tokenization-throughput-20260625-mozhi/review/source_understanding_review.html all ccn-report/学术论文分析/推理/incremental-bpe-tokenization-throughput-20260625-mozhi/review/source-understanding-images
+python skills/ppt-deep-search/scripts/validate_source_understanding_html.py ccn-report/学术论文分析/推理/20260626-incremental-bpe-tokenization-throughput-mozhi/review/source_understanding_review.html all ccn-report/学术论文分析/推理/20260626-incremental-bpe-tokenization-throughput-mozhi/review/source-understanding-images
 ```
 
 结果：PASS。检测到 13 页，左右键导航正常，截图导出成功，图片缩放硬门禁通过。

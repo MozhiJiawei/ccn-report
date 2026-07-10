@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CCN Report 导览</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --ink: #171a1f;
+      --muted: #657080;
+      --line: #d9dee7;
+      --accent: #b4232a;
+      --accent-2: #0f766e;
+      --blue: #2457a6;
+      --shadow: 0 14px 34px rgba(23, 26, 31, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Inter", "Noto Sans SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.55;
+    }
+    a { color: inherit; text-decoration: none; }
+    .shell { width: min(1220px, calc(100% - 32px)); margin: 0 auto; }
+    header {
+      padding: 34px 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,.72) 100%);
+    }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 46px); line-height: 1.08; letter-spacing: 0; }
+    .subtitle { margin: 10px 0 0; color: var(--muted); max-width: 760px; }
+    .stats { display: flex; gap: 10px; flex-wrap: wrap; }
+    .stat {
+      min-width: 102px;
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .stat b { display: block; font-size: 22px; line-height: 1; }
+    .stat span { color: var(--muted); font-size: 13px; }
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: rgba(245,246,248,.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .toolbar-inner { display: grid; grid-template-columns: minmax(220px, 1fr) auto auto; gap: 12px; padding: 12px 0; }
+    input[type="search"],
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 11px 12px;
+      font: inherit;
+      color: var(--ink);
+    }
+    select {
+      min-width: 168px;
+      cursor: pointer;
+    }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .tab[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+    main { padding: 18px 0 42px; }
+    .section-title { margin: 26px 0 12px; display: flex; align-items: baseline; gap: 10px; }
+    .section-title h2 { margin: 0; font-size: 24px; letter-spacing: 0; }
+    .section-title span { color: var(--muted); font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      min-width: 0;
+    }
+    .meta { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 13px; }
+    .title { margin: 8px 0 6px; font-size: 19px; line-height: 1.25; letter-spacing: 0; }
+    .desc { margin: 0; color: #303844; }
+    .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #fafbfc;
+      font-size: 14px;
+    }
+    .link.html { border-color: rgba(36, 87, 166, .35); color: var(--blue); }
+    .link.pptx { border-color: rgba(15, 118, 110, .35); color: var(--accent-2); }
+    details {
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+    summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+    .file-list { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+    .file-list li { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+    .hidden { display: none !important; }
+    .empty { color: var(--muted); padding: 32px 0; }
+    @media (max-width: 820px) {
+      .toolbar-inner { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      .stat { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <div class="topline">
+        <div>
+          <h1>CCN Report 导览</h1>
+          <p class="subtitle">打开本页即可浏览归档报告；HTML 会在浏览器中打开，PPTX 会按系统配置下载或交给本机 Office 打开。</p>
+        </div>
+        <div class="stats" aria-label="仓库统计">
+          <div class="stat"><b id="reportCount">26</b><span>报告目录</span></div>
+          <div class="stat"><b id="htmlCount">0</b><span>HTML</span></div>
+          <div class="stat"><b id="pptxCount">0</b><span>PPTX</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="toolbar">
+    <div class="shell toolbar-inner">
+      <input id="search" type="search" placeholder="搜索对象、主题、路径或说明">
+      <select id="dateFilter" aria-label="按日期过滤">
+        <option value="all">全部日期</option>
+      </select>
+      <div class="tabs" aria-label="报告分类">
+        <button class="tab" type="button" data-filter="all" aria-pressed="true">全部</button>
+        <button class="tab" type="button" data-filter="大厂动态" aria-pressed="false">大厂动态</button>
+        <button class="tab" type="button" data-filter="开源软件分析" aria-pressed="false">开源软件</button>
+        <button class="tab" type="button" data-filter="学术论文分析" aria-pressed="false">学术论文</button>
+      </div>
+    </div>
+  </div>
+  <main class="shell">
+    <div id="app"></div>
+    <p id="empty" class="empty hidden">没有匹配的报告。</p>
+  </main>
+  <script>
+    const reports = [
+      {
+        category: "大厂动态",
+        area: "Anthropic",
+        date: "20260625",
+        title: "Anthropic Sub-Agent 官方材料分析",
+        description: "梳理 Anthropic 官方材料中 Sub-Agent、Multi-Agent 与 Harness Design 的来源理解和工程信号。",
+        path: "大厂动态/Anthropic/20260625-sub-agent-blog-codex",
+        files: [
+          ["HTML", "Harness Design", "大厂动态/Anthropic/20260625-sub-agent-blog-codex/source-understanding/anthropic-harness-design.html"],
+          ["HTML", "Multi-Agent Research", "大厂动态/Anthropic/20260625-sub-agent-blog-codex/source-understanding/anthropic-multi-agent-research.html"]
+        ]
+      },
+      {
+        category: "大厂动态",
+        area: "GoogleCloud",
+        date: "20260626",
+        title: "GKE Inference Gateway Latency Source Understanding",
+        description: "解释 GKE Inference Gateway 延迟优化材料的关键结论、来源边界和后续补证需求。",
+        path: "大厂动态/GoogleCloud/20260626-gke-inference-gateway-latency-mozhi",
+        files: [["HTML", "Source Understanding", "大厂动态/GoogleCloud/20260626-gke-inference-gateway-latency-mozhi/review/source_understanding_review.html"]]
+      },
+      {
+        category: "大厂动态",
+        area: "Intel",
+        date: "20260702",
+        title: "Intel Xeon 6 + NVIDIA HGX B200 异构推理架构研究",
+        description: "围绕 Xeon 6 与 HGX B200 异构推理架构，归档详细版、短版 HTML 和可编辑 PPTX。",
+        path: "大厂动态/Intel/20260702-intel-xeon6-hgx-b200-codex",
+        files: [
+          ["HTML", "4 页短版", "大厂动态/Intel/20260702-intel-xeon6-hgx-b200-codex/html/source_understanding_4page.html"],
+          ["HTML", "15 页详细版", "大厂动态/Intel/20260702-intel-xeon6-hgx-b200-codex/html/source_understanding_detailed_15page.html"],
+          ["PPTX", "可编辑 PPTX", "大厂动态/Intel/20260702-intel-xeon6-hgx-b200-codex/pptx/intel-xeon6-hgx-b200-brief-editable.pptx"]
+        ]
+      },
+      {
+        category: "大厂动态",
+        area: "OpenAI",
+        date: "20260625",
+        title: "OpenAI Sub-Agent 官方材料分析",
+        description: "聚合 OpenAI 官方博客和 Codex 文档中 Sub-Agent、长程 Codex 与 Responses 相关材料。",
+        path: "大厂动态/OpenAI/20260625-sub-agent-blog-codex",
+        files: [
+          ["HTML", "Codex Subagents", "大厂动态/OpenAI/20260625-sub-agent-blog-codex/source-understanding/openai-codex-subagents.html"],
+          ["HTML", "Long-Horizon Codex", "大厂动态/OpenAI/20260625-sub-agent-blog-codex/source-understanding/openai-long-horizon-codex.html"],
+          ["HTML", "One Year of Responses", "大厂动态/OpenAI/20260625-sub-agent-blog-codex/source-understanding/openai-one-year-responses.html"]
+        ]
+      },
+      {
+        category: "大厂动态",
+        area: "小米",
+        date: "20260626",
+        title: "MiMo 与 TileRT 万亿参数 1000+ TPS 解码分析",
+        description: "归档小米 MiMo 与 TileRT 相关材料的 Source Understanding 阶段产物和证据边界。",
+        path: "大厂动态/小米/20260626-mimo-tilert-trillion-1000tps-mozhi",
+        files: [["HTML", "Source Understanding", "大厂动态/小米/20260626-mimo-tilert-trillion-1000tps-mozhi/review/source_understanding_review.html"]]
+      },
+      {
+        category: "开源软件分析",
+        area: "LangChain",
+        date: "20260611",
+        title: "LangChain Blog Analysis Archive",
+        description: "归档 LangChain 博客分析结果，包含总览、趋势、价值文章和大量文章离线页。",
+        path: "开源软件分析/LangChain/20260611-langchain-blog-analysis-mozhi",
+        files: [
+          ["HTML", "总览入口", "开源软件分析/LangChain/20260611-langchain-blog-analysis-mozhi/html/index.html"],
+          ["HTML", "Blog Index", "开源软件分析/LangChain/20260611-langchain-blog-analysis-mozhi/html/blog-index.html"],
+          ["HTML", "Trend Summary", "开源软件分析/LangChain/20260611-langchain-blog-analysis-mozhi/html/trend-summary.html"],
+          ["HTML", "Valuable Articles", "开源软件分析/LangChain/20260611-langchain-blog-analysis-mozhi/html/valuable-articles.html"],
+          ["HTML", "Product Architecture", "开源软件分析/LangChain/20260611-langchain-blog-analysis-mozhi/html/langchain-product-architecture.html"]
+        ],
+        note: "目录内还有 90+ 篇文章 HTML，可从 Blog Index 继续进入。"
+      },
+      {
+        category: "开源软件分析",
+        area: "Loop-Engineering",
+        date: "20260615",
+        title: "Loop Engineering 架构图交付归档",
+        description: "用 3+1 架构视图解释 Loop Engineering 的用例、逻辑、运行和开发结构。",
+        path: "开源软件分析/Loop-Engineering/20260615-loop-engineering-architecture-mozhi",
+        files: [["HTML", "架构图入口", "开源软件分析/Loop-Engineering/20260615-loop-engineering-architecture-mozhi/index.html"]]
+      },
+      {
+        category: "开源软件分析",
+        area: "MemSlides",
+        date: "20260709",
+        title: "MemSlides Source Understanding",
+        description: "围绕清华等高校联合开源 MemSlides，整理论文与官方仓库的理解边界。",
+        path: "开源软件分析/MemSlides/20260709-memslides-source-understanding-codex",
+        files: [["HTML", "Source Understanding", "开源软件分析/MemSlides/20260709-memslides-source-understanding-codex/source_understanding_review.html"]]
+      },
+      {
+        category: "开源软件分析",
+        area: "OpenClaw",
+        date: "20260709",
+        title: "OpenClaw Release Trend Report",
+        description: "分析 OpenClaw 2026 年 1-7 月 release 趋势，并分拆能力、可用性、插件生态和 DFX 报告。",
+        path: "开源软件分析/OpenClaw/20260709-openclaw-release-trend-mozhi",
+        files: [
+          ["HTML", "汇总报告", "开源软件分析/OpenClaw/20260709-openclaw-release-trend-mozhi/summary/index.html"],
+          ["HTML", "Agent 能力趋势", "开源软件分析/OpenClaw/20260709-openclaw-release-trend-mozhi/agent-capability/agent-capability-report.html"],
+          ["HTML", "可用性", "开源软件分析/OpenClaw/20260709-openclaw-release-trend-mozhi/usability/index.html"],
+          ["HTML", "插件生态", "开源软件分析/OpenClaw/20260709-openclaw-release-trend-mozhi/plugin-ecosystem/index.html"],
+          ["HTML", "DFX", "开源软件分析/OpenClaw/20260709-openclaw-release-trend-mozhi/dfx/index.html"]
+        ]
+      },
+      {
+        category: "开源软件分析",
+        area: "OpenHarness",
+        date: "20260702",
+        title: "HITL Approval Architecture Source Understanding",
+        description: "解释 Harness 层人机协同审批架构在高风险 Agent 操作中的拦截点和恢复流程。",
+        path: "开源软件分析/OpenHarness/20260702-hitl-approval-architecture-codex",
+        files: [["HTML", "Source Understanding", "开源软件分析/OpenHarness/20260702-hitl-approval-architecture-codex/source_understanding_review.html"]]
+      },
+      {
+        category: "开源软件分析",
+        area: "SGLang",
+        date: "20260702",
+        title: "SGLang GB300 DeepSeek-V4 serving 优化复盘",
+        description: "复盘 SGLang 团队 GB300 serving 优化，归档研究 HTML、证据板 PPTX 和审阅页。",
+        path: "开源软件分析/SGLang/20260702-sglang-gb300-deepseek-v4-serving-codex",
+        files: [
+          ["HTML", "证据板 HTML", "开源软件分析/SGLang/20260702-sglang-gb300-deepseek-v4-serving-codex/html/index.html"],
+          ["PPTX", "可编辑 PPTX", "开源软件分析/SGLang/20260702-sglang-gb300-deepseek-v4-serving-codex/pptx/sglang-gb300-evidence-board-editable.pptx"],
+          ["HTML", "Source Understanding", "开源软件分析/SGLang/20260702-sglang-gb300-deepseek-v4-serving-codex/review/source_understanding_review.html"]
+        ]
+      },
+      {
+        category: "开源软件分析",
+        area: "vLLM",
+        date: "20260709",
+        title: "vLLM Semantic Router Micro-Agent Source Understanding",
+        description: "分析 vLLM Semantic Router 如何把多模型协作内化为服务层推理原语。",
+        path: "开源软件分析/vLLM/20260709-vllm-semantic-router-micro-agent-codex",
+        files: [["HTML", "Source Understanding", "开源软件分析/vLLM/20260709-vllm-semantic-router-micro-agent-codex/source_understanding_review.html"]]
+      },
+      {
+        category: "开源软件分析",
+        area: "WayfinderRouter",
+        date: "20260709",
+        title: "Wayfinder Router Source Understanding",
+        description: "围绕 Wayfinder Router 开源项目发布，补充实现层和 benchmark 边界分析。",
+        path: "开源软件分析/WayfinderRouter/20260709-wayfinder-router-source-understanding-codex",
+        files: [["HTML", "Source Understanding", "开源软件分析/WayfinderRouter/20260709-wayfinder-router-source-understanding-codex/source_understanding_review.html"]]
+      },
+      {
+        category: "学术论文分析",
+        area: "Agent",
+        date: "20260626",
+        title: "SkillOpt Agent Skill Optimization",
+        description: "归档 Microsoft SkillOpt 论文的一页报告、可编辑 PPTX 和 Source Understanding 审阅页。",
+        path: "学术论文分析/Agent/20260626-skillopt-agent-skill-optimization-codex",
+        files: [
+          ["HTML", "一页 HTML", "学术论文分析/Agent/20260626-skillopt-agent-skill-optimization-codex/html/skillopt_one_page.html"],
+          ["PPTX", "可编辑 PPTX", "学术论文分析/Agent/20260626-skillopt-agent-skill-optimization-codex/pptx/skillopt_one_page_visual_editable.pptx"],
+          ["HTML", "Source Understanding", "学术论文分析/Agent/20260626-skillopt-agent-skill-optimization-codex/review/source_understanding_review.html"]
+        ]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260626",
+        title: "增量 BPE 分词算法推理吞吐分析",
+        description: "归档增量 BPE 分词 O(n log²t) 复杂度和推理吞吐提升主题的 Source Understanding。",
+        path: "学术论文分析/推理/20260626-incremental-bpe-tokenization-throughput-mozhi",
+        files: [["HTML", "Source Understanding", "学术论文分析/推理/20260626-incremental-bpe-tokenization-throughput-mozhi/review/source_understanding_review.html"]]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260626",
+        title: "KVarN 论文 Source Understanding",
+        description: "解释 KVarN 的 KV-cache 量化误差累积、Hadamard rotation 与 variance normalization 证据边界。",
+        path: "学术论文分析/推理/20260626-kvarn-variance-normalized-kv-cache-mozhi",
+        files: [
+          ["HTML", "最终单页", "学术论文分析/推理/20260626-kvarn-variance-normalized-kv-cache-mozhi/final-slide/kvarn-summary-slide.html"],
+          ["PPTX", "最终 PPTX", "学术论文分析/推理/20260626-kvarn-variance-normalized-kv-cache-mozhi/final-slide/kvarn-summary-slide.pptx"],
+          ["HTML", "Source Understanding", "学术论文分析/推理/20260626-kvarn-variance-normalized-kv-cache-mozhi/review/source_understanding_review.html"]
+        ]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260626",
+        title: "RTPurboV2 注意力压缩分析",
+        description: "归档 RTPurboV2 / RTPurbo 稀疏注意力迁移主题的最终单页、PPTX 和审阅材料。",
+        path: "学术论文分析/推理/20260626-rtpurbo-v2-attention-compression-mozhi",
+        files: [
+          ["HTML", "最终单页", "学术论文分析/推理/20260626-rtpurbo-v2-attention-compression-mozhi/final-slide/rtpurbo-summary-slide.html"],
+          ["PPTX", "最终 PPTX", "学术论文分析/推理/20260626-rtpurbo-v2-attention-compression-mozhi/final-slide/rtpurbo-summary-slide.pptx"],
+          ["HTML", "Source Understanding", "学术论文分析/推理/20260626-rtpurbo-v2-attention-compression-mozhi/review/source_understanding_review.html"]
+        ]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260702",
+        title: "Dustin Sparse Verification Evidence Board",
+        description: "归档 Dustin 长上下文投机解码稀疏验证研究的 HTML 报告和单页 PPTX。",
+        path: "学术论文分析/推理/20260702-dustin-sparse-verification-codex",
+        files: [
+          ["HTML", "证据板 HTML", "学术论文分析/推理/20260702-dustin-sparse-verification-codex/report/index.html"],
+          ["PPTX", "证据板 PPTX", "学术论文分析/推理/20260702-dustin-sparse-verification-codex/ppt/dustin-one-page-evidence-board.pptx"]
+        ]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260702",
+        title: "Implicit Chain-of-Thought Token Cost",
+        description: "归档隐式思维链 token 成本主题的 Source Understanding 审阅结果。",
+        path: "学术论文分析/推理/20260702-implicit-chain-of-thought-token-cost-mozhi",
+        files: [["HTML", "Source Understanding", "学术论文分析/推理/20260702-implicit-chain-of-thought-token-cost-mozhi/source_understanding_review.html"]]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260702",
+        title: "Nexus Sampling KV Cache Eviction Evidence Board",
+        description: "归档 Nexus Sampling 固定预算流式 KV-cache eviction 论文的证据板 HTML 和 PPTX。",
+        path: "学术论文分析/推理/20260702-nexus-sampling-kv-cache-eviction-codex",
+        files: [
+          ["HTML", "证据板 HTML", "学术论文分析/推理/20260702-nexus-sampling-kv-cache-eviction-codex/evidence-board.html"],
+          ["PPTX", "证据板 PPTX", "学术论文分析/推理/20260702-nexus-sampling-kv-cache-eviction-codex/nexus-one-page-evidence-board.pptx"]
+        ]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260702",
+        title: "SlidingServe LLM Scheduling Capacity",
+        description: "归档 SlidingServe 调度容量主题的一页报告、PPTX、复盘和 Source Understanding。",
+        path: "学术论文分析/推理/20260702-slidingserve-llm-scheduling-capacity-codex",
+        files: [
+          ["HTML", "一页 HTML", "学术论文分析/推理/20260702-slidingserve-llm-scheduling-capacity-codex/html-ppt/slidingserve-onepage.html"],
+          ["PPTX", "可编辑 PPTX", "学术论文分析/推理/20260702-slidingserve-llm-scheduling-capacity-codex/pptx/slidingserve-onepage-editable.pptx"],
+          ["HTML", "Workflow Retrospective", "学术论文分析/推理/20260702-slidingserve-llm-scheduling-capacity-codex/retrospective/multi-agent-workflow.html"],
+          ["HTML", "Source Understanding", "学术论文分析/推理/20260702-slidingserve-llm-scheduling-capacity-codex/review/source_understanding_review.html"]
+        ]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260702",
+        title: "SVF LLM Scheduling Evidence Board",
+        description: "归档 Geometry-Aware Online Scheduling for LLM Serving 的证据板 HTML 和 PPTX。",
+        path: "学术论文分析/推理/20260702-svf-llm-scheduling-codex",
+        files: [
+          ["HTML", "证据板 HTML", "学术论文分析/推理/20260702-svf-llm-scheduling-codex/evidence-board.html"],
+          ["PPTX", "证据板 PPTX", "学术论文分析/推理/20260702-svf-llm-scheduling-codex/svf-one-page-evidence-board.pptx"]
+        ]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260709",
+        title: "DSpark Speculative Decoding",
+        description: "归档 DSpark confidence-scheduled speculative decoding 论文的 Source Understanding HTML。",
+        path: "学术论文分析/推理/20260709-dspark-speculative-decoding-codex",
+        files: [["HTML", "Source Understanding", "学术论文分析/推理/20260709-dspark-speculative-decoding-codex/source_understanding_review.html"]]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260709",
+        title: "RedKnot Long-Context LLM Serving",
+        description: "归档 RedKnot head-aware KV reuse 与 SegPagedAttention 主题的 Source Understanding HTML。",
+        path: "学术论文分析/推理/20260709-redknot-long-context-llm-serving-codex",
+        files: [["HTML", "Source Understanding", "学术论文分析/推理/20260709-redknot-long-context-llm-serving-codex/source_understanding_review.html"]]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260709",
+        title: "SeKV Resolution-Adaptive KV Cache",
+        description: "归档 SeKV 分辨率自适应语义 KV 缓存论文的 Source Understanding 审阅交付件。",
+        path: "学术论文分析/推理/20260709-sekv-resolution-adaptive-kv-cache-codex",
+        files: [["HTML", "Source Understanding", "学术论文分析/推理/20260709-sekv-resolution-adaptive-kv-cache-codex/source_understanding_review.html"]]
+      },
+      {
+        category: "学术论文分析",
+        area: "推理",
+        date: "20260709",
+        title: "SwiftCache Heterogeneous KV Cache",
+        description: "归档南科大与阿里 SwiftCache 论文主题的 Source Understanding 报告。",
+        path: "学术论文分析/推理/20260709-swiftcache-heterogeneous-kv-cache-codex",
+        files: [["HTML", "Source Understanding", "学术论文分析/推理/20260709-swiftcache-heterogeneous-kv-cache-codex/source_understanding_review.html"]]
+      }
+    ];
+
+    const app = document.querySelector("#app");
+    const empty = document.querySelector("#empty");
+    const search = document.querySelector("#search");
+    const dateFilter = document.querySelector("#dateFilter");
+    const tabs = [...document.querySelectorAll(".tab")];
+    let active = "all";
+
+    function typeClass(type) {
+      return type.toLowerCase();
+    }
+
+    function render() {
+      const query = search.value.trim().toLowerCase();
+      const selectedDate = dateFilter.value;
+      const visible = reports.filter((report) => {
+        const inCategory = active === "all" || report.category === active;
+        const inDate = selectedDate === "all" || report.date === selectedDate;
+        const haystack = [report.category, report.area, report.date, report.title, report.description, report.path, ...report.files.flat()].join(" ").toLowerCase();
+        return inCategory && inDate && (!query || haystack.includes(query));
+      });
+      app.innerHTML = "";
+      empty.classList.toggle("hidden", visible.length !== 0);
+      for (const category of ["大厂动态", "开源软件分析", "学术论文分析"]) {
+        const group = visible.filter((report) => report.category === category);
+        if (!group.length) continue;
+        const section = document.createElement("section");
+        section.innerHTML = `<div class="section-title"><h2>${category}</h2><span>${group.length} 个报告</span></div><div class="grid"></div>`;
+        const grid = section.querySelector(".grid");
+        for (const report of group) {
+          const htmlFiles = report.files.filter(([type]) => type === "HTML").length;
+          const pptxFiles = report.files.filter(([type]) => type === "PPTX").length;
+          const card = document.createElement("article");
+          card.className = "card";
+          card.innerHTML = `
+            <div class="meta"><span>${report.area}</span><span>${report.date}</span></div>
+            <h3 class="title">${report.title}</h3>
+            <p class="desc">${report.description}</p>
+            <div class="links">
+              ${report.files.map(([type, label, href]) => `<a class="link ${typeClass(type)}" href="${href}" target="_blank" rel="noopener"><span>${type}</span><strong>${label}</strong></a>`).join("")}
+            </div>
+            <details>
+              <summary>文件信息：${htmlFiles} HTML / ${pptxFiles} PPTX</summary>
+              <ul class="file-list">
+                <li>目录：${report.path}</li>
+                ${report.note ? `<li>说明：${report.note}</li>` : ""}
+                ${report.files.map(([type, label, href]) => `<li>${type} · ${label} · ${href}</li>`).join("")}
+              </ul>
+            </details>
+          `;
+          grid.appendChild(card);
+        }
+        app.appendChild(section);
+      }
+    }
+
+    function updateStats() {
+      const html = reports.reduce((sum, report) => sum + report.files.filter(([type]) => type === "HTML").length, 0);
+      const pptx = reports.reduce((sum, report) => sum + report.files.filter(([type]) => type === "PPTX").length, 0);
+      document.querySelector("#reportCount").textContent = reports.length;
+      document.querySelector("#htmlCount").textContent = html;
+      document.querySelector("#pptxCount").textContent = pptx;
+    }
+
+    function populateDateFilter() {
+      const dates = [...new Set(reports.map((report) => report.date))].sort().reverse();
+      for (const date of dates) {
+        const option = document.createElement("option");
+        option.value = date;
+        option.textContent = date.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
+        dateFilter.appendChild(option);
+      }
+    }
+
+    search.addEventListener("input", render);
+    dateFilter.addEventListener("change", render);
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        active = tab.dataset.filter;
+        tabs.forEach((item) => item.setAttribute("aria-pressed", String(item === tab)));
+        render();
+      });
+    });
+    populateDateFilter();
+    updateStats();
+    render();
+  </script>
+</body>
+</html>
