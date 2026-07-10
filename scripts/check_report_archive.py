@@ -8,11 +8,20 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR_RE = re.compile(
-    r"^(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)-(?P<date>\d{8})-(?P<creator>[\w\u4e00-\u9fff-]+)$"
+    r"^(?P<date>\d{8})-(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)-(?P<creator>[\w\u4e00-\u9fff-]+)$"
 )
 ALLOWED_TOP_LEVEL = {"大厂动态", "开源软件分析", "学术论文分析"}
 IGNORED_NAMES = {".gitkeep"}
-PROJECT_ROOT_NAMES = {".git", ".github", ".gitattributes", ".gitignore", "AGENTS.md", "README.md", "scripts"}
+PROJECT_ROOT_NAMES = {
+    ".git",
+    ".github",
+    ".gitattributes",
+    ".gitignore",
+    "AGENTS.md",
+    "README.md",
+    "index.html",
+    "scripts",
+}
 ALLOWED_REPORT_SUFFIXES = {".html", ".pptx"}
 ALLOWED_REPORT_FILENAMES = {"README.md"}
 LOCAL_TEMP_URL_RE = re.compile(r"(?:http://(?:127\.0\.0\.1|localhost):\d+|file://)", re.IGNORECASE)
@@ -78,7 +87,7 @@ def check_archive_branch(branch: Path, errors: list[str]) -> None:
     if direct_files:
         fail(
             f"Directory contains files but is not a valid report directory: {branch.relative_to(REPO_ROOT)}. "
-            "Move files into <report-slug>-<YYYYMMDD>-<creator>/ or rename this directory to that format.",
+            "Move files into <YYYYMMDD>-<report-slug>-<creator>/ or rename this directory to that format.",
             errors,
         )
 

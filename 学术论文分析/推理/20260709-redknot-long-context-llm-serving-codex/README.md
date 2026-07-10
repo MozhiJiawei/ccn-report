@@ -5,7 +5,7 @@
 ## 归档信息
 
 - 归档日期：2026-07-09
-- 归档路径：`学术论文分析/推理/redknot-long-context-llm-serving-20260709-codex/`
+- 归档路径：`学术论文分析/推理/20260709-redknot-long-context-llm-serving-codex/`
 - 交付件：`source_understanding_review.html`
 - 交付形态：SingleFile 离线 HTML
 

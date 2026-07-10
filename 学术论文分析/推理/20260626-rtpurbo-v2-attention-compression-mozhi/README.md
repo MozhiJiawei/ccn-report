@@ -27,11 +27,11 @@ RTPurboV2 的核心不是单点加速数字，而是把既有 Full Attention 模
 归档后重新运行：
 
 ```powershell
-python ../skills/ppt-deep-search/scripts/validate_source_understanding_html.py ccn-report/学术论文分析/推理/rtpurbo-v2-attention-compression-20260625-mozhi/review/source_understanding_review.html all ccn-report/学术论文分析/推理/rtpurbo-v2-attention-compression-20260625-mozhi/review/source-understanding-images
+python ../skills/ppt-deep-search/scripts/validate_source_understanding_html.py ccn-report/学术论文分析/推理/20260626-rtpurbo-v2-attention-compression-mozhi/review/source_understanding_review.html all ccn-report/学术论文分析/推理/20260626-rtpurbo-v2-attention-compression-mozhi/review/source-understanding-images
 ```
 
 ```powershell
-python ../skills/ppt-deep-search/scripts/validate_source_understanding_html.py ccn-report/学术论文分析/推理/rtpurbo-v2-attention-compression-20260625-mozhi/final-slide/rtpurbo-summary-slide.html all ccn-report/学术论文分析/推理/rtpurbo-v2-attention-compression-20260625-mozhi/final-slide/qa-images
+python ../skills/ppt-deep-search/scripts/validate_source_understanding_html.py ccn-report/学术论文分析/推理/20260626-rtpurbo-v2-attention-compression-mozhi/final-slide/rtpurbo-summary-slide.html all ccn-report/学术论文分析/推理/20260626-rtpurbo-v2-attention-compression-mozhi/final-slide/qa-images
 ```
 
 结果：两个 HTML 均通过渲染校验；最终 PPTX 由 `@oai/artifact-tool` 生成，子 agent 已检查 1 页、无明显裁切/遮挡，程序化边界检查 `outOfBounds: []`。

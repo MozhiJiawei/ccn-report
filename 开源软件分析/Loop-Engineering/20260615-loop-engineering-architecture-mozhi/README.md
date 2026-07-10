@@ -5,7 +5,7 @@
 - 归档日期：2026-06-15
 - 创建人：mozhi
 - 报告类型：开源软件架构分析 / 3+1 架构视图
-- 归档路径：`开源软件分析/Loop-Engineering/loop-engineering-architecture-20260615-mozhi/`
+- 归档路径：`开源软件分析/Loop-Engineering/20260615-loop-engineering-architecture-mozhi/`
 
 ## 分析对象
 

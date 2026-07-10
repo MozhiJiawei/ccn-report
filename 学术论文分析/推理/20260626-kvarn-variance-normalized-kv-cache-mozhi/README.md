@@ -28,7 +28,7 @@ KVarN 的核心不是证明整网 TPOT / TTFT 变快，而是指出长链 decodi
 归档后已运行：
 
 ```powershell
-python skills/ppt-deep-search/scripts/validate_source_understanding_html.py ccn-report/学术论文分析/推理/kvarn-variance-normalized-kv-cache-20260625-mozhi/review/source_understanding_review.html all ccn-report/学术论文分析/推理/kvarn-variance-normalized-kv-cache-20260625-mozhi/review/source-understanding-images
+python skills/ppt-deep-search/scripts/validate_source_understanding_html.py ccn-report/学术论文分析/推理/20260626-kvarn-variance-normalized-kv-cache-mozhi/review/source_understanding_review.html all ccn-report/学术论文分析/推理/20260626-kvarn-variance-normalized-kv-cache-mozhi/review/source-understanding-images
 ```
 
 结果：PASS。检测到 13 页，左右键导航正常，截图导出成功，图片缩放硬门禁通过；独立视觉 QA Verdict 为 PASS。
@@ -36,7 +36,7 @@ python skills/ppt-deep-search/scripts/validate_source_understanding_html.py ccn-
 Content Brief 校验：
 
 ```powershell
-python skills/ppt-deep-search/scripts/validate_ppt_content_brief.py ccn-report/学术论文分析/推理/kvarn-variance-normalized-kv-cache-20260625-mozhi/ppt_content_brief.md --min-page-content-chars 900 --min-summary-content-chars 1200 --allow-absolute-paths --expected-pages 1
+python skills/ppt-deep-search/scripts/validate_ppt_content_brief.py ccn-report/学术论文分析/推理/20260626-kvarn-variance-normalized-kv-cache-mozhi/ppt_content_brief.md --min-page-content-chars 900 --min-summary-content-chars 1200 --allow-absolute-paths --expected-pages 1
 ```
 
 结果：PASS。单页 Summary Page 内容密度达标，参考图片绝对路径位于 `参考图片` 字段内。
@@ -44,7 +44,7 @@ python skills/ppt-deep-search/scripts/validate_ppt_content_brief.py ccn-report/�
 一页 HTML PPT 校验：
 
 ```powershell
-chrome --headless=new --disable-gpu --hide-scrollbars --window-size=1600,900 --force-device-scale-factor=1 --screenshot=ccn-report/学术论文分析/推理/kvarn-variance-normalized-kv-cache-20260625-mozhi/final-slide/kvarn-summary-slide.webp ccn-report/学术论文分析/推理/kvarn-variance-normalized-kv-cache-20260625-mozhi/final-slide/kvarn-summary-slide.html
+chrome --headless=new --disable-gpu --hide-scrollbars --window-size=1600,900 --force-device-scale-factor=1 --screenshot=ccn-report/学术论文分析/推理/20260626-kvarn-variance-normalized-kv-cache-mozhi/final-slide/kvarn-summary-slide.webp ccn-report/学术论文分析/推理/20260626-kvarn-variance-normalized-kv-cache-mozhi/final-slide/kvarn-summary-slide.html
 ```
 
 结果：PASS。截图为 1600x900，比例 16:9；HTML 中 5 个图片引用均指向归档内存在的证据素材。
