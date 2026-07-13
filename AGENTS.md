@@ -16,11 +16,13 @@
 <大类>/<对象或方向>/.../.../<YYYYMMDD>-<report-slug>-<creator>/.../
 ```
 
-当前大类：
+当前常用大类（仅作为示例，不是归档脚本的固定白名单）：
 
 - `大厂动态/`
 - `开源软件分析/`
 - `学术论文分析/`
+
+归档脚本和门禁会从仓库根目录递归发现符合命名规则的最终报告目录。可以新增、改名或调整分类根目录，无需同步修改代码；报告目录仍须位于仓库根目录至少两级之下。
 
 示例二级目录：
 
@@ -73,21 +75,26 @@ python scripts/export_singlefile_archive.py --root <html-root> <entry.html> --ou
 - 导出后报告目录只保留 HTML、PPTX 和 `README.md`。
 - 其他参数按需查看 `python scripts/export_singlefile_archive.py --help`。
 
-## Release Package
+## Release Packages
 
-- GitHub Release 只保留最新可下载离线包；不要为每次合入创建永久日期 Release。
+- GitHub Release 只维护一个滚动发布入口；不要为每次合入创建永久日期 Release。
 - PR 合入 `main` 后，更新滚动 Release：
 
 ```powershell
 python scripts/release_compressed_archive.py --quality 70
 ```
 
-- 默认 tag 为 `latest-compressed-archive`，脚本会覆盖该 Release 的 zip、`manifest.json` 和 `SHA256SUMS.txt`。
+- 默认 tag 为 `latest-compressed-archive`；报告通过最终目录名中的 `YYYYMMDD` 识别，再按月份生成 `ccn-report-YYYYMM-q70.zip`。
+- 每个 ZIP 保留仓库相对目录结构，可将多个月度包解压到同一目录增量合并。
+- 同时发布 `ccn-report-full-q70.zip` 全量包，供首次下载或一次性获取全部报告。
+- 根目录 `index.html` 独立发布，不合入月度包或全量包。
+- 脚本通过上一版 manifest 跳过未变化月度包；全量包仅在报告内容变化时覆盖，并清理失效月度包、旧日期包和旧格式整仓大包。
+- `manifest.json` 和 `SHA256SUMS.txt` 每次更新，作为滚动资产索引。
 - 只有人工明确要求保留里程碑快照时，才使用 `--snapshot` 创建带时间戳的独立 Release。
 
 ## Git LFS Rules
 
-三大归档目录下的交付件默认走 Git LFS。
+动态发现到的报告目录中的 HTML 和 PPTX 默认走 Git LFS；根目录 `index.html` 保留普通 Git diff。
 
 只有报告说明 Markdown 保留普通 Git diff：
 

@@ -17,12 +17,13 @@ from urllib.parse import quote, unquote, urlsplit
 
 from PIL import Image
 
+from report_archive_layout import find_report_dirs, report_date
+
 
 # Keep the invocation path instead of resolving it. On Windows this allows
 # callers to use a short subst drive for repositories that contain very deep
 # archived HTML paths.
 REPO_ROOT = Path(__file__).parents[1].absolute()
-REPORT_ROOTS = ("大厂动态", "开源软件分析", "学术论文分析")
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
 GIF_EXTENSIONS = {".gif"}
 TEXT_EXTENSIONS = {
@@ -37,8 +38,8 @@ TEXT_EXTENSIONS = {
     ".svg",
     ".xml",
 }
-SKIP_DIR_NAMES = {".git", "__pycache__", ".pytest_cache", ".mypy_cache"}
 LATEST_RELEASE_TAG = "latest-compressed-archive"
+MANIFEST_SCHEMA_VERSION = 4
 
 
 @dataclass(frozen=True)
@@ -64,22 +65,22 @@ def size_of(path: Path) -> int:
     return sum(item.stat().st_size for item in path.rglob("*") if item.is_file())
 
 
-def copy_repo_tree(source: Path, destination: Path) -> None:
+def copy_report_dirs(source: Path, destination: Path, report_dirs: list[Path]) -> None:
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True)
+    for report_dir in report_dirs:
+        relative = report_dir.relative_to(source)
+        shutil.copytree(report_dir, destination / relative)
 
-    def ignore(_dir: str, names: list[str]) -> set[str]:
-        return {name for name in names if name in SKIP_DIR_NAMES}
 
-    for item in source.iterdir():
-        if item.name in SKIP_DIR_NAMES:
-            continue
-        target = destination / item.name
-        if item.is_dir():
-            shutil.copytree(item, target, ignore=ignore)
-        else:
-            shutil.copy2(item, target)
+def group_reports_by_month(report_dirs: list[Path]) -> dict[str, list[Path]]:
+    grouped: dict[str, list[Path]] = {}
+    for report_dir in report_dirs:
+        date = report_date(report_dir.name)
+        if date is not None:
+            grouped.setdefault(date[:6], []).append(report_dir)
+    return grouped
 
 
 def convert_static_image(source: Path, quality: int) -> tuple[Path | None, str | None]:
@@ -132,8 +133,8 @@ def candidate_assets(root: Path) -> list[Path]:
     allowed = IMAGE_EXTENSIONS | GIF_EXTENSIONS
     return [
         path
-        for report_root in REPORT_ROOTS
-        for path in (root / report_root).rglob("*")
+        for report_dir in find_report_dirs(root)
+        for path in report_dir.rglob("*")
         if path.is_file() and path.suffix.lower() in allowed
     ]
 
@@ -244,6 +245,7 @@ def check_local_references(root: Path) -> list[dict[str, object]]:
     attr_re = re.compile(r"""(?:src|href|poster)=["'](?P<url>[^"']+)["']""", re.IGNORECASE)
     css_re = re.compile(r"""url\(\s*["']?(?P<url>[^)"']+)["']?\s*\)""", re.IGNORECASE)
     missing: list[dict[str, object]] = []
+    resolved_root = root.resolve()
 
     for document in root.rglob("*"):
         if not document.is_file() or document.suffix.lower() not in {".html", ".htm", ".css"}:
@@ -260,7 +262,7 @@ def check_local_references(root: Path) -> list[dict[str, object]]:
                 continue
             target = (document.parent / local_path).resolve()
             try:
-                target.relative_to(root.resolve())
+                target.relative_to(resolved_root)
             except ValueError:
                 continue
             if not target.exists():
@@ -269,13 +271,33 @@ def check_local_references(root: Path) -> list[dict[str, object]]:
     return missing
 
 
-def write_zip(source: Path, destination: Path) -> None:
+def write_zip_entries(entries: list[tuple[Path, Path]], destination: Path) -> None:
     if destination.exists():
         destination.unlink()
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
-        for path in source.rglob("*"):
-            if path.is_file():
-                archive.write(path, path.relative_to(source.parent))
+        for path, relative in sorted(entries, key=lambda item: item[1].as_posix()):
+            info = zipfile.ZipInfo(relative.as_posix(), date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info._compresslevel = 9
+            info.create_system = 3
+            info.external_attr = 0o100644 << 16
+            with path.open("rb") as source, archive.open(info, "w", force_zip64=True) as target:
+                shutil.copyfileobj(source, target, length=1024 * 1024)
+
+
+def write_zip(source: Path, destination: Path) -> None:
+    entries = [(path, path.relative_to(source)) for path in source.rglob("*") if path.is_file()]
+    write_zip_entries(entries, destination)
+
+
+def write_full_zip(package_roots: list[Path], destination: Path) -> None:
+    entries = [
+        (path, path.relative_to(root))
+        for root in package_roots
+        for path in root.rglob("*")
+        if path.is_file()
+    ]
+    write_zip_entries(entries, destination)
 
 
 def sha256(path: Path) -> str:
@@ -380,36 +402,94 @@ def update_release(
     return f"https://github.com/{github_repo}/releases/tag/{tag}"
 
 
-def list_release_tags(github_repo: str) -> list[str]:
-    completed = run(["gh", "release", "list", "--repo", github_repo, "--limit", "200"])
+def load_release_manifest(github_repo: str, tag: str, destination: Path) -> dict[str, object]:
+    destination.mkdir(parents=True, exist_ok=True)
+    completed = run(
+        ["gh", "release", "download", tag, "--repo", github_repo, "--pattern", "manifest.json", "--dir", str(destination), "--clobber"]
+    )
+    manifest = destination / "manifest.json"
+    if completed.returncode != 0 or not manifest.exists():
+        return {}
+    try:
+        return json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def list_release_assets(github_repo: str, tag: str) -> set[str]:
+    completed = run(["gh", "release", "view", tag, "--repo", github_repo, "--json", "assets", "--jq", ".assets[].name"])
     if completed.returncode != 0:
-        fail(completed.stderr.strip() or completed.stdout.strip() or "gh release list failed")
-
-    tags: list[str] = []
-    for line in completed.stdout.splitlines():
-        columns = line.split("\t")
-        if len(columns) >= 3:
-            tags.append(columns[2])
-    return tags
+        fail(completed.stderr.strip() or completed.stdout.strip() or "failed to list release assets")
+    return {line.strip() for line in completed.stdout.splitlines() if line.strip()}
 
 
-def cleanup_other_releases(github_repo: str, keep_tag: str) -> list[str]:
+def delete_release_assets(github_repo: str, tag: str, names: set[str]) -> list[str]:
     deleted: list[str] = []
-    for tag in list_release_tags(github_repo):
-        if tag == keep_tag:
-            continue
-        completed = run(["gh", "release", "delete", tag, "--repo", github_repo, "--yes", "--cleanup-tag"])
+    for name in sorted(names):
+        completed = run(["gh", "release", "delete-asset", tag, name, "--repo", github_repo, "--yes"])
         if completed.returncode != 0:
-            fail(completed.stderr.strip() or completed.stdout.strip() or f"failed to delete release {tag}")
-        deleted.append(tag)
+            fail(completed.stderr.strip() or completed.stdout.strip() or f"failed to delete release asset {name}")
+        deleted.append(name)
     return deleted
 
 
+def select_release_changes(
+    package_paths: list[Path],
+    packages: list[dict[str, object]],
+    full_archive_path: Path,
+    full_archive_info: dict[str, object],
+    index_path: Path,
+    index_info: dict[str, object],
+    previous: dict[str, object],
+    existing_assets: set[str],
+) -> tuple[list[Path], list[Path], set[str]]:
+    if len(package_paths) != len(packages):
+        fail("package paths and manifest entries have different lengths")
+    for path, package in zip(package_paths, packages):
+        if path.name != package.get("filename"):
+            fail(f"package path and manifest filename differ: {path.name} != {package.get('filename')}")
+    if previous.get("manifest_schema_version") != MANIFEST_SCHEMA_VERSION:
+        previous = {}
+    previous_items = previous.get("packages", [])
+    previous_packages = {
+        str(item.get("filename")): str(item.get("sha256"))
+        for item in previous_items
+        if isinstance(item, dict)
+    } if isinstance(previous_items, list) else {}
+    previous_index = previous.get("index", {}) if isinstance(previous.get("index"), dict) else {}
+    changed_packages = [
+        path
+        for path, package in zip(package_paths, packages)
+        if previous_packages.get(path.name) != package["sha256"] or path.name not in existing_assets
+    ]
+    changed_assets = list(changed_packages)
+    previous_full_archive = previous.get("full_archive", {}) if isinstance(previous.get("full_archive"), dict) else {}
+    if (
+        previous_full_archive.get("sha256") != full_archive_info["sha256"]
+        or full_archive_path.name not in existing_assets
+    ):
+        changed_assets.append(full_archive_path)
+    if previous_index.get("sha256") != index_info["sha256"] or index_path.name not in existing_assets:
+        changed_assets.append(index_path)
+    desired_zip_names = {path.name for path in package_paths} | {full_archive_path.name}
+    obsolete_assets = {
+        name
+        for name in existing_assets
+        if name not in desired_zip_names
+        and (
+            re.fullmatch(r"ccn-report-\d{6}(?:\d{2})?-q\d+\.zip", name)
+            or re.fullmatch(r"ccn-report-full-q\d+\.zip", name)
+            or re.fullmatch(r"ccn-report-(?:latest-)?compressed(?:-q\d+)?(?:-\d{8}-\d{6})?\.zip", name)
+        )
+    }
+    return changed_packages, changed_assets, obsolete_assets
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build and upload a compressed ccn-report release archive.")
+    parser = argparse.ArgumentParser(description="Build and incrementally publish month-partitioned ccn-report archives.")
     parser.add_argument("--quality", type=int, default=70, help="WebP quality for image conversion.")
     parser.add_argument("--min-gain", type=float, default=0.02, help="Minimum size reduction ratio to keep WebP output.")
-    parser.add_argument("--work-dir", type=Path, default=REPO_ROOT.parent / ".tmp" / "ccn-report-full-release")
+    parser.add_argument("--work-dir", type=Path, default=REPO_ROOT.parent / ".tmp" / "ccn")
     parser.add_argument("--tag", default=LATEST_RELEASE_TAG)
     parser.add_argument("--title", default="")
     parser.add_argument("--github-repo", default="")
@@ -417,105 +497,126 @@ def main() -> int:
     parser.add_argument("--stable", action="store_true", help="Create a normal release instead of a prerelease.")
     parser.add_argument("--snapshot", action="store_true", help="Create a timestamped immutable release instead of updating latest.")
     parser.add_argument("--force-webp", action="store_true", help="Keep WebP outputs even when they are not smaller.")
-    parser.add_argument(
-        "--keep-old-releases",
-        action="store_true",
-        help="Do not delete other releases after updating latest.",
-    )
     args = parser.parse_args()
 
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     tag = args.tag
     if args.snapshot and tag == LATEST_RELEASE_TAG:
-        tag = f"ccn-report-compressed-q{args.quality}-{timestamp}"
+        tag = f"ccn-report-monthly-archives-q{args.quality}-{timestamp}"
     title = args.title or (
-        f"ccn-report latest compressed archive q{args.quality}"
+        f"ccn-report full and monthly archives q{args.quality}"
         if not args.snapshot
-        else f"ccn-report compressed archive q{args.quality} {timestamp}"
+        else f"ccn-report full and monthly archives q{args.quality} {timestamp}"
     )
-    github_repo = args.github_repo or infer_github_repo()
+    github_repo = args.github_repo or ("" if args.no_upload else infer_github_repo())
 
-    source_size = size_of(REPO_ROOT) - size_of(REPO_ROOT / ".git")
-    copy_root = args.work_dir / "repo-copy"
+    report_dirs = find_report_dirs(REPO_ROOT)
+    if not report_dirs:
+        fail("no report directories found")
+    grouped = group_reports_by_month(report_dirs)
+
     assets_root = args.work_dir / "assets"
+    if args.work_dir.exists():
+        shutil.rmtree(args.work_dir)
     assets_root.mkdir(parents=True, exist_ok=True)
 
-    print(f"Copying repository tree to {copy_root}")
-    copy_repo_tree(REPO_ROOT, copy_root)
-    copied_size = size_of(copy_root)
+    package_paths: list[Path] = []
+    package_roots: list[Path] = []
+    packages: list[dict[str, object]] = []
+    total_source_size = 0
+    total_compressed_size = 0
+    for month, monthly_reports in sorted(grouped.items()):
+        copy_root = args.work_dir / "p" / month
+        print(f"Building {month} from {len(monthly_reports)} report(s)")
+        copy_report_dirs(REPO_ROOT, copy_root, monthly_reports)
+        copied_size = size_of(copy_root)
+        total_source_size += copied_size
+        converted, skipped = compress_assets(copy_root, args.quality, args.min_gain, args.force_webp)
+        changed_text_files = update_text_references(copy_root, converted)
+        compressed_size = size_of(copy_root)
+        total_compressed_size += compressed_size
+        missing_refs = check_local_references(copy_root)
+        archive_path = assets_root / f"ccn-report-{month}-q{args.quality}.zip"
+        write_zip(copy_root, archive_path)
+        package_paths.append(archive_path)
+        package_roots.append(copy_root)
+        packages.append(
+            {
+                "month": month,
+                "filename": archive_path.name,
+                "sha256": sha256(archive_path),
+                "bytes": archive_path.stat().st_size,
+                "report_count": len(monthly_reports),
+                "reports": [path.relative_to(REPO_ROOT).as_posix() for path in sorted(monthly_reports)],
+                "source_bytes": copied_size,
+                "compressed_tree_bytes": compressed_size,
+                "converted_count": len(converted),
+                "skipped_count": len(skipped),
+                "changed_text_files": changed_text_files,
+                "missing_reference_count": len(missing_refs),
+                "missing_references": missing_refs[:100],
+            }
+        )
 
-    converted, skipped = compress_assets(copy_root, args.quality, args.min_gain, args.force_webp)
-    changed_text_files = update_text_references(copy_root, converted)
-    compressed_size = size_of(copy_root)
-    missing_refs = check_local_references(copy_root)
+    full_archive_path = assets_root / f"ccn-report-full-q{args.quality}.zip"
+    write_full_zip(package_roots, full_archive_path)
+    full_archive_info = {
+        "filename": full_archive_path.name,
+        "sha256": sha256(full_archive_path),
+        "bytes": full_archive_path.stat().st_size,
+        "report_count": len(report_dirs),
+    }
 
-    archive_name = (
-        f"ccn-report-compressed-q{args.quality}-{timestamp}.zip"
-        if args.snapshot
-        else f"ccn-report-latest-compressed-q{args.quality}.zip"
-    )
-    archive_path = assets_root / archive_name
-    write_zip(copy_root, archive_path)
-    archive_hash = sha256(archive_path)
-    archive_size = archive_path.stat().st_size
+    index_source = REPO_ROOT / "index.html"
+    if not index_source.is_file():
+        fail("repository index.html not found")
+    index_path = assets_root / "index.html"
+    shutil.copy2(index_source, index_path)
+    index_info = {"filename": index_path.name, "sha256": sha256(index_path), "bytes": index_path.stat().st_size}
 
-    report = {
+    report: dict[str, object] = {
+        "manifest_schema_version": MANIFEST_SCHEMA_VERSION,
         "tag": tag,
         "title": title,
         "github_repo": github_repo,
         "quality": args.quality,
         "min_gain": args.min_gain,
-        "source_bytes_excluding_git": source_size,
-        "copied_bytes": copied_size,
-        "compressed_tree_bytes": compressed_size,
-        "archive_bytes": archive_size,
-        "source_mb_excluding_git": round(source_size / 1024 / 1024, 2),
-        "copied_mb": round(copied_size / 1024 / 1024, 2),
-        "compressed_tree_mb": round(compressed_size / 1024 / 1024, 2),
-        "archive_mb": round(archive_size / 1024 / 1024, 2),
-        "tree_saved_percent": round((copied_size - compressed_size) * 100 / copied_size, 2) if copied_size else 0,
-        "archive_sha256": archive_hash,
-        "converted_count": len(converted),
-        "skipped_count": len(skipped),
-        "changed_text_files": changed_text_files,
-        "missing_reference_count": len(missing_refs),
-        "top_converted": [
-            {
-                "path": str(item.old_relative),
-                "old_bytes": item.old_bytes,
-                "new_bytes": item.new_bytes,
-                "saved_bytes": item.old_bytes - item.new_bytes,
-            }
-            for item in sorted(converted, key=lambda entry: entry.old_bytes - entry.new_bytes, reverse=True)[:50]
-        ],
-        "skipped": skipped[:100],
-        "missing_references": missing_refs[:100],
+        "generated_at": datetime.now().astimezone().isoformat(),
+        "source_report_bytes": total_source_size,
+        "compressed_tree_bytes": total_compressed_size,
+        "report_count": len(report_dirs),
+        "package_count": len(packages),
+        "packages": packages,
+        "full_archive": full_archive_info,
+        "index": index_info,
     }
 
     manifest_path = assets_root / "manifest.json"
     sums_path = assets_root / "SHA256SUMS.txt"
     notes_path = assets_root / "release-notes.md"
     manifest_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    sums_path.write_text(f"{archive_hash}  {archive_path.name}\n", encoding="ascii")
+    checksum_entries = [(str(package["sha256"]), str(package["filename"])) for package in packages]
+    checksum_entries.append((str(full_archive_info["sha256"]), full_archive_path.name))
+    checksum_entries.append((str(index_info["sha256"]), index_path.name))
+    sums_path.write_text("".join(f"{digest}  {name}\n" for digest, name in checksum_entries), encoding="ascii")
     notes_path.write_text(
         "\n".join(
             [
                 f"# {title}",
                 "",
-                "Compressed offline HTML archive generated from the current ccn-report working tree.",
+                "Full and month-partitioned offline report archives generated from the current ccn-report working tree.",
                 "",
                 "## Size",
                 "",
-                f"- Source tree excluding .git: {report['source_mb_excluding_git']} MB",
-                f"- Compressed expanded tree: {report['compressed_tree_mb']} MB",
-                f"- Release zip asset: {report['archive_mb']} MB",
-                f"- Converted assets: {len(converted)}",
-                f"- Text files with rewritten references: {changed_text_files}",
-                f"- Missing local HTML/CSS references found after conversion: {len(missing_refs)}",
+                f"- Reports: {len(report_dirs)}",
+                f"- Monthly packages: {len(packages)}",
+                f"- Full archive: {round(full_archive_path.stat().st_size / 1024 / 1024, 2)} MB",
+                f"- Source report tree: {round(total_source_size / 1024 / 1024, 2)} MB",
+                f"- Compressed expanded tree: {round(total_compressed_size / 1024 / 1024, 2)} MB",
                 "",
                 "## SHA256",
                 "",
-                f"- `{archive_hash}`  `{archive_path.name}`",
+                *[f"- `{digest}`  `{name}`" for digest, name in checksum_entries],
             ]
         )
         + "\n",
@@ -524,8 +625,9 @@ def main() -> int:
 
     release_url = ""
     if not args.no_upload:
-        assets = [archive_path, manifest_path, sums_path]
-        if args.snapshot or not release_exists(github_repo, tag):
+        exists = release_exists(github_repo, tag)
+        if args.snapshot or not exists:
+            assets = [*package_paths, full_archive_path, index_path, manifest_path, sums_path]
             release_url = create_release(
                 github_repo=github_repo,
                 tag=tag,
@@ -535,14 +637,30 @@ def main() -> int:
                 prerelease=not args.stable,
             )
         else:
+            previous = load_release_manifest(github_repo, tag, args.work_dir / "previous")
+            existing_assets = list_release_assets(github_repo, tag)
+            changed_packages, changed_assets, obsolete_assets = select_release_changes(
+                package_paths,
+                packages,
+                full_archive_path,
+                full_archive_info,
+                index_path,
+                index_info,
+                previous,
+                existing_assets,
+            )
+            report["uploaded_monthly_packages"] = [path.name for path in changed_packages]
             release_url = update_release(
                 github_repo=github_repo,
                 tag=tag,
                 title=title,
                 notes_path=notes_path,
-                assets=assets,
+                assets=[*changed_assets, sums_path],
                 prerelease=not args.stable,
             )
+            # Upload replacements before deleting obsolete archives so a failed
+            # upload cannot leave the rolling release without usable packages.
+            report["deleted_assets"] = delete_release_assets(github_repo, tag, obsolete_assets)
         report["release_url"] = release_url
         manifest_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
         completed = run(
@@ -559,24 +677,6 @@ def main() -> int:
         )
         if completed.returncode != 0:
             fail(completed.stderr.strip() or completed.stdout.strip() or "gh release upload manifest failed")
-        if not args.snapshot and not args.keep_old_releases:
-            deleted_releases = cleanup_other_releases(github_repo, keep_tag=tag)
-            report["deleted_old_releases"] = deleted_releases
-            manifest_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-            completed = run(
-                [
-                    "gh",
-                    "release",
-                    "upload",
-                    tag,
-                    str(manifest_path),
-                    "--repo",
-                    github_repo,
-                    "--clobber",
-                ]
-            )
-            if completed.returncode != 0:
-                fail(completed.stderr.strip() or completed.stdout.strip() or "gh release upload manifest failed")
 
     print(json.dumps(report, ensure_ascii=False, indent=2))
     if release_url:

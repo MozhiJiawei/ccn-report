@@ -2,25 +2,19 @@ from __future__ import annotations
 
 import re
 import sys
-from datetime import datetime
 from pathlib import Path
+
+from report_archive_layout import IGNORED_DIRECTORY_NAMES, is_valid_report_dir_name
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-REPORT_DIR_RE = re.compile(
-    r"^(?P<date>\d{8})-(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)-(?P<creator>[\w\u4e00-\u9fff-]+)$"
-)
-ALLOWED_TOP_LEVEL = {"大厂动态", "开源软件分析", "学术论文分析"}
 IGNORED_NAMES = {".gitkeep"}
-PROJECT_ROOT_NAMES = {
-    ".git",
-    ".github",
+ALLOWED_ROOT_FILE_NAMES = {
     ".gitattributes",
     ".gitignore",
     "AGENTS.md",
     "README.md",
     "index.html",
-    "scripts",
 }
 ALLOWED_REPORT_SUFFIXES = {".html", ".pptx"}
 ALLOWED_REPORT_FILENAMES = {"README.md"}
@@ -31,59 +25,27 @@ def fail(message: str, errors: list[str]) -> None:
     errors.append(message)
 
 
-def is_valid_report_dir_name(name: str) -> bool:
-    match = REPORT_DIR_RE.fullmatch(name)
-    if not match:
-        return False
-
-    try:
-        datetime.strptime(match.group("date"), "%Y%m%d")
-    except ValueError:
-        return False
-
-    return True
-
-
 def check_repo_root(errors: list[str]) -> None:
-    for category_name in sorted(ALLOWED_TOP_LEVEL):
-        if not (REPO_ROOT / category_name).is_dir():
-            fail(f"Missing top-level category directory: {category_name}/", errors)
-
     for item in REPO_ROOT.iterdir():
         if item.name in IGNORED_NAMES:
             continue
-        if item.name in PROJECT_ROOT_NAMES:
+        if item.name in ALLOWED_ROOT_FILE_NAMES or item.name in IGNORED_DIRECTORY_NAMES:
             continue
         if not item.is_dir():
             fail(f"Repository root contains an unexpected file: {item.relative_to(REPO_ROOT)}", errors)
             continue
-        if item.name not in ALLOWED_TOP_LEVEL:
-            fail(
-                f"Unknown top-level category {item.relative_to(REPO_ROOT)}. "
-                f"Allowed: {', '.join(sorted(ALLOWED_TOP_LEVEL))}",
-                errors,
-            )
-
-
-def check_category(category: Path, errors: list[str]) -> None:
-    for item in category.iterdir():
-        if item.name in IGNORED_NAMES:
-            continue
-        if not item.is_dir():
-            fail(f"Category directories must not contain files directly: {item.relative_to(REPO_ROOT)}", errors)
-            continue
         if is_valid_report_dir_name(item.name):
             fail(
-                f"Report directories must be placed under an object/direction directory: {item.relative_to(REPO_ROOT)}",
+                f"Report directories must be at least two levels below the repository root: {item.relative_to(REPO_ROOT)}",
                 errors,
             )
-            continue
-
-        check_archive_branch(item, errors)
 
 
 def check_archive_branch(branch: Path, errors: list[str]) -> None:
-    direct_files = [item for item in branch.iterdir() if item.is_file() and item.name not in IGNORED_NAMES]
+    if branch.name in IGNORED_DIRECTORY_NAMES:
+        return
+    items = list(branch.iterdir())
+    direct_files = [item for item in items if item.is_file() and item.name not in IGNORED_NAMES]
     if direct_files:
         fail(
             f"Directory contains files but is not a valid report directory: {branch.relative_to(REPO_ROOT)}. "
@@ -91,7 +53,7 @@ def check_archive_branch(branch: Path, errors: list[str]) -> None:
             errors,
         )
 
-    for item in branch.iterdir():
+    for item in items:
         if item.name in IGNORED_NAMES:
             continue
         if item.is_file():
@@ -147,10 +109,9 @@ def main() -> int:
     errors: list[str] = []
     check_repo_root(errors)
 
-    for category_name in sorted(ALLOWED_TOP_LEVEL):
-        category = REPO_ROOT / category_name
-        if category.is_dir():
-            check_category(category, errors)
+    for item in REPO_ROOT.iterdir():
+        if item.is_dir() and item.name not in IGNORED_DIRECTORY_NAMES:
+            check_archive_branch(item, errors)
 
     if errors:
         print("Report archive validation failed:")

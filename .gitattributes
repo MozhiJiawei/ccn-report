@@ -1,8 +1,11 @@
 # Archive deliverables default to Git LFS.
-大厂动态/** filter=lfs diff=lfs merge=lfs -text
-开源软件分析/** filter=lfs diff=lfs merge=lfs -text
-学术论文分析/** filter=lfs diff=lfs merge=lfs -text
+**/*.html filter=lfs diff=lfs merge=lfs -text
+**/*.htm filter=lfs diff=lfs merge=lfs -text
+**/*.pptx filter=lfs diff=lfs merge=lfs -text
+
+# The standalone repository index remains reviewable in regular Git.
+/index.html -filter diff merge text
 
 # Keep report notes reviewable in regular Git.
-*.md -filter -diff -merge text
-*.markdown -filter -diff -merge text
+*.md -filter diff merge text
+*.markdown -filter diff merge text

@@ -16,6 +16,7 @@ def run(command: list[str]) -> int:
 
 def main() -> int:
     checks = [
+        [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"],
         [sys.executable, "scripts/check_report_archive.py"],
     ]
 
