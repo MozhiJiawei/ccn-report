@@ -15,8 +15,6 @@ from io import BytesIO
 from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit
 
-from PIL import Image
-
 from report_archive_layout import find_report_dirs, report_date
 
 
@@ -84,6 +82,8 @@ def group_reports_by_month(report_dirs: list[Path]) -> dict[str, list[Path]]:
 
 
 def convert_static_image(source: Path, quality: int) -> tuple[Path | None, str | None]:
+    from PIL import Image
+
     target = source.with_suffix(".webp")
     try:
         data = source.read_bytes()

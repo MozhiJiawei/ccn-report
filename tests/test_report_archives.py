@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import subprocess
 import tempfile
 import time
 import unittest
@@ -48,6 +49,27 @@ class ReportArchiveLayoutTests(unittest.TestCase):
 
 
 class MonthlyPackageTests(unittest.TestCase):
+    def test_release_helpers_import_without_pillow_installed(self) -> None:
+        script = """
+import importlib.abc
+import sys
+class BlockPillow(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path, target=None):
+        if fullname == 'PIL' or fullname.startswith('PIL.'):
+            raise ModuleNotFoundError("blocked Pillow for test")
+        return None
+sys.meta_path.insert(0, BlockPillow())
+import release_compressed_archive
+"""
+        completed = subprocess.run(
+            [sys.executable, "-c", script],
+            cwd=SCRIPTS,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+
     def test_zip_preserves_repository_relative_paths_without_wrapper(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "repo"
