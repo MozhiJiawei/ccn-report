@@ -72,6 +72,8 @@ python scripts/export_singlefile_archive.py --root <html-root> <entry.html> --ou
 ```
 
 - 入口页会索引子报告时，追加 `--recursive-linked-html`。
+- 导出器会扫描 HTML 中的本地 `href`、`src` 和 CSS `url(...)` 引用；资源位于 `--root` 外时，会自动上移临时 HTTP 服务根目录，同时保持输出仍相对于 `--root`。
+- SingleFile 若产出空的 `data:` 图片会判定导出失败，避免把本地图片加载失败的残缺页面归档。
 - 导出后报告目录只保留 HTML、PPTX 和 `README.md`。
 - 其他参数按需查看 `python scripts/export_singlefile_archive.py --help`。
 
@@ -113,3 +115,10 @@ python scripts/pre_commit_gate.py
 ```
 
 若门禁失败，先修复目录层级、命名问题或报告目录内的非归档文件，再提交。
+
+## Pull Request Delivery
+
+- 用户要求“提 PR”“合入”“合并”或其他等价交付时，默认表示完成整套交付流程，而不只是创建 PR。
+- 创建 PR 后必须持续跟进 CI、自动化检查和评审意见；出现失败或新增反馈时，应修复、提交并重新验证，不能在推送修复后停止跟进。
+- 只有 PR 已实际合并进目标分支，且合并后的远端状态已确认，任务才算完成；仅达到“CI 通过”“可合并”或“等待人工点击合并”不算完成。
+- 若受权限、必需人工审批、语义冲突或外部系统故障阻塞，必须明确报告阻塞原因和所需人工动作；除此之外不要把可自动完成的收尾留给用户。
