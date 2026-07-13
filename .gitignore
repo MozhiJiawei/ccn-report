@@ -2,6 +2,8 @@
 .tmp/
 tmp/
 *.log
+__pycache__/
+*.py[cod]
 
 # OS/editor noise
 .DS_Store
