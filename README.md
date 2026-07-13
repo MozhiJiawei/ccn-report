@@ -81,6 +81,8 @@ python scripts/pre_commit_gate.py
 
 入口页会索引子报告时追加 `--recursive-linked-html`。导出后只归档 HTML、PPTX 和 `README.md`。
 
+导出器会发现 HTML 中通过 `href`、`src` 和 CSS `url(...)` 引用的本地资源。引用位于 `--root` 外时，临时 HTTP 服务根目录会自动扩展到可访问这些资源的共同目录，但输出目录结构仍以 `--root` 为基准。若 SingleFile 生成空的 `data:` 图片，导出会失败，避免归档本地图片缺失的残缺页面。
+
 ## Full and Monthly Release Packages
 
 GitHub Release 同时维护全量包和按报告月份汇聚的增量包。PR 合入 `main` 后运行：

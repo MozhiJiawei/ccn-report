@@ -44,9 +44,21 @@ HREF_RE = re.compile(
     r"""href\s*=\s*(?:(?P<quote>["'])(?P<url_q>.*?)(?P=quote)|(?P<url_u>[^"'\s>]+))""",
     re.IGNORECASE | re.DOTALL,
 )
+LOCAL_ASSET_ATTR_RE = re.compile(
+    r"""(?:href|src)\s*=\s*(?:(?P<quote>["'])(?P<url_q>.*?)(?P=quote)|(?P<url_u>[^"'\s>]+))""",
+    re.IGNORECASE | re.DOTALL,
+)
+CSS_URL_RE = re.compile(
+    r"""url\(\s*(?:(?P<quote>["'])(?P<url_q>.*?)(?P=quote)|(?P<url_u>[^"')]+))\s*\)""",
+    re.IGNORECASE | re.DOTALL,
+)
 LOCAL_HTTP_URL_RE = re.compile(r"""http://(?:127\.0\.0\.1|localhost):\d+/(?P<path>[^"'<>\s)]*)""")
 LOCAL_CANONICAL_RE = re.compile(
     r"""<link\b(?=[^>]*\brel\s*=\s*["']?canonical\b)(?=[^>]*\bhref\s*=\s*["']?http://(?:127\.0\.0\.1|localhost):\d+/)[^>]*>""",
+    re.IGNORECASE,
+)
+EMPTY_DATA_IMG_RE = re.compile(
+    r"""<img\b[^>]*\bsrc\s*=\s*(?:(["'])data:\1|data:)(?:[\s>/]|,)""",
     re.IGNORECASE,
 )
 
@@ -106,7 +118,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("inputs", nargs="*", type=Path, help="HTML files to export.")
     parser.add_argument("--input-list", type=Path, help="UTF-8 text file containing HTML paths.")
-    parser.add_argument("--root", type=Path, default=Path.cwd(), help="Local root served over HTTP.")
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="Input and output path root. The HTTP serving root may expand to include referenced local assets.",
+    )
     parser.add_argument("--output-dir", type=Path, help="Directory for exported HTML, mirroring --root paths.")
     parser.add_argument("--recursive-linked-html", action="store_true", help="Also export local HTML pages linked by inputs.")
     parser.add_argument("--max-depth", type=int, default=None, help="Maximum linked HTML recursion depth.")
@@ -181,6 +198,57 @@ def resolve_local(owner: Path, url: str, root: Path) -> Path | None:
     if resolved.is_dir():
         resolved = resolved / "index.html"
     return resolved if resolved.exists() else None
+
+
+def resolve_local_reference(owner: Path, url: str, root: Path) -> Path | None:
+    if is_remote_or_special(url):
+        return None
+    split = urlsplit(html.unescape(url.strip()))
+    if split.scheme and split.scheme != "file":
+        return None
+    raw_path = unquote(split.path)
+    candidate = root / raw_path.lstrip("/\\") if raw_path.startswith(("/", "\\")) else owner.parent / raw_path
+    try:
+        resolved = candidate.resolve()
+    except Exception:
+        return None
+    if resolved.is_dir():
+        resolved = resolved / "index.html"
+    return resolved if resolved.exists() and resolved.is_file() else None
+
+
+def referenced_local_assets(path: Path, root: Path) -> list[Path]:
+    try:
+        content = path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return []
+    assets: list[Path] = []
+    for pattern in (LOCAL_ASSET_ATTR_RE, CSS_URL_RE):
+        for match in pattern.finditer(content):
+            target = resolve_local_reference(path, href_value(match), root)
+            if target and target.suffix.lower() not in HTML_EXTENSIONS:
+                assets.append(target.resolve())
+    return unique_paths(assets)
+
+
+def unique_paths(paths: list[Path]) -> list[Path]:
+    seen: set[Path] = set()
+    unique: list[Path] = []
+    for path in paths:
+        resolved = path.resolve()
+        if resolved not in seen:
+            seen.add(resolved)
+            unique.append(resolved)
+    return unique
+
+
+def serving_root_for(inputs: list[Path], root: Path) -> Path:
+    paths = [root.resolve()]
+    for path in inputs:
+        for asset in referenced_local_assets(path, root):
+            paths.append(asset)
+    common = Path(os.path.commonpath([str(path) for path in paths])).resolve()
+    return common if common.is_dir() else common.parent
 
 
 def read_inputs(args: argparse.Namespace, root: Path) -> list[Path]:
@@ -437,11 +505,28 @@ def rewrite_unexported_html_links(output: Path, source: Path, root: Path, export
         output.write_text(rewritten, encoding="utf-8")
 
 
-def export_one(path: Path, depth: int, base_url: str, args: argparse.Namespace, root: Path, cache_dir: Path) -> ExportResult:
-    rel = path.relative_to(root).as_posix()
+def validate_singlefile_output(path: Path) -> None:
+    content = path.read_text(encoding="utf-8", errors="replace")
+    if EMPTY_DATA_IMG_RE.search(content):
+        raise RuntimeError(
+            "SingleFile output contains an empty data: image. "
+            "A local image was probably unreachable from the served root."
+        )
+
+
+def export_one(
+    path: Path,
+    depth: int,
+    base_url: str,
+    args: argparse.Namespace,
+    serve_root: Path,
+    output_root: Path,
+    cache_dir: Path,
+) -> ExportResult:
+    rel = path.relative_to(serve_root).as_posix()
     url = f"{base_url}/{quote(rel, safe='/')}"
-    final_output = output_path_for(path, args, root)
-    temp_output = artifact_path("outputs", path, root, args.work_dir)
+    final_output = output_path_for(path, args, output_root)
+    temp_output = artifact_path("outputs", path, output_root, args.work_dir)
     temp_output.parent.mkdir(parents=True, exist_ok=True)
     original_size = path.stat().st_size
     before = image_cache_stats(cache_dir)
@@ -459,7 +544,8 @@ def export_one(path: Path, depth: int, base_url: str, args: argparse.Namespace, 
             )
             if completed.returncode or not temp_output.exists():
                 raise RuntimeError((completed.stderr or completed.stdout or "SingleFile failed").strip()[:2000])
-            rewrite_local_http_links(temp_output, path, root)
+            validate_singlefile_output(temp_output)
+            rewrite_local_http_links(temp_output, path, serve_root)
             final_output.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(temp_output, final_output)
         after = image_cache_stats(cache_dir)
@@ -491,11 +577,12 @@ def export_one(path: Path, depth: int, base_url: str, args: argparse.Namespace, 
         )
 
 
-def write_manifest(results: list[ExportResult], args: argparse.Namespace) -> None:
+def write_manifest(results: list[ExportResult], args: argparse.Namespace, serve_root: Path) -> None:
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
     data = {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "root": str(args.root.resolve()),
+        "served_root": str(serve_root.resolve()),
         "quality": args.quality,
         "recursive_linked_html": args.recursive_linked_html,
         "max_depth": args.max_depth,
@@ -535,9 +622,13 @@ def main() -> int:
     )
 
     cache_dir = args.work_dir / "image-cache"
-    server, base_url = start_server(args.root, args.quality, cache_dir)
+    serve_root = serving_root_for(list(depths), args.root)
+    server, base_url = start_server(serve_root, args.quality, cache_dir)
     try:
-        results = [export_one(path, depth, base_url, args, args.root, cache_dir) for path, depth in depths.items()]
+        results = [
+            export_one(path, depth, base_url, args, serve_root, args.root, cache_dir)
+            for path, depth in depths.items()
+        ]
     finally:
         server.shutdown()
     exported_sources = {path.resolve() for path, _ in depths.items()}
@@ -552,7 +643,7 @@ def main() -> int:
                 exported_sources,
                 args.unexported_html_link_action,
             )
-    write_manifest(results, args)
+    write_manifest(results, args, serve_root)
     print(
         json.dumps(
             {
