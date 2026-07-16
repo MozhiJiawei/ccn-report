@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import zipfile
 from dataclasses import dataclass
 from datetime import datetime
@@ -49,8 +50,37 @@ class ConvertedAsset:
 
 
 def run(command: list[str], cwd: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
-    print(f"$ {' '.join(command)}")
+    print(f"$ {' '.join(command)}", flush=True)
     return subprocess.run(command, cwd=cwd, check=False, text=True, capture_output=True)
+
+
+def run_streaming(
+    command: list[str],
+    cwd: Path = REPO_ROOT,
+    heartbeat_seconds: float = 30,
+) -> subprocess.CompletedProcess[str]:
+    print(f"$ {' '.join(command)}", flush=True)
+    started = time.monotonic()
+    process = subprocess.Popen(command, cwd=cwd)
+    try:
+        while True:
+            try:
+                returncode = process.wait(timeout=heartbeat_seconds)
+                break
+            except subprocess.TimeoutExpired:
+                elapsed = round(time.monotonic() - started)
+                print(f"... still running ({elapsed}s elapsed)", flush=True)
+    except BaseException:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+        raise
+
+    elapsed = round(time.monotonic() - started, 1)
+    print(f"... completed in {elapsed}s (exit {returncode})", flush=True)
+    return subprocess.CompletedProcess(command, returncode, "", "")
 
 
 def fail(message: str) -> None:
@@ -308,6 +338,74 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def verify_release_assets(
+    github_repo: str,
+    tag: str,
+    expected_assets: list[Path],
+    attempts: int = 3,
+    retry_seconds: float = 2,
+) -> None:
+    last_error = "release asset verification failed"
+    expected = {
+        path.name: {"size": path.stat().st_size, "digest": f"sha256:{sha256(path)}"}
+        for path in expected_assets
+    }
+    for attempt in range(1, attempts + 1):
+        encoded_tag = quote(tag, safe="")
+        completed = run(["gh", "api", f"repos/{github_repo}/releases/tags/{encoded_tag}"])
+        if completed.returncode != 0:
+            last_error = completed.stderr.strip() or completed.stdout.strip() or "failed to query release assets"
+        else:
+            try:
+                payload = json.loads(completed.stdout)
+            except json.JSONDecodeError as exc:
+                last_error = f"failed to parse release assets: {exc}"
+            else:
+                remote_assets = {str(asset.get("name")): asset for asset in payload.get("assets", [])}
+                problems: list[str] = []
+                for path in expected_assets:
+                    remote = remote_assets.get(path.name)
+                    if remote is None:
+                        problems.append(f"missing: {path.name}")
+                        continue
+                    if remote.get("size") != expected[path.name]["size"]:
+                        problems.append(f"size mismatch: {path.name}")
+                    if remote.get("digest") != expected[path.name]["digest"]:
+                        problems.append(f"digest mismatch: {path.name}")
+                if not problems:
+                    print(f"Verified {len(expected_assets)} release asset(s) by size and SHA-256.", flush=True)
+                    return
+                last_error = "; ".join(problems)
+
+        if attempt < attempts:
+            print(f"Release verification attempt {attempt}/{attempts} failed: {last_error}", flush=True)
+            time.sleep(retry_seconds)
+    fail(f"release asset verification failed after {attempts} attempt(s): {last_error}")
+
+
+def upload_release_assets(github_repo: str, tag: str, assets: list[Path]) -> None:
+    if not assets:
+        print("No changed release assets to upload.", flush=True)
+        return
+    total_bytes = sum(path.stat().st_size for path in assets)
+    names = ", ".join(path.name for path in assets)
+    print(f"Uploading {len(assets)} asset(s), {round(total_bytes / 1024 / 1024, 2)} MiB: {names}", flush=True)
+    command = [
+        "gh",
+        "release",
+        "upload",
+        tag,
+        *[str(asset) for asset in assets],
+        "--repo",
+        github_repo,
+        "--clobber",
+    ]
+    completed = run_streaming(command)
+    if completed.returncode != 0:
+        fail("gh release upload failed; see streamed output above")
+    verify_release_assets(github_repo, tag, assets)
+
+
 def infer_github_repo() -> str:
     completed = run(["git", "remote", "get-url", "origin"])
     if completed.returncode != 0:
@@ -345,10 +443,10 @@ def create_release(
     if prerelease:
         command.append("--prerelease")
 
-    completed = run(command)
+    completed = run_streaming(command)
     if completed.returncode != 0:
-        fail(completed.stderr.strip() or completed.stdout.strip() or "gh release create failed")
-    return completed.stdout.strip()
+        fail("gh release create failed; see streamed output above")
+    return f"https://github.com/{github_repo}/releases/tag/{tag}"
 
 
 def release_exists(github_repo: str, tag: str) -> bool:
@@ -385,19 +483,7 @@ def update_release(
     if completed.returncode != 0:
         fail(completed.stderr.strip() or completed.stdout.strip() or "gh release edit failed")
 
-    upload_command = [
-        "gh",
-        "release",
-        "upload",
-        tag,
-        *[str(asset) for asset in assets],
-        "--repo",
-        github_repo,
-        "--clobber",
-    ]
-    completed = run(upload_command)
-    if completed.returncode != 0:
-        fail(completed.stderr.strip() or completed.stdout.strip() or "gh release upload failed")
+    upload_release_assets(github_repo, tag, assets)
 
     return f"https://github.com/{github_repo}/releases/tag/{tag}"
 
@@ -527,7 +613,7 @@ def main() -> int:
     total_compressed_size = 0
     for month, monthly_reports in sorted(grouped.items()):
         copy_root = args.work_dir / "p" / month
-        print(f"Building {month} from {len(monthly_reports)} report(s)")
+        print(f"Building {month} from {len(monthly_reports)} report(s)", flush=True)
         copy_report_dirs(REPO_ROOT, copy_root, monthly_reports)
         copied_size = size_of(copy_root)
         total_source_size += copied_size
@@ -627,7 +713,7 @@ def main() -> int:
     if not args.no_upload:
         exists = release_exists(github_repo, tag)
         if args.snapshot or not exists:
-            assets = [*package_paths, full_archive_path, index_path, manifest_path, sums_path]
+            assets = [*package_paths, full_archive_path, index_path]
             release_url = create_release(
                 github_repo=github_repo,
                 tag=tag,
@@ -655,7 +741,7 @@ def main() -> int:
                 tag=tag,
                 title=title,
                 notes_path=notes_path,
-                assets=[*changed_assets, sums_path],
+                assets=changed_assets,
                 prerelease=not args.stable,
             )
             # Upload replacements before deleting obsolete archives so a failed
@@ -663,24 +749,12 @@ def main() -> int:
             report["deleted_assets"] = delete_release_assets(github_repo, tag, obsolete_assets)
         report["release_url"] = release_url
         manifest_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-        completed = run(
-            [
-                "gh",
-                "release",
-                "upload",
-                tag,
-                str(manifest_path),
-                "--repo",
-                github_repo,
-                "--clobber",
-            ]
-        )
-        if completed.returncode != 0:
-            fail(completed.stderr.strip() or completed.stdout.strip() or "gh release upload manifest failed")
+        upload_release_assets(github_repo, tag, [sums_path, manifest_path])
+        verify_release_assets(github_repo, tag, [*package_paths, full_archive_path, index_path, sums_path, manifest_path])
 
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    print(json.dumps(report, ensure_ascii=False, indent=2), flush=True)
     if release_url:
-        print(release_url)
+        print(release_url, flush=True)
     return 0
 
 
