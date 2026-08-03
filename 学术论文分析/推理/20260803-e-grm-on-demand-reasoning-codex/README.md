@@ -31,6 +31,5 @@ E-GRM 是腾讯混元、腾讯元宝与高校团队在 ACL 2026 Findings 发表�
 - SingleFile 导出：成功。
 - 独立视觉 QA：PASS；无破图、裁切、遮挡、空 alt 或横向溢出。
 
-归档日期：2026-08-03  
+归档日期：2026-08-03
 Creator：Codex
-
