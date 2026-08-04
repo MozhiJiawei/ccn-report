@@ -23,6 +23,19 @@ def fail(message: str) -> None:
     raise RuntimeError(message)
 
 
+def filesystem_path(path: Path) -> Path:
+    """Use Windows extended-length paths for deeply nested report files."""
+    absolute = path.resolve()
+    if os.name != "nt":
+        return absolute
+    value = str(absolute)
+    if value.startswith("\\\\?\\"):
+        return absolute
+    if value.startswith("\\\\"):
+        return Path(f"\\\\?\\UNC\\{value[2:]}")
+    return Path(f"\\\\?\\{value}")
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -109,13 +122,13 @@ def extract_packages(package_paths: list[Path], destination: Path) -> int:
             for info in archive.infolist():
                 relative = safe_member_path(info.filename)
                 if info.is_dir():
-                    (destination / relative).mkdir(parents=True, exist_ok=True)
+                    filesystem_path(destination / relative).mkdir(parents=True, exist_ok=True)
                     continue
                 if relative in extracted:
                     fail(f"duplicate archive path across monthly packages: {relative.as_posix()}")
                 target = destination / relative
-                target.parent.mkdir(parents=True, exist_ok=True)
-                with archive.open(info) as source, target.open("wb") as output:
+                filesystem_path(target.parent).mkdir(parents=True, exist_ok=True)
+                with archive.open(info) as source, filesystem_path(target).open("wb") as output:
                     shutil.copyfileobj(source, output, length=1024 * 1024)
                 extracted.add(relative)
     return len(extracted)
