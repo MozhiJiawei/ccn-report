@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import contextlib
+import io
+import json
 import sys
 import subprocess
 import tempfile
@@ -7,6 +10,7 @@ import time
 import unittest
 import zipfile
 from pathlib import Path
+from unittest import mock
 
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
@@ -16,7 +20,9 @@ from report_archive_layout import find_report_dirs, report_date  # noqa: E402
 from release_compressed_archive import (  # noqa: E402
     copy_report_dirs,
     group_reports_by_month,
+    run_streaming,
     select_release_changes,
+    verify_release_assets,
     write_full_zip,
     write_zip,
 )
@@ -49,6 +55,51 @@ class ReportArchiveLayoutTests(unittest.TestCase):
 
 
 class MonthlyPackageTests(unittest.TestCase):
+    def test_streaming_command_emits_heartbeats_until_completion(self) -> None:
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            completed = run_streaming(
+                [sys.executable, "-c", "import time; time.sleep(0.08)"],
+                heartbeat_seconds=0.02,
+            )
+
+        self.assertEqual(completed.returncode, 0)
+        self.assertIn("still running", output.getvalue())
+        self.assertIn("completed in", output.getvalue())
+
+    def test_release_verification_rejects_digest_mismatch(self) -> None:
+        asset = Path("ccn-report-202607-q70.zip")
+        with tempfile.TemporaryDirectory() as temporary:
+            local_asset = Path(temporary) / asset
+            local_asset.write_bytes(b"expected")
+            remote_assets = {
+                "assets": [
+                    {
+                        "name": asset.name,
+                        "size": local_asset.stat().st_size,
+                        "digest": "sha256:" + "0" * 64,
+                    }
+                ]
+            }
+            completed = subprocess.CompletedProcess(
+                args=["gh"],
+                returncode=0,
+                stdout=json.dumps(remote_assets),
+                stderr="",
+            )
+            with (
+                mock.patch("release_compressed_archive.run", return_value=completed) as run_release,
+                mock.patch("release_compressed_archive.sha256", return_value="f" * 64) as digest,
+                mock.patch("release_compressed_archive.time.sleep"),
+            ):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    with self.assertRaisesRegex(RuntimeError, "digest mismatch"):
+                        verify_release_assets("owner/repo", "tag/with space", [local_asset])
+            digest.assert_called_once_with(local_asset)
+            run_release.assert_called_with(
+                ["gh", "api", "repos/owner/repo/releases/tags/tag%2Fwith%20space"]
+            )
+
     def test_release_helpers_import_without_pillow_installed(self) -> None:
         script = """
 import importlib.abc
