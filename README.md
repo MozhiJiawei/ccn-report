@@ -85,24 +85,34 @@ python scripts/pre_commit_gate.py
 
 导出器会发现 HTML 中通过 `href`、`src` 和 CSS `url(...)` 引用的本地资源。引用位于 `--root` 外时，临时 HTTP 服务根目录会自动扩展到可访问这些资源的共同目录，但输出目录结构仍以 `--root` 为基准。若 SingleFile 生成空的 `data:` 图片，导出会失败，避免归档本地图片缺失的残缺页面。
 
-## Full and Monthly Release Packages
+## Monthly Release Packages
 
-GitHub Release 同时维护全量包和按报告月份汇聚的增量包。PR 合入 `main` 后运行：
+GitHub Release 只维护按报告月份汇聚的分包，避免每次更新都重新生成和上传体积较大的全量 ZIP。PR 合入 `main` 后运行：
 
 ```powershell
 python scripts/release_compressed_archive.py --quality 70
 ```
 
+也可以在 GitHub Actions 手动触发 `Publish monthly archives` 工作流；工作流会先跑归档门禁，再更新滚动 Release。
+
 默认更新 `latest-compressed-archive` 滚动 Release：
 
 - 报告仍通过目录名中的 `YYYYMMDD` 识别，但按 `YYYYMM` 汇聚为 `ccn-report-YYYYMM-q70.zip`。
 - ZIP 保持报告相对于仓库根目录的完整路径；多个月度包可依次解压到同一目录进行增量合并。
-- 同时生成 `ccn-report-full-q70.zip`，供首次下载或一次性获取全部报告；其内部目录结构与月度包一致。
-- 根目录 `index.html` 作为独立 Release 资产发布，不进入月度包或全量包。
-- 脚本根据上一版 `manifest.json` 的 SHA256 只上传新增或变化的月度包；全量包仅在报告内容变化时覆盖，并删除已经失效的月度包、旧日期包和旧格式整仓大包。
+- 根目录 `index.html` 作为独立 Release 资产发布，不进入月度包。
+- `download_full_archive.py` 作为独立 Release 资产发布，可自动下载、校验并解压全部月度包，生成本地全量目录。
+- 发布脚本根据上一版 `manifest.json` 的 SHA256 只上传新增或变化的月度包，并删除已经失效的月度包以及历史全量包、旧日期包和旧格式整仓大包。
 - `manifest.json` 与 `SHA256SUMS.txt` 提供完整资产索引和校验值。
 
-只有需要长期保留里程碑时才使用 `--snapshot` 创建独立 Release；快照同样包含全量包和月度分包。
+从 Release 页面下载 `download_full_archive.py` 后，可直接运行：
+
+```powershell
+python download_full_archive.py --output-dir ccn-report-full
+```
+
+脚本会读取滚动 Release 的 manifest，下载所有月度包并校验 SHA256；只有全部分包成功解压后才会生成输出目录，且不会覆盖已有目录。可通过 `--github-repo`、`--tag` 和 `--output-dir` 指定其他仓库、发布标签和输出位置。
+
+只有需要长期保留里程碑时才使用 `--snapshot` 创建独立 Release；快照同样只包含月度分包和全量组装脚本。
 
 ## Validation
 
