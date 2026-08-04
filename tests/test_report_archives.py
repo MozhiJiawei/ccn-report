@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import sys
+import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -13,7 +14,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 from report_archive_layout import find_report_dirs, report_date  # noqa: E402
-from download_full_archive import extract_packages, package_records, safe_member_path  # noqa: E402
+from download_full_archive import extract_packages, filesystem_path, package_records, safe_member_path  # noqa: E402
 from release_compressed_archive import (  # noqa: E402
     copy_report_dirs,
     group_reports_by_month,
@@ -189,6 +190,21 @@ import release_compressed_archive
     def test_download_extraction_rejects_traversal(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "unsafe ZIP entry"):
             safe_member_path("../outside.txt")
+
+    def test_download_extraction_supports_deep_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            package = root / "deep.zip"
+            relative = "/".join(["segment-" + "x" * 62] * 4) + "/report.html"
+            with zipfile.ZipFile(package, "w") as archive:
+                archive.writestr(relative, "deep")
+            destination = root / "assembled"
+            destination.mkdir()
+            try:
+                self.assertEqual(extract_packages([package], destination), 1)
+                self.assertEqual(filesystem_path(destination / Path(*relative.split("/"))).read_text(), "deep")
+            finally:
+                shutil.rmtree(filesystem_path(destination))
 
     def test_zip_hash_is_stable_when_file_mtime_changes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
