@@ -37,7 +37,7 @@ TEXT_EXTENSIONS = {
     ".xml",
 }
 LATEST_RELEASE_TAG = "latest-compressed-archive"
-MANIFEST_SCHEMA_VERSION = 4
+MANIFEST_SCHEMA_VERSION = 5
 
 
 @dataclass(frozen=True)
@@ -290,16 +290,6 @@ def write_zip(source: Path, destination: Path) -> None:
     write_zip_entries(entries, destination)
 
 
-def write_full_zip(package_roots: list[Path], destination: Path) -> None:
-    entries = [
-        (path, path.relative_to(root))
-        for root in package_roots
-        for path in root.rglob("*")
-        if path.is_file()
-    ]
-    write_zip_entries(entries, destination)
-
-
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -436,10 +426,10 @@ def delete_release_assets(github_repo: str, tag: str, names: set[str]) -> list[s
 def select_release_changes(
     package_paths: list[Path],
     packages: list[dict[str, object]],
-    full_archive_path: Path,
-    full_archive_info: dict[str, object],
     index_path: Path,
     index_info: dict[str, object],
+    assembler_path: Path,
+    assembler_info: dict[str, object],
     previous: dict[str, object],
     existing_assets: set[str],
 ) -> tuple[list[Path], list[Path], set[str]]:
@@ -448,7 +438,7 @@ def select_release_changes(
     for path, package in zip(package_paths, packages):
         if path.name != package.get("filename"):
             fail(f"package path and manifest filename differ: {path.name} != {package.get('filename')}")
-    if previous.get("manifest_schema_version") != MANIFEST_SCHEMA_VERSION:
+    if previous.get("manifest_schema_version") not in {4, MANIFEST_SCHEMA_VERSION}:
         previous = {}
     previous_items = previous.get("packages", [])
     previous_packages = {
@@ -463,15 +453,15 @@ def select_release_changes(
         if previous_packages.get(path.name) != package["sha256"] or path.name not in existing_assets
     ]
     changed_assets = list(changed_packages)
-    previous_full_archive = previous.get("full_archive", {}) if isinstance(previous.get("full_archive"), dict) else {}
-    if (
-        previous_full_archive.get("sha256") != full_archive_info["sha256"]
-        or full_archive_path.name not in existing_assets
-    ):
-        changed_assets.append(full_archive_path)
     if previous_index.get("sha256") != index_info["sha256"] or index_path.name not in existing_assets:
         changed_assets.append(index_path)
-    desired_zip_names = {path.name for path in package_paths} | {full_archive_path.name}
+    previous_assembler = previous.get("assembler", {}) if isinstance(previous.get("assembler"), dict) else {}
+    if (
+        previous_assembler.get("sha256") != assembler_info["sha256"]
+        or assembler_path.name not in existing_assets
+    ):
+        changed_assets.append(assembler_path)
+    desired_zip_names = {path.name for path in package_paths}
     obsolete_assets = {
         name
         for name in existing_assets
@@ -504,9 +494,9 @@ def main() -> int:
     if args.snapshot and tag == LATEST_RELEASE_TAG:
         tag = f"ccn-report-monthly-archives-q{args.quality}-{timestamp}"
     title = args.title or (
-        f"ccn-report full and monthly archives q{args.quality}"
+        f"ccn-report monthly archives q{args.quality}"
         if not args.snapshot
-        else f"ccn-report full and monthly archives q{args.quality} {timestamp}"
+        else f"ccn-report monthly archives q{args.quality} {timestamp}"
     )
     github_repo = args.github_repo or ("" if args.no_upload else infer_github_repo())
 
@@ -521,7 +511,6 @@ def main() -> int:
     assets_root.mkdir(parents=True, exist_ok=True)
 
     package_paths: list[Path] = []
-    package_roots: list[Path] = []
     packages: list[dict[str, object]] = []
     total_source_size = 0
     total_compressed_size = 0
@@ -539,7 +528,6 @@ def main() -> int:
         archive_path = assets_root / f"ccn-report-{month}-q{args.quality}.zip"
         write_zip(copy_root, archive_path)
         package_paths.append(archive_path)
-        package_roots.append(copy_root)
         packages.append(
             {
                 "month": month,
@@ -558,21 +546,23 @@ def main() -> int:
             }
         )
 
-    full_archive_path = assets_root / f"ccn-report-full-q{args.quality}.zip"
-    write_full_zip(package_roots, full_archive_path)
-    full_archive_info = {
-        "filename": full_archive_path.name,
-        "sha256": sha256(full_archive_path),
-        "bytes": full_archive_path.stat().st_size,
-        "report_count": len(report_dirs),
-    }
-
     index_source = REPO_ROOT / "index.html"
     if not index_source.is_file():
         fail("repository index.html not found")
     index_path = assets_root / "index.html"
     shutil.copy2(index_source, index_path)
     index_info = {"filename": index_path.name, "sha256": sha256(index_path), "bytes": index_path.stat().st_size}
+
+    assembler_source = REPO_ROOT / "scripts" / "download_full_archive.py"
+    if not assembler_source.is_file():
+        fail("scripts/download_full_archive.py not found")
+    assembler_path = assets_root / assembler_source.name
+    shutil.copy2(assembler_source, assembler_path)
+    assembler_info = {
+        "filename": assembler_path.name,
+        "sha256": sha256(assembler_path),
+        "bytes": assembler_path.stat().st_size,
+    }
 
     report: dict[str, object] = {
         "manifest_schema_version": MANIFEST_SCHEMA_VERSION,
@@ -587,8 +577,8 @@ def main() -> int:
         "report_count": len(report_dirs),
         "package_count": len(packages),
         "packages": packages,
-        "full_archive": full_archive_info,
         "index": index_info,
+        "assembler": assembler_info,
     }
 
     manifest_path = assets_root / "manifest.json"
@@ -596,21 +586,21 @@ def main() -> int:
     notes_path = assets_root / "release-notes.md"
     manifest_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     checksum_entries = [(str(package["sha256"]), str(package["filename"])) for package in packages]
-    checksum_entries.append((str(full_archive_info["sha256"]), full_archive_path.name))
     checksum_entries.append((str(index_info["sha256"]), index_path.name))
+    checksum_entries.append((str(assembler_info["sha256"]), assembler_path.name))
     sums_path.write_text("".join(f"{digest}  {name}\n" for digest, name in checksum_entries), encoding="ascii")
     notes_path.write_text(
         "\n".join(
             [
                 f"# {title}",
                 "",
-                "Full and month-partitioned offline report archives generated from the current ccn-report working tree.",
+                "Month-partitioned offline report archives generated from the current ccn-report working tree.",
+                "Run `python download_full_archive.py` to download, verify, and extract every monthly package into a full local archive.",
                 "",
                 "## Size",
                 "",
                 f"- Reports: {len(report_dirs)}",
                 f"- Monthly packages: {len(packages)}",
-                f"- Full archive: {round(full_archive_path.stat().st_size / 1024 / 1024, 2)} MB",
                 f"- Source report tree: {round(total_source_size / 1024 / 1024, 2)} MB",
                 f"- Compressed expanded tree: {round(total_compressed_size / 1024 / 1024, 2)} MB",
                 "",
@@ -627,7 +617,7 @@ def main() -> int:
     if not args.no_upload:
         exists = release_exists(github_repo, tag)
         if args.snapshot or not exists:
-            assets = [*package_paths, full_archive_path, index_path, manifest_path, sums_path]
+            assets = [*package_paths, index_path, assembler_path, manifest_path, sums_path]
             release_url = create_release(
                 github_repo=github_repo,
                 tag=tag,
@@ -642,10 +632,10 @@ def main() -> int:
             changed_packages, changed_assets, obsolete_assets = select_release_changes(
                 package_paths,
                 packages,
-                full_archive_path,
-                full_archive_info,
                 index_path,
                 index_info,
+                assembler_path,
+                assembler_info,
                 previous,
                 existing_assets,
             )

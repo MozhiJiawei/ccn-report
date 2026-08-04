@@ -100,10 +100,10 @@ python scripts/release_compressed_archive.py --quality 70
 
 - 默认 tag 为 `latest-compressed-archive`；报告通过最终目录名中的 `YYYYMMDD` 识别，再按月份生成 `ccn-report-YYYYMM-q70.zip`。
 - 每个 ZIP 保留仓库相对目录结构，可将多个月度包解压到同一目录增量合并。
-- 同时发布 `ccn-report-full-q70.zip` 全量包，供首次下载或一次性获取全部报告。
-- 根目录 `index.html` 独立发布，不合入月度包或全量包。
-- 脚本通过上一版 manifest 跳过未变化月度包；全量包仅在报告内容变化时覆盖，并清理失效月度包、旧日期包和旧格式整仓大包。
-- `manifest.json` 和 `SHA256SUMS.txt` 每次更新，作为滚动资产索引。
+- 不再生成或发布 `ccn-report-full-q70.zip`；Release 提供 `download_full_archive.py`，由使用者按 manifest 自动下载、校验并解压全部月度包，形成本地全量目录。
+- 根目录 `index.html` 独立发布，不合入月度包。
+- 脚本通过上一版 manifest 跳过未变化月度包，并清理失效月度包、历史全量包、旧日期包和旧格式整仓大包。
+- `manifest.json` 和 `SHA256SUMS.txt` 每次更新，作为滚动资产索引；`download_full_archive.py` 也作为 Release 资产发布。
 - 只有人工明确要求保留里程碑快照时，才使用 `--snapshot` 创建带时间戳的独立 Release。
 
 ## Git LFS Rules

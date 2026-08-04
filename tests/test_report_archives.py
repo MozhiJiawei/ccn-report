@@ -13,11 +13,11 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 from report_archive_layout import find_report_dirs, report_date  # noqa: E402
+from download_full_archive import extract_packages, package_records, safe_member_path  # noqa: E402
 from release_compressed_archive import (  # noqa: E402
     copy_report_dirs,
     group_reports_by_month,
     select_release_changes,
-    write_full_zip,
     write_zip,
 )
 
@@ -90,13 +90,15 @@ import release_compressed_archive
             {"filename": paths[1].name, "sha256": "new"},
         ]
         previous = {
+            # Schema 4 used the same monthly package records and can be reused
+            # during the one-time migration that removes the full archive.
             "manifest_schema_version": 4,
             "packages": [
                 {"filename": paths[0].name, "sha256": "same"},
                 {"filename": paths[1].name, "sha256": "old"},
             ],
             "index": {"filename": "index.html", "sha256": "index-same"},
-            "full_archive": {"filename": "ccn-report-full-q70.zip", "sha256": "full-same"},
+            "assembler": {"filename": "download_full_archive.py", "sha256": "assembler-same"},
         }
         existing = {
             paths[0].name,
@@ -107,14 +109,15 @@ import release_compressed_archive
             "ccn-report-full-q70.zip",
             "ccn-report-full-q60.zip",
             "ccn-report-20260713-q70.zip",
+            "download_full_archive.py",
         }
         changed_packages, changed_assets, obsolete = select_release_changes(
             paths,
             packages,
-            Path("ccn-report-full-q70.zip"),
-            {"filename": "ccn-report-full-q70.zip", "sha256": "full-same"},
             Path("index.html"),
             {"filename": "index.html", "sha256": "index-same"},
+            Path("download_full_archive.py"),
+            {"filename": "download_full_archive.py", "sha256": "assembler-same"},
             previous,
             existing,
         )
@@ -124,6 +127,7 @@ import release_compressed_archive
             obsolete,
             {
                 "ccn-report-20260713-q70.zip",
+                "ccn-report-full-q70.zip",
                 "ccn-report-full-q60.zip",
                 "ccn-report-latest-compressed-q70.zip",
             },
@@ -134,9 +138,9 @@ import release_compressed_archive
             select_release_changes(
                 [Path("ccn-report-202607-q70.zip")],
                 [],
-                Path("ccn-report-full-q70.zip"),
-                {},
                 Path("index.html"),
+                {},
+                Path("download_full_archive.py"),
                 {},
                 {},
                 set(),
@@ -153,25 +157,38 @@ import release_compressed_archive
             {"202607": reports[:2], "202608": reports[2:]},
         )
 
-    def test_full_zip_combines_date_roots_without_index(self) -> None:
+    def test_downloaded_packages_combine_into_full_tree(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            first = root / "first"
-            second = root / "second"
-            (first / "分类A" / "对象" / "20260712-first-report-x").mkdir(parents=True)
-            (second / "分类B" / "对象" / "20260713-second-report-x").mkdir(parents=True)
-            (first / "分类A" / "对象" / "20260712-first-report-x" / "a.html").write_text("a")
-            (second / "分类B" / "对象" / "20260713-second-report-x" / "b.html").write_text("b")
-            archive = root / "full.zip"
-            write_full_zip([first, second], archive)
-            with zipfile.ZipFile(archive) as handle:
-                self.assertEqual(
-                    handle.namelist(),
-                    [
-                        "分类A/对象/20260712-first-report-x/a.html",
-                        "分类B/对象/20260713-second-report-x/b.html",
-                    ],
-                )
+            first = root / "first.zip"
+            second = root / "second.zip"
+            with zipfile.ZipFile(first, "w") as archive:
+                archive.writestr("分类A/对象/20260712-first-report-x/a.html", "a")
+            with zipfile.ZipFile(second, "w") as archive:
+                archive.writestr("分类B/对象/20260713-second-report-x/b.html", "b")
+            destination = root / "full"
+            destination.mkdir()
+            self.assertEqual(extract_packages([first, second], destination), 2)
+            self.assertEqual(
+                sorted(path.relative_to(destination).as_posix() for path in destination.rglob("*") if path.is_file()),
+                [
+                    "分类A/对象/20260712-first-report-x/a.html",
+                    "分类B/对象/20260713-second-report-x/b.html",
+                ],
+            )
+
+    def test_download_manifest_package_records_are_validated(self) -> None:
+        digest = "a" * 64
+        self.assertEqual(
+            package_records({"packages": [{"filename": "ccn-report-202607-q70.zip", "sha256": digest}]}),
+            [("ccn-report-202607-q70.zip", digest)],
+        )
+        with self.assertRaisesRegex(RuntimeError, "unsafe or duplicate"):
+            package_records({"packages": [{"filename": "../archive.zip", "sha256": digest}]})
+
+    def test_download_extraction_rejects_traversal(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "unsafe ZIP entry"):
+            safe_member_path("../outside.txt")
 
     def test_zip_hash_is_stable_when_file_mtime_changes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

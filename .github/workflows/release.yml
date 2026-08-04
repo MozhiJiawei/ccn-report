@@ -1,0 +1,27 @@
+name: Publish monthly archives
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-monthly-archives
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: python -m pip install Pillow
+      - run: python scripts/pre_commit_gate.py
+      - run: python scripts/release_compressed_archive.py --quality 70
+        env:
+          GH_TOKEN: ${{ github.token }}
