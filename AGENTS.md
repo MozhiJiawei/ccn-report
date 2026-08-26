@@ -105,6 +105,7 @@ python scripts/release_compressed_archive.py --quality 70
 - 脚本通过上一版 manifest 跳过未变化月度包，并清理失效月度包、历史全量包、旧日期包和旧格式整仓大包。
 - `manifest.json` 和 `SHA256SUMS.txt` 每次更新，作为滚动资产索引；`download_full_archive.py` 也作为 Release 资产发布。
 - `download_full_archive.py` 使用 manifest SHA256 复用持久化的月度 ZIP 缓存，只重新下载缺失或已变化的分包；默认缓存位于输出目录旁的 `.ccn-report-cache`。
+- 全量组装支持归并到已有输出目录：先在临时目录完成全部解压，再按相对路径覆盖同名文件并加入新文件，不删除仅在本地存在的文件。
 - 只有人工明确要求保留里程碑快照时，才使用 `--snapshot` 创建带时间戳的独立 Release。
 
 ## Git LFS Rules

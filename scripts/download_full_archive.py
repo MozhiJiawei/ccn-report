@@ -156,6 +156,21 @@ def extract_packages(package_paths: list[Path], destination: Path) -> int:
     return len(extracted)
 
 
+def merge_tree(source: Path, destination: Path) -> int:
+    destination.mkdir(parents=True, exist_ok=True)
+    copied = 0
+    for source_path in source.rglob("*"):
+        relative = source_path.relative_to(source)
+        target = destination / relative
+        if source_path.is_dir():
+            filesystem_path(target).mkdir(parents=True, exist_ok=True)
+            continue
+        filesystem_path(target.parent).mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(filesystem_path(source_path), filesystem_path(target))
+        copied += 1
+    return copied
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Download every monthly ccn-report release package and assemble a full local archive."
@@ -166,7 +181,7 @@ def main() -> int:
         "--output-dir",
         type=Path,
         default=Path.cwd() / "ccn-report-full",
-        help="New directory that will contain the assembled archive (must not already exist).",
+        help="Directory that will contain the assembled archive; existing files are overwritten by path.",
     )
     parser.add_argument(
         "--cache-dir",
@@ -181,8 +196,8 @@ def main() -> int:
         if args.cache_dir is not None
         else output_dir.parent / ".ccn-report-cache"
     )
-    if output_dir.exists():
-        fail(f"output directory already exists: {output_dir}")
+    if output_dir.exists() and (not output_dir.is_dir() or output_dir.is_symlink()):
+        fail(f"output path exists but is not a regular directory: {output_dir}")
     output_dir.parent.mkdir(parents=True, exist_ok=True)
 
     with tempfile.TemporaryDirectory(prefix="ccn-report-download-", dir=output_dir.parent) as temporary:
@@ -209,9 +224,14 @@ def main() -> int:
         assembled = temporary_root / "assembled"
         assembled.mkdir()
         file_count = extract_packages(package_paths, assembled)
-        assembled.replace(output_dir)
+        if output_dir.exists():
+            merge_tree(assembled, output_dir)
+            action = "Merged into"
+        else:
+            assembled.replace(output_dir)
+            action = "Assembled at"
 
-    print(f"Assembled {len(records)} monthly packages and {file_count} files at {output_dir}")
+    print(f"{action} {output_dir}: {len(records)} monthly packages and {file_count} files")
     return 0
 
 

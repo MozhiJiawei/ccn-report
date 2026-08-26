@@ -19,6 +19,7 @@ from download_full_archive import (  # noqa: E402
     ensure_cached_package,
     extract_packages,
     filesystem_path,
+    merge_tree,
     package_records,
     safe_member_path,
     sha256,
@@ -185,6 +186,23 @@ import release_compressed_archive
                     "分类B/对象/20260713-second-report-x/b.html",
                 ],
             )
+
+    def test_existing_output_is_merged_and_matching_paths_are_overwritten(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            assembled = root / "assembled"
+            output = root / "output"
+            (assembled / "分类" / "报告").mkdir(parents=True)
+            (output / "分类" / "报告").mkdir(parents=True)
+            (assembled / "分类" / "报告" / "same.html").write_text("new", encoding="utf-8")
+            (assembled / "分类" / "报告" / "added.html").write_text("added", encoding="utf-8")
+            (output / "分类" / "报告" / "same.html").write_text("old", encoding="utf-8")
+            (output / "local-only.html").write_text("keep", encoding="utf-8")
+
+            self.assertEqual(merge_tree(assembled, output), 2)
+            self.assertEqual((output / "分类" / "报告" / "same.html").read_text(encoding="utf-8"), "new")
+            self.assertEqual((output / "分类" / "报告" / "added.html").read_text(encoding="utf-8"), "added")
+            self.assertEqual((output / "local-only.html").read_text(encoding="utf-8"), "keep")
 
     def test_download_manifest_package_records_are_validated(self) -> None:
         digest = "a" * 64
