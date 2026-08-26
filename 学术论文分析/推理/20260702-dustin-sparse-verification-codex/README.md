@@ -4,6 +4,8 @@
 
 ## 交付件
 
+- Issue #25 一句话单页（自包含 HTML）：[one-page.html](one-page.html)
+- Issue #25 一句话单页（可编辑 PPTX）：[one-page-editable.pptx](one-page-editable.pptx)
 - HTML 视觉证据板：[report/index.html](report/index.html)
 - HTML 静态预览：[report/index-preview.webp](report/index-preview.webp)
 - 可编辑 PPT 复刻版：[ppt/dustin-one-page-evidence-board.pptx](ppt/dustin-one-page-evidence-board.pptx)
