@@ -9,6 +9,7 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path, PurePosixPath
+from typing import Callable
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
@@ -101,6 +102,27 @@ def package_records(manifest: dict[str, object]) -> list[tuple[str, str]]:
     return records
 
 
+def ensure_cached_package(
+    cache_dir: Path,
+    filename: str,
+    expected_digest: str,
+    fetch: Callable[[Path], None],
+) -> tuple[Path, bool]:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    package_path = cache_dir / filename
+    if package_path.is_file() and sha256(package_path) == expected_digest:
+        return package_path, False
+
+    with tempfile.TemporaryDirectory(prefix=f".{filename}-", dir=cache_dir) as temporary:
+        downloaded = Path(temporary) / filename
+        fetch(downloaded)
+        actual_digest = sha256(downloaded)
+        if actual_digest != expected_digest:
+            fail(f"SHA256 mismatch for {filename}: expected {expected_digest}, got {actual_digest}")
+        downloaded.replace(package_path)
+    return package_path, True
+
+
 def safe_member_path(name: str) -> Path:
     normalized = name.replace("\\", "/")
     pure = PurePosixPath(normalized)
@@ -146,9 +168,19 @@ def main() -> int:
         default=Path.cwd() / "ccn-report-full",
         help="New directory that will contain the assembled archive (must not already exist).",
     )
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        help="Persistent monthly ZIP cache (default: .ccn-report-cache beside the output directory).",
+    )
     args = parser.parse_args()
 
     output_dir = args.output_dir.expanduser().absolute()
+    cache_dir = (
+        args.cache_dir.expanduser().absolute()
+        if args.cache_dir is not None
+        else output_dir.parent / ".ccn-report-cache"
+    )
     if output_dir.exists():
         fail(f"output directory already exists: {output_dir}")
     output_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -162,12 +194,16 @@ def main() -> int:
 
         package_paths: list[Path] = []
         for position, (filename, expected_digest) in enumerate(records, start=1):
-            print(f"[{position}/{len(records)}] Downloading {filename}")
-            package_path = temporary_root / filename
-            download(release_asset_url(args.github_repo, args.tag, filename), package_path)
-            actual_digest = sha256(package_path)
-            if actual_digest != expected_digest:
-                fail(f"SHA256 mismatch for {filename}: expected {expected_digest}, got {actual_digest}")
+            package_path, downloaded = ensure_cached_package(
+                cache_dir,
+                filename,
+                expected_digest,
+                lambda destination, name=filename: download(
+                    release_asset_url(args.github_repo, args.tag, name), destination
+                ),
+            )
+            action = "Downloaded" if downloaded else "Using cached"
+            print(f"[{position}/{len(records)}] {action} {filename}")
             package_paths.append(package_path)
 
         assembled = temporary_root / "assembled"
