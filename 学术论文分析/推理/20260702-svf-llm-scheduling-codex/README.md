@@ -4,6 +4,8 @@
 
 ## 交付件
 
+- `one-page.html`：自包含的一页同版式 HTML。
+- `one-page-editable.pptx`：以可编辑文字、形状和论文表格原图组成的一页 PowerPoint。
 - `svf-one-page-evidence-board.pptx`：可编辑 PowerPoint 版本。
 - `evidence-board.html`：单页 HTML 技术证据板。
 - `assets/evidence-board-preview.webp`：HTML 版本渲染预览。
