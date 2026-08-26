@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import shutil
 import subprocess
 import sys
@@ -14,7 +15,14 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 from report_archive_layout import find_report_dirs, report_date  # noqa: E402
-from download_full_archive import extract_packages, filesystem_path, package_records, safe_member_path  # noqa: E402
+from download_full_archive import (  # noqa: E402
+    ensure_cached_package,
+    extract_packages,
+    filesystem_path,
+    package_records,
+    safe_member_path,
+    sha256,
+)
 from release_compressed_archive import (  # noqa: E402
     copy_report_dirs,
     group_reports_by_month,
@@ -186,6 +194,44 @@ import release_compressed_archive
         )
         with self.assertRaisesRegex(RuntimeError, "unsafe or duplicate"):
             package_records({"packages": [{"filename": "../archive.zip", "sha256": digest}]})
+
+    def test_download_reuses_matching_cached_package(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            cache = Path(temporary) / "cache"
+            cache.mkdir()
+            package = cache / "ccn-report-202607-q70.zip"
+            package.write_bytes(b"cached")
+            fetches: list[Path] = []
+
+            result, downloaded = ensure_cached_package(
+                cache,
+                package.name,
+                sha256(package),
+                lambda destination: fetches.append(destination),
+            )
+
+            self.assertEqual(result, package)
+            self.assertFalse(downloaded)
+            self.assertEqual(fetches, [])
+
+    def test_download_replaces_changed_cached_package(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            cache = Path(temporary) / "cache"
+            cache.mkdir()
+            package = cache / "ccn-report-202607-q70.zip"
+            package.write_bytes(b"old")
+            expected = hashlib.sha256(b"new").hexdigest()
+
+            result, downloaded = ensure_cached_package(
+                cache,
+                package.name,
+                expected,
+                lambda destination: destination.write_bytes(b"new"),
+            )
+
+            self.assertEqual(result, package)
+            self.assertTrue(downloaded)
+            self.assertEqual(package.read_bytes(), b"new")
 
     def test_download_extraction_rejects_traversal(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "unsafe ZIP entry"):

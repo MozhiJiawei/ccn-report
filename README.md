@@ -110,7 +110,7 @@ python scripts/release_compressed_archive.py --quality 70
 python download_full_archive.py --output-dir ccn-report-full
 ```
 
-脚本会读取滚动 Release 的 manifest，下载所有月度包并校验 SHA256；只有全部分包成功解压后才会生成输出目录，且不会覆盖已有目录。可通过 `--github-repo`、`--tag` 和 `--output-dir` 指定其他仓库、发布标签和输出位置。
+脚本会读取滚动 Release 的 manifest，先用其中的 SHA256 校验本地月度 ZIP 缓存，只下载缺失或内容已变化的分包；只有全部分包成功解压后才会生成输出目录，且不会覆盖已有目录。默认缓存位于输出目录旁的 `.ccn-report-cache`，可通过 `--cache-dir` 指定其他位置，也可通过 `--github-repo`、`--tag` 和 `--output-dir` 指定其他仓库、发布标签和输出位置。
 
 只有需要长期保留里程碑时才使用 `--snapshot` 创建独立 Release；快照同样只包含月度分包和全量组装脚本。
 
