@@ -17,8 +17,8 @@
 
 ## 交付件说明
 
-- [source_understanding_review.html](./source_understanding_review.html)：dependency-free SingleFile Source Understanding HTML，可离线打开。
-- [single_page_tech_report.pptx](./single_page_tech_report.pptx)：基于已验收 HTML 总结的一页式可编辑技术洞察 PPTX。
+- [Dense-LLM-并行策略.html](./Dense-LLM-并行策略.html)：dependency-free SingleFile Source Understanding HTML，可离线打开。
+- [Dense-LLM-并行策略.pptx](./Dense-LLM-并行策略.pptx)：基于已验收 HTML 总结的一页式可编辑技术洞察 PPTX。
 
 ## 引用信息源说明
 

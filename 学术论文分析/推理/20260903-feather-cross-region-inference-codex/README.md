@@ -17,8 +17,8 @@
 
 ## 交付件说明
 
-- [source_understanding_review.html](./source_understanding_review.html)：dependency-free SingleFile Source Understanding HTML，可离线打开。
-- [single_page_tech_report.pptx](./single_page_tech_report.pptx)：基于已验收 HTML 总结的一页式可编辑技术洞察 PPTX。
+- [Feather-跨地域推理.html](./Feather-跨地域推理.html)：dependency-free SingleFile Source Understanding HTML，可离线打开。
+- [Feather-跨地域推理.pptx](./Feather-跨地域推理.pptx)：基于已验收 HTML 总结的一页式可编辑技术洞察 PPTX。
 
 ## 引用信息源说明
 
