@@ -6,40 +6,23 @@ AI 生成报告交付件归档仓库。
 
 ## Directory Convention
 
+一级目录按分类表顺序添加`01-`至`13-`前缀，保持稳定排序；二级目录名称保持不变。
+
+报告按业务责任组织为13个一级分类、50个二级分类。完整文字准则见 [分类总则](classification/README.md)，按需加载一级板块细则。
+
 ```text
-.
-|-- AGENTS.md
-|-- README.md
-|-- 大厂动态/
-|   |-- Anthropic/
-|   `-- OpenAI/
-|-- 开源软件分析/
-|   |-- LangChain/
-|   `-- OpenHarness/
-|-- 学术论文分析/
-|   |-- Agent/
-|   `-- 推理/
-|-- scripts/
-|   |-- check_report_archive.py
-|   `-- pre_commit_gate.py
+classification/                 # 分类总则、板块细则与名称注册表
+04-AI模型/
+├── 多模态模型与模型架构/
+│   └── YYYYMMDD-report-slug-creator/
+└── YYYYMMDD-survey-slug-creator/
 ```
 
 ## Report Package
 
-报告必须归档到分类和对象或方向目录之后的独立报告目录里，中间可以按需要增加自定义子类。分类根目录名称不固定；归档和门禁通过最终报告目录名动态发现报告。
-
-```text
-<大类>/<对象或方向>/.../.../<YYYYMMDD>-<report-slug>-<creator>/.../
-```
-
-示例：
-
-```text
-大厂动态/OpenAI/20260611-gpt-5-market-scan-mozhi/
-大厂动态/OpenAI/模型发布/20260611-gpt-5-market-scan-mozhi/
-开源软件分析/LangChain/Runtime/LangGraph/20260611-langgraph-runtime-review-mozhi/
-学术论文分析/Agent/多智能体规划/20260611-multi-agent-planning-survey-mozhi/
-```
+普通专题使用 `<一级分类>/<二级分类>/<YYYYMMDD>-<report-slug>-<creator>/`。
+无适配单一二级的综述／综合报告可使用 `<一级分类>/<YYYYMMDD>-<report-slug>-<creator>/`，README须按分类总则记录一级直归理由。
+禁止任意增加中间分类层，不按厂商或材料来源建立分类，不设置“其他”或“综合”目录。
 
 目录名规则：
 
@@ -59,7 +42,7 @@ AI 生成报告交付件归档仓库。
 
 - 根目录不直接放报告文件。
 - 大类目录下不直接放报告文件。
-- 对象或方向目录及其自定义子类目录下不直接放单个交付文件。
+- 二级分类目录下不直接放单个交付文件。
 - 一个报告一个目录，不把多个主题混在同一目录。
 - 只有最终报告目录名必须满足 `<YYYYMMDD>-<report-slug>-<creator>`。
 - 报告目录内部只保留 HTML、PPTX 和必需的 `README.md`。
@@ -68,7 +51,7 @@ AI 生成报告交付件归档仓库。
 
 ## Git LFS
 
-动态发现到的报告目录中的 HTML 和 PPTX 默认使用 Git LFS，以避免正式交付件撑大 Git 历史；独立发布的根目录 `index.html` 保留普通 Git diff。
+动态发现到的报告目录中的 HTML 和 PPTX 默认使用 Git LFS，以避免正式交付件撑大 Git 历史。
 
 只有报告说明 Markdown 保留普通 Git diff。HTML 和 PPTX 都是正式交付件，默认走 LFS。
 
@@ -99,7 +82,6 @@ python scripts/release_compressed_archive.py --quality 70
 
 - 报告仍通过目录名中的 `YYYYMMDD` 识别，但按 `YYYYMM` 汇聚为 `ccn-report-YYYYMM-q70.zip`。
 - ZIP 保持报告相对于仓库根目录的完整路径；多个月度包可依次解压到同一目录进行增量合并。
-- 根目录 `index.html` 作为独立 Release 资产发布，不进入月度包。
 - `download_full_archive.py` 作为独立 Release 资产发布，可自动下载、校验并解压全部月度包，生成本地全量目录。
 - 发布脚本根据上一版 `manifest.json` 的 SHA256 只上传新增或变化的月度包，并删除已经失效的月度包以及历史全量包、旧日期包和旧格式整仓大包。
 - `manifest.json` 与 `SHA256SUMS.txt` 提供完整资产索引和校验值。

@@ -8,30 +8,16 @@
 - 不归档临时草稿、缓存、运行日志、未整理的中间导出。
 - 仓库根目录只保存说明、脚本和分类入口。
 
-## Directory Rules
+## Classification Loading and Directory Rules
 
-报告必须进入大类和对象或方向之后，再创建独立报告目录；中间可以按需要增加自定义子类：
+一级归档目录必须使用两位序号加短横线前缀（`01-`至`13-`），顺序以分类总则与注册表为准；不得去掉前缀或自行重排。二级目录不加序号。
 
-```text
-<大类>/<对象或方向>/.../.../<YYYYMMDD>-<report-slug>-<creator>/.../
-```
+每次归档前必须先读取 [分类总则](classification/README.md)，再按索引加载候选一级板块细则；存在跨板块边界时必须加载双方细则，依据正式报告正文判断后再建目录。
 
-当前常用大类（仅作为示例，不是归档脚本的固定白名单）：
-
-- `大厂动态/`
-- `开源软件分析/`
-- `学术论文分析/`
-
-归档脚本和门禁会从仓库根目录递归发现符合命名规则的最终报告目录。可以新增、改名或调整分类根目录，无需同步修改代码；报告目录仍须位于仓库根目录至少两级之下。
-
-示例二级目录：
-
-- `大厂动态/Anthropic/`
-- `大厂动态/OpenAI/`
-- `开源软件分析/LangChain/`
-- `开源软件分析/OpenHarness/`
-- `学术论文分析/Agent/`
-- `学术论文分析/推理/`
+- 专题报告：`<一级分类>/<二级分类>/<YYYYMMDD>-<report-slug>-<creator>/`。
+- 无适配单一二级的综述／综合报告：`<一级分类>/<YYYYMMDD>-<report-slug>-<creator>/`；README必须按总则记录文章类型、一级分类及一级直归理由。
+- 分类固定为总则中的13个一级与50个二级，不得自行增加厂商、来源、其他或综合等目录层。
+- 完成归档后运行统一门禁。
 
 ## Report Directory Naming
 
@@ -46,8 +32,8 @@
 - `<YYYYMMDD>` 使用 8 位合入日期，例如 `20260611`。
 - `<report-slug>` 使用小写字母、数字和短横线。
 - `<creator>` 使用中文、英文字母、数字、短横线或下划线。
-- 报告文件不能直接放在大类、对象或方向、自定义子类目录下。
-- 大类目录下不能直接创建报告目录；至少需要 `<大类>/<对象或方向>/<报告目录>`。
+- 报告文件不能直接放在一级、二级分类目录下。
+- 一级目录可直接承载符合分类总则的综述报告目录；禁止把交付文件散放在分类目录。
 - 合法报告目录内部可以继续创建任意子目录和文件，不再受归档层级门禁约束。
 
 ## Report Package Contents
@@ -72,7 +58,7 @@
 
 该总结必须保持为一句话；可以使用分号或冒号组织信息，但不能拆成多条口号。若来源没有性能数字，应使用支持的平台、任务覆盖、验证条件或能力边界实现可衡量性，禁止为了满足 SMART 编造数据。
 
-不归档 PDF、图片依赖包、源码材料、QA 中间记录或生成日志；如需说明，整理进 `README.md`。无论采用哪种形态，都必须先创建符合命名规则的最终报告目录，不能把交付文件直接放在大类、对象或方向、自定义子类目录下。
+不归档 PDF、图片依赖包、源码材料、QA 中间记录或生成日志；如需说明，整理进 `README.md`。无论采用哪种形态，都必须先创建符合命名规则的最终报告目录，不能把交付文件直接放在一级、二级分类目录下。
 
 ## HTML SingleFile Export
 
@@ -101,7 +87,6 @@ python scripts/release_compressed_archive.py --quality 70
 - 默认 tag 为 `latest-compressed-archive`；报告通过最终目录名中的 `YYYYMMDD` 识别，再按月份生成 `ccn-report-YYYYMM-q70.zip`。
 - 每个 ZIP 保留仓库相对目录结构，可将多个月度包解压到同一目录增量合并。
 - 不再生成或发布 `ccn-report-full-q70.zip`；Release 提供 `download_full_archive.py`，由使用者按 manifest 自动下载、校验并解压全部月度包，形成本地全量目录。
-- 根目录 `index.html` 独立发布，不合入月度包。
 - 脚本通过上一版 manifest 跳过未变化月度包，并清理失效月度包、历史全量包、旧日期包和旧格式整仓大包。
 - `manifest.json` 和 `SHA256SUMS.txt` 每次更新，作为滚动资产索引；`download_full_archive.py` 也作为 Release 资产发布。
 - `download_full_archive.py` 使用 manifest SHA256 复用持久化的月度 ZIP 缓存，只重新下载缺失或已变化的分包；默认缓存位于输出目录旁的 `.ccn-report-cache`。
@@ -110,7 +95,7 @@ python scripts/release_compressed_archive.py --quality 70
 
 ## Git LFS Rules
 
-动态发现到的报告目录中的 HTML 和 PPTX 默认走 Git LFS；根目录 `index.html` 保留普通 Git diff。
+动态发现到的报告目录中的 HTML 和 PPTX 默认走 Git LFS。
 
 只有报告说明 Markdown 保留普通 Git diff：
 

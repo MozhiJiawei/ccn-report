@@ -37,7 +37,7 @@ TEXT_EXTENSIONS = {
     ".xml",
 }
 LATEST_RELEASE_TAG = "latest-compressed-archive"
-MANIFEST_SCHEMA_VERSION = 5
+MANIFEST_SCHEMA_VERSION = 6
 
 
 @dataclass(frozen=True)
@@ -426,8 +426,6 @@ def delete_release_assets(github_repo: str, tag: str, names: set[str]) -> list[s
 def select_release_changes(
     package_paths: list[Path],
     packages: list[dict[str, object]],
-    index_path: Path,
-    index_info: dict[str, object],
     assembler_path: Path,
     assembler_info: dict[str, object],
     previous: dict[str, object],
@@ -438,7 +436,7 @@ def select_release_changes(
     for path, package in zip(package_paths, packages):
         if path.name != package.get("filename"):
             fail(f"package path and manifest filename differ: {path.name} != {package.get('filename')}")
-    if previous.get("manifest_schema_version") not in {4, MANIFEST_SCHEMA_VERSION}:
+    if previous.get("manifest_schema_version") not in {4, 5, MANIFEST_SCHEMA_VERSION}:
         previous = {}
     previous_items = previous.get("packages", [])
     previous_packages = {
@@ -446,15 +444,12 @@ def select_release_changes(
         for item in previous_items
         if isinstance(item, dict)
     } if isinstance(previous_items, list) else {}
-    previous_index = previous.get("index", {}) if isinstance(previous.get("index"), dict) else {}
     changed_packages = [
         path
         for path, package in zip(package_paths, packages)
         if previous_packages.get(path.name) != package["sha256"] or path.name not in existing_assets
     ]
     changed_assets = list(changed_packages)
-    if previous_index.get("sha256") != index_info["sha256"] or index_path.name not in existing_assets:
-        changed_assets.append(index_path)
     previous_assembler = previous.get("assembler", {}) if isinstance(previous.get("assembler"), dict) else {}
     if (
         previous_assembler.get("sha256") != assembler_info["sha256"]
@@ -546,13 +541,6 @@ def main() -> int:
             }
         )
 
-    index_source = REPO_ROOT / "index.html"
-    if not index_source.is_file():
-        fail("repository index.html not found")
-    index_path = assets_root / "index.html"
-    shutil.copy2(index_source, index_path)
-    index_info = {"filename": index_path.name, "sha256": sha256(index_path), "bytes": index_path.stat().st_size}
-
     assembler_source = REPO_ROOT / "scripts" / "download_full_archive.py"
     if not assembler_source.is_file():
         fail("scripts/download_full_archive.py not found")
@@ -577,7 +565,6 @@ def main() -> int:
         "report_count": len(report_dirs),
         "package_count": len(packages),
         "packages": packages,
-        "index": index_info,
         "assembler": assembler_info,
     }
 
@@ -586,7 +573,6 @@ def main() -> int:
     notes_path = assets_root / "release-notes.md"
     manifest_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     checksum_entries = [(str(package["sha256"]), str(package["filename"])) for package in packages]
-    checksum_entries.append((str(index_info["sha256"]), index_path.name))
     checksum_entries.append((str(assembler_info["sha256"]), assembler_path.name))
     sums_path.write_text("".join(f"{digest}  {name}\n" for digest, name in checksum_entries), encoding="ascii")
     notes_path.write_text(
@@ -617,7 +603,7 @@ def main() -> int:
     if not args.no_upload:
         exists = release_exists(github_repo, tag)
         if args.snapshot or not exists:
-            assets = [*package_paths, index_path, assembler_path, manifest_path, sums_path]
+            assets = [*package_paths, assembler_path, manifest_path, sums_path]
             release_url = create_release(
                 github_repo=github_repo,
                 tag=tag,
@@ -632,8 +618,6 @@ def main() -> int:
             changed_packages, changed_assets, obsolete_assets = select_release_changes(
                 package_paths,
                 packages,
-                index_path,
-                index_info,
                 assembler_path,
                 assembler_info,
                 previous,
