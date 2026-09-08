@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import io
+import json
 import shutil
 import subprocess
 import sys
@@ -9,12 +11,15 @@ import time
 import unittest
 import zipfile
 from pathlib import Path
+from contextlib import redirect_stdout
+from unittest.mock import patch
 
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 from report_archive_layout import find_report_dirs, report_date  # noqa: E402
+import release_compressed_archive as release  # noqa: E402
 from download_full_archive import (  # noqa: E402
     ensure_cached_package,
     extract_packages,
@@ -59,6 +64,29 @@ class ReportArchiveLayoutTests(unittest.TestCase):
 
 
 class MonthlyPackageTests(unittest.TestCase):
+    def test_offline_release_contains_only_monthly_packages_and_assembler(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "repo"
+            report = root / "AI模型" / "20260908-survey-codex"
+            report.mkdir(parents=True)
+            (report / "report.html").write_text("<html>Report</html>", encoding="utf-8")
+            scripts = root / "scripts"
+            scripts.mkdir()
+            (scripts / "download_full_archive.py").write_text("# assembler\n", encoding="utf-8")
+            work = Path(temporary) / "build"
+            with patch.object(release, "REPO_ROOT", root), patch.object(sys, "argv", ["release", "--no-upload", "--work-dir", str(work)]), redirect_stdout(io.StringIO()):
+                self.assertEqual(release.main(), 0)
+            assets = work / "assets"
+            self.assertEqual({p.name for p in assets.iterdir()}, {
+                "ccn-report-202609-q70.zip", "download_full_archive.py", "manifest.json", "SHA256SUMS.txt", "release-notes.md",
+            })
+            manifest = json.loads((assets / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["manifest_schema_version"], 6)
+            self.assertEqual(manifest["report_count"], 1)
+            self.assertEqual(len(manifest["packages"]), 1)
+            sums = (assets / "SHA256SUMS.txt").read_text(encoding="ascii").splitlines()
+            self.assertEqual({line.split("  ", 1)[1] for line in sums}, {"ccn-report-202609-q70.zip", "download_full_archive.py"})
+
     def test_release_helpers_import_without_pillow_installed(self) -> None:
         script = """
 import importlib.abc
@@ -107,13 +135,11 @@ import release_compressed_archive
                 {"filename": paths[0].name, "sha256": "same"},
                 {"filename": paths[1].name, "sha256": "old"},
             ],
-            "index": {"filename": "index.html", "sha256": "index-same"},
             "assembler": {"filename": "download_full_archive.py", "sha256": "assembler-same"},
         }
         existing = {
             paths[0].name,
             paths[1].name,
-            "index.html",
             "ccn-report-latest-compressed-q70.zip",
             "unrelated-download.zip",
             "ccn-report-full-q70.zip",
@@ -124,8 +150,6 @@ import release_compressed_archive
         changed_packages, changed_assets, obsolete = select_release_changes(
             paths,
             packages,
-            Path("index.html"),
-            {"filename": "index.html", "sha256": "index-same"},
             Path("download_full_archive.py"),
             {"filename": "download_full_archive.py", "sha256": "assembler-same"},
             previous,
@@ -148,8 +172,6 @@ import release_compressed_archive
             select_release_changes(
                 [Path("ccn-report-202607-q70.zip")],
                 [],
-                Path("index.html"),
-                {},
                 Path("download_full_archive.py"),
                 {},
                 {},

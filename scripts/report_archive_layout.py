@@ -17,6 +17,7 @@ IGNORED_DIRECTORY_NAMES = {
     "__pycache__",
     "scripts",
     "tests",
+    "classification",
 }
 
 

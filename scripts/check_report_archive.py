@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import json
 import sys
 from pathlib import Path
 
@@ -14,7 +15,6 @@ ALLOWED_ROOT_FILE_NAMES = {
     ".gitignore",
     "AGENTS.md",
     "README.md",
-    "index.html",
 }
 ALLOWED_REPORT_SUFFIXES = {".html", ".pptx"}
 ALLOWED_REPORT_FILENAMES = {"README.md"}
@@ -26,6 +26,7 @@ def fail(message: str, errors: list[str]) -> None:
 
 
 def check_repo_root(errors: list[str]) -> None:
+    categories = load_categories()
     for item in REPO_ROOT.iterdir():
         if item.name in IGNORED_NAMES:
             continue
@@ -39,10 +40,23 @@ def check_repo_root(errors: list[str]) -> None:
                 f"Report directories must be at least two levels below the repository root: {item.relative_to(REPO_ROOT)}",
                 errors,
             )
+        elif item.name not in categories:
+            fail(f"Unknown primary category: {item.name}", errors)
+
+
+def load_categories() -> dict[str, list[str]]:
+    return json.loads((REPO_ROOT / "classification" / "categories.json").read_text(encoding="utf-8"))
 
 
 def check_archive_branch(branch: Path, errors: list[str]) -> None:
-    if branch.name in IGNORED_DIRECTORY_NAMES:
+    if branch.parent == REPO_ROOT and branch.name in IGNORED_DIRECTORY_NAMES:
+        return
+    parts = branch.relative_to(REPO_ROOT).parts
+    categories = load_categories()
+    if parts[0] not in categories:
+        return  # Reported by the root check.
+    if len(parts) > 2 or (len(parts) == 2 and parts[1] not in categories[parts[0]]):
+        fail(f"Invalid category or extra classification level: {branch.relative_to(REPO_ROOT)}", errors)
         return
     items = list(branch.iterdir())
     direct_files = [item for item in items if item.is_file() and item.name not in IGNORED_NAMES]
@@ -73,6 +87,15 @@ def check_archive_branch(branch: Path, errors: list[str]) -> None:
 
 
 def check_report_contents(report_dir: Path, errors: list[str]) -> None:
+    readme = report_dir / "README.md"
+    if not readme.is_file():
+        fail(f"Report is missing README.md: {report_dir.relative_to(REPO_ROOT)}", errors)
+    elif len(report_dir.relative_to(REPO_ROOT).parts) == 2:
+        text = readme.read_text(encoding="utf-8")
+        primary = report_dir.relative_to(REPO_ROOT).parts[0]
+        required = [r"文章类型：\s*综述／综合", r"一级分类：\s*" + re.escape(primary) + r"\s*(?:\n|$)", r"一级直归理由：[^\n\s][^\n]+"]
+        if not all(re.search(pattern, text) for pattern in required):
+            fail(f"Primary-level report needs survey classification and reason: {report_dir.relative_to(REPO_ROOT)}", errors)
     for path in report_dir.rglob("*"):
         if not path.is_file():
             continue
